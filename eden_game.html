@@ -1,0 +1,2539 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Eden: Genesis - Alpha 0.7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b1410; --panel:#152a1c; --panel-2:#0f2016;
+    --wood:#8a5a30; --wood-dark:#5a3a1c; --gold:#ffcf4d; --eva:#39e6ff;
+    --ink:#eafff0; --pink:#ff8fc7;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh;
+    background:radial-gradient(circle at 20% 10%, #1c3324 0%, transparent 55%),
+               radial-gradient(circle at 85% 85%, #1a2a3a 0%, transparent 50%), var(--bg);
+    color:var(--ink); font-family:'Kanit', sans-serif;
+    display:flex; flex-direction:column; align-items:center; padding:22px 14px 40px;
+  }
+  .pixel{ font-family:'Press Start 2P', monospace; }
+  h1{
+    font-family:'Press Start 2P', monospace; font-size:20px; letter-spacing:1px; margin:0 0 4px;
+    background:linear-gradient(180deg,#c9ffb0 0%, #6fbf47 55%, #2f6e22 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 3px 0 rgba(0,0,0,0.35);
+  }
+  .subtitle{ font-size:11px; letter-spacing:2px; color:var(--gold); opacity:0.85; margin-bottom:14px; font-family:'Press Start 2P', monospace;}
+  @keyframes titleGlow{ 0%,100%{ filter:drop-shadow(0 0 6px rgba(111,191,71,0.45)); } 50%{ filter:drop-shadow(0 0 15px rgba(111,191,71,0.85)); } }
+  h1{ animation: titleGlow 3s ease-in-out infinite; }
+  .frame{ position:relative; padding:10px; border-radius:16px; background:linear-gradient(160deg, var(--wood) 0%, var(--wood-dark) 100%); box-shadow: 0 14px 34px rgba(0,0,0,0.55), inset 0 0 0 3px rgba(0,0,0,0.25);}
+  .frame::before{ content:""; position:absolute; inset:-4px; border-radius:19px; z-index:-1; filter:blur(7px); opacity:0.55;
+    background:conic-gradient(from 0deg, #6fbf47, #39e6ff, #ffcf4d, #ff8fc7, #6fbf47); animation: rotateGlow 7s linear infinite; }
+  @keyframes rotateGlow{ to{ transform:rotate(360deg);} }
+  canvas{ display:block; background:#2e4a22; image-rendering:pixelated; border-radius:9px; box-shadow: inset 0 0 40px rgba(0,0,0,0.45);}
+  #ui, #ui2{ width:660px; margin-top:12px; display:grid; grid-template-columns: 1fr 1.3fr 1fr; gap:10px; }
+  #ui2{ grid-template-columns: 1fr 1fr 1fr; }
+  .card{ background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 12px; box-shadow:0 4px 10px rgba(0,0,0,0.35); transition:transform 0.15s ease, box-shadow 0.15s ease;}
+  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 16px rgba(0,0,0,0.45); }
+  .card h3{ margin:0 0 6px; font-size:12px; color:var(--gold); display:flex; align-items:center; gap:6px; letter-spacing:0.5px;}
+  .row{ display:flex; justify-content:space-between; font-size:12.5px; margin:3px 0; opacity:0.95;}
+  .pill{ background:rgba(255,255,255,0.08); padding:1px 8px; border-radius:20px; font-weight:600;}
+  .barTrack{ width:100%; height:7px; border-radius:6px; background:rgba(0,0,0,0.4); overflow:hidden; margin-top:3px; box-shadow:inset 0 1px 2px rgba(0,0,0,0.6);}
+  .barFill{ height:100%; border-radius:6px; background:linear-gradient(90deg, #ff8a65, #ff5a4d); transition:width 0.2s ease;}
+  .barFill.veg{ background:linear-gradient(90deg, #9ccc65, #4CAF50);}
+  .barFill.meat{ background:linear-gradient(90deg, #ffab40, #ff5722);}
+  .barFill.bond{ background:linear-gradient(90deg, #f48fb1, #ff4fa1);}
+  .barFill.skill{ background:linear-gradient(90deg, #7fd8ff, #29b6f6);}
+  .barFill.exp{ background:linear-gradient(90deg, #ffe066, #ff9800);}
+  #dayWeatherHUD{
+    position:absolute; top:10px; left:10px; z-index:4; pointer-events:none;
+    background:rgba(10,20,14,0.55); border:1px solid rgba(255,255,255,0.15); border-radius:8px;
+    padding:5px 10px; font-size:11.5px; color:#eafff0; display:flex; gap:10px; align-items:center;
+    backdrop-filter:blur(2px);
+  }
+  #dayWeatherHUD .seg{ display:flex; align-items:center; gap:5px; white-space:nowrap; }
+  .barFill.energy{ background:linear-gradient(90deg, #ffe082, #ffb300);}
+  .partyItem{ display:flex; align-items:center; gap:6px; font-size:12px; padding:3px 4px; border-radius:6px; margin-bottom:3px;}
+  .partyItem.active{ background:rgba(255,207,77,0.15); box-shadow:inset 0 0 0 1px rgba(255,207,77,0.5);}
+  .dot{ width:10px; height:10px; border-radius:50%; flex:0 0 auto;}
+  .btn{ font-family:'Press Start 2P',monospace; font-size:9px; background:linear-gradient(180deg,#3a3a3a,#1c1c1c); border:1px solid #666; color:#fff; padding:5px 8px; border-radius:5px; cursor:pointer; box-shadow:0 2px 0 #000;}
+  .btn:hover{ filter:brightness(1.2); }
+  #eva-panel{ width:660px; margin-top:10px; display:flex; align-items:flex-start; gap:10px; background:linear-gradient(160deg, #06222c 0%, #031015 100%); border:1px solid rgba(57,230,255,0.45); box-shadow:0 0 18px rgba(57,230,255,0.18), inset 0 0 20px rgba(57,230,255,0.06); border-radius:12px; padding:12px 14px;}
+  .eva-avatar{ flex:0 0 auto; width:34px; height:34px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #bdf6ff, #12b6d6 60%, #06414f 100%); box-shadow:0 0 12px rgba(57,230,255,0.7); position:relative; margin-top:2px;}
+  .eva-avatar::after{ content:""; position:absolute; inset:0; border-radius:50%; border:2px solid rgba(255,255,255,0.5); animation:pulse 2.2s infinite;}
+  @keyframes pulse{ 0%{transform:scale(1); opacity:0.8;} 70%{transform:scale(1.35); opacity:0;} 100%{opacity:0;} }
+  .eva-text{ color:var(--eva); font-size:14px; line-height:1.5;}
+  .eva-text::after{ content:"▍"; animation: blink 1s steps(1) infinite; margin-left:2px;}
+  @keyframes blink{ 50%{ opacity:0; } }
+  .eva-tag{ font-family:'Press Start 2P',monospace; font-size:10px; color:#7ff; margin-bottom:4px; display:block; letter-spacing:1px;}
+  .controls{ width:660px; margin-top:10px; font-size:12px; color:#cfe; opacity:0.85; display:flex; flex-wrap:wrap; gap:6px 14px; justify-content:center;}
+  kbd{ background:linear-gradient(180deg,#3a3a3a,#1c1c1c); border:1px solid #555; padding:2px 7px; border-radius:5px; font-size:11px; box-shadow:0 2px 0 #000; font-family:'Press Start 2P', monospace;}
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{ width:660px; display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px; }
+  .toolbar button{ font-family:'Press Start 2P',monospace; font-size:9px; background:linear-gradient(180deg,#2a3a2a,#12200f); border:1px solid #6fbf47; color:#eafff0; padding:6px 10px; border-radius:6px; cursor:pointer; box-shadow:0 2px 0 #05300f;}
+  .toolbar button:hover{ filter:brightness(1.25); }
+
+  /* ---------- Title Screen ---------- */
+  #titleScreen{
+    position:absolute; top:10px; left:10px; right:10px; bottom:10px; border-radius:9px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+    background:
+      linear-gradient(180deg, rgba(10,20,12,0.55), rgba(4,8,5,0.88)),
+      radial-gradient(circle at 50% 30%, #2e4a22 0%, #16240f 55%, #0a1006 100%);
+    z-index:5; color:#eafff0; padding:20px; overflow:hidden;
+  }
+  #titleScreen .egg{ font-size:56px; animation:eggBob 1.6s ease-in-out infinite; margin-bottom:6px; filter:drop-shadow(0 0 12px rgba(255,207,77,0.55));}
+  @keyframes eggBob{ 0%,100%{ transform:translateY(0) rotate(-4deg);} 50%{ transform:translateY(-10px) rotate(4deg);} }
+  #titleScreen .tt1{ font-family:'Press Start 2P',monospace; font-size:22px; color:#c9ffb0; text-shadow:0 3px 0 rgba(0,0,0,0.4), 0 0 16px rgba(111,191,71,0.6); margin-bottom:6px;}
+  #titleScreen .tt2{ font-family:'Press Start 2P',monospace; font-size:10px; letter-spacing:2px; color:#ffcf4d; margin-bottom:22px;}
+  #titleScreen .startBtn{
+    font-family:'Press Start 2P',monospace; font-size:11px; color:#0a1006; letter-spacing:1px;
+    background:linear-gradient(180deg,#c9ffb0,#6fbf47); padding:12px 20px; border-radius:8px; cursor:pointer;
+    box-shadow:0 4px 0 #2f6e22; animation:startPulse 1.3s ease-in-out infinite; border:none;
+  }
+  @keyframes startPulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.05);} }
+  #titleScreen .verTag{ position:absolute; bottom:8px; right:12px; font-size:10px; color:#8fae95; letter-spacing:1px;}
+  #titleScreen .featList{ margin-top:16px; font-size:11.5px; color:#bcd6c0; line-height:1.8;}
+
+  /* ---------- Tutorial banner ---------- */
+  #tutorialBar{
+    width:660px; margin-top:10px; display:flex; align-items:center; gap:10px;
+    background:linear-gradient(160deg,#3a2f10,#241b08); border:1px solid rgba(255,207,77,0.55);
+    border-radius:10px; padding:9px 12px; box-shadow:0 0 14px rgba(255,207,77,0.12);
+  }
+  #tutorialBar .tut-icon{ font-size:18px; flex:0 0 auto; }
+  #tutorialBar .tut-body{ flex:1; }
+  #tutorialBar .tut-progress{ font-family:'Press Start 2P',monospace; font-size:8px; color:#ffcf4d; margin-bottom:2px; letter-spacing:1px;}
+  #tutorialBar .tut-text{ font-size:13px; color:#fff2cf; }
+  #tutorialBar .tut-close{ flex:0 0 auto; background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:12px; line-height:1;}
+  #tutorialBar .tut-close:hover{ background:rgba(255,255,255,0.15); }
+  #tutorialBar.done{ border-color:rgba(111,191,71,0.6); }
+
+  /* ---------- Help modal ---------- */
+  #helpOverlay{ position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:50; padding:20px;}
+  #helpOverlay.open{ display:flex; }
+  #helpCard{ width:min(560px,92vw); max-height:82vh; overflow-y:auto; background:linear-gradient(160deg,#152a1c,#0a1409); border:1px solid rgba(111,191,71,0.5); border-radius:14px; padding:20px 22px; box-shadow:0 20px 50px rgba(0,0,0,0.6);}
+  #helpCard h2{ font-family:'Press Start 2P',monospace; font-size:15px; color:#c9ffb0; margin:0 0 12px;}
+  #helpCard h4{ color:#ffcf4d; font-size:13px; margin:14px 0 6px; letter-spacing:0.5px;}
+  #helpCard p{ font-size:13px; line-height:1.6; margin:2px 0; opacity:0.9;}
+  #helpCard .closeHelp{ float:right; font-family:'Press Start 2P',monospace; font-size:9px; background:linear-gradient(180deg,#3a3a3a,#1c1c1c); border:1px solid #666; color:#fff; padding:6px 10px; border-radius:6px; cursor:pointer;}
+
+  /* ---------- Story screen ---------- */
+  #storyScreen{
+    position:absolute; top:10px; left:10px; right:10px; bottom:10px; border-radius:9px;
+    display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+    background:linear-gradient(180deg, rgba(6,12,8,0.92), rgba(3,6,4,0.97));
+    z-index:6; color:#eafff0; padding:26px;
+  }
+  #storyScreen.open{ display:flex; }
+  #storyScreen .storyIcon{ font-size:40px; margin-bottom:14px; filter:drop-shadow(0 0 10px rgba(111,191,71,0.5)); }
+  #storyScreen .storyText{ font-size:14px; line-height:1.9; max-width:520px; color:#dff5e2; min-height:110px; }
+  #storyScreen .storyTag{ font-family:'Press Start 2P',monospace; font-size:9px; color:#ffcf4d; letter-spacing:2px; margin-bottom:16px; }
+  #storyScreen .storyNav{ display:flex; gap:10px; margin-top:22px; }
+  #storyScreen .storyDots{ display:flex; gap:6px; margin-top:14px; }
+  #storyScreen .storyDots span{ width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.25); }
+  #storyScreen .storyDots span.on{ background:#6fbf47; }
+
+  /* ---------- Dialogue overlay (NPC) ---------- */
+  #dialogueOverlay{ position:fixed; inset:0; background:rgba(0,0,0,0.65); display:none; align-items:flex-end; justify-content:center; z-index:55; padding:20px; }
+  #dialogueOverlay.open{ display:flex; }
+  #dialogueCard{ width:min(600px,94vw); margin-bottom:6vh; background:linear-gradient(160deg,#241b08,#12200f); border:2px solid rgba(255,207,77,0.55); border-radius:14px; padding:16px 18px; box-shadow:0 20px 50px rgba(0,0,0,0.6); display:flex; gap:12px;}
+  #dialogueCard .npcPortrait{ flex:0 0 auto; width:52px; height:52px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #d9b98a, #7a5a34 65%, #4a3620 100%); box-shadow:0 0 10px rgba(255,207,77,0.35); }
+  #dialogueCard .npcBody{ flex:1; }
+  #dialogueCard .npcName{ font-family:'Press Start 2P',monospace; font-size:11px; color:#ffcf4d; margin-bottom:6px; letter-spacing:0.5px;}
+  #dialogueCard .npcText{ font-size:13.5px; line-height:1.6; color:#fff2cf; min-height:44px;}
+  #dialogueCard .npcNav{ display:flex; justify-content:flex-end; gap:8px; margin-top:10px;}
+  #npcPrompt{ position:absolute; display:none; z-index:4; pointer-events:none; }
+
+  /* ---------- Quest panels ---------- */
+  #questPanel{ width:660px; margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  #questPanel .card{ max-height:210px; overflow-y:auto; }
+  #questPanel .card h3{ display:flex; align-items:center; justify-content:space-between; }
+  .questItem{ font-size:12px; padding:5px 6px; border-radius:6px; margin-bottom:4px; background:rgba(255,255,255,0.04); }
+  .questItem .qTitle{ font-weight:600; color:#eafff0; display:flex; align-items:center; gap:5px; }
+  .questItem .qDesc{ opacity:0.75; font-size:11px; margin-top:2px; }
+  .questItem.done .qTitle{ color:#8fd982; text-decoration:line-through; opacity:0.7;}
+  .questItem.locked{ opacity:0.4; }
+
+  /* ---------- Shop overlay ---------- */
+  #shopOverlay{ position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:52; padding:20px;}
+  #shopOverlay.open{ display:flex; }
+  #shopCard{ width:min(560px,92vw); max-height:82vh; overflow-y:auto; background:linear-gradient(160deg,#241b08,#12200f); border:1px solid rgba(255,207,77,0.55); border-radius:14px; padding:20px 22px; box-shadow:0 20px 50px rgba(0,0,0,0.6);}
+  #shopCard h2{ font-family:'Press Start 2P',monospace; font-size:15px; color:#ffcf4d; margin:0 0 4px;}
+  #shopCard .shopCoin{ font-size:12.5px; color:#ffcf4d; margin-bottom:12px; }
+  #shopCard h4{ color:#c9ffb0; font-size:12.5px; margin:14px 0 8px; letter-spacing:0.5px;}
+  #shopCard .closeShop{ float:right; font-family:'Press Start 2P',monospace; font-size:9px; background:linear-gradient(180deg,#3a3a3a,#1c1c1c); border:1px solid #666; color:#fff; padding:6px 10px; border-radius:6px; cursor:pointer;}
+  .shopRow{ display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.05); border-radius:8px; padding:8px 10px; margin-bottom:6px; font-size:12.5px; }
+  .shopRow .shopInfo{ flex:1; }
+  .shopRow .shopName{ font-weight:600; }
+  .shopRow .shopSub{ opacity:0.7; font-size:11px; margin-top:2px; }
+  .shopRow button{ font-family:'Press Start 2P',monospace; font-size:8.5px; background:linear-gradient(180deg,#3a5a2a,#1c3a0f); border:1px solid #6fbf47; color:#eafff0; padding:6px 9px; border-radius:6px; cursor:pointer; white-space:nowrap; }
+  .shopRow button:disabled{ opacity:0.4; cursor:not-allowed; filter:grayscale(0.6); }
+  .shopRow button:hover:not(:disabled){ filter:brightness(1.2); }
+
+  /* ---------- Craft overlay ---------- */
+  #craftOverlay{ position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:53; padding:20px;}
+  #craftOverlay.open{ display:flex; }
+  #craftCard{ width:min(560px,92vw); max-height:82vh; overflow-y:auto; background:linear-gradient(160deg,#152a1c,#0a1409); border:1px solid rgba(255,207,77,0.5); border-radius:14px; padding:20px 22px; box-shadow:0 20px 50px rgba(0,0,0,0.6);}
+  #craftCard h2{ font-family:'Press Start 2P',monospace; font-size:15px; color:#c9ffb0; margin:0 0 12px;}
+</style>
+</head>
+<body>
+
+  <h1>PROJECT EDEN</h1>
+  <div class="subtitle pixel">: GENESIS &nbsp;·&nbsp; ALPHA 0.7</div>
+
+  <div class="toolbar">
+    <button id="shopToggle">🛒 ร้านค้า</button>
+    <button id="craftToggle">🔨 ช่างฝีมือ</button>
+    <button id="soundToggle">🔊 Sound: On</button>
+    <button id="helpBtn">❓ How to Play</button>
+  </div>
+
+  <div class="frame">
+    <canvas id="game" width="640" height="480"></canvas>
+    <div id="dayWeatherHUD">
+      <span class="seg"><span id="hud-daynight">☀️</span> <span id="hud-day">Day 1 · กลางวัน</span></span>
+      <span class="seg"><span id="hud-weather">🌤️</span> <span id="hud-weathertext">แจ่มใส</span></span>
+      <span class="seg"><span id="hud-season">🌸</span> <span id="hud-seasontext">ใบไม้ผลิ</span></span>
+    </div>
+    <div id="titleScreen">
+      <div class="egg">🥚</div>
+      <div class="tt1">PROJECT EDEN</div>
+      <div class="tt2">: GENESIS — LIVING WORLD DEMO</div>
+      <button class="startBtn" id="startBtn">▶ กด SPACE หรือคลิกเพื่อเริ่ม</button>
+      <div class="featList">🌱 ปลูก &nbsp;·&nbsp; 🐾 เลี้ยงและวิวัฒนาการ &nbsp;·&nbsp; ⚔️ ผจญภัย &nbsp;·&nbsp; 🍳 ปรุงอาหาร &nbsp;·&nbsp; 🥚 ผสมพันธุ์</div>
+      <div class="verTag">ALPHA 0.7 · NEW ZONES UPDATE</div>
+    </div>
+    <div id="storyScreen">
+      <div class="storyTag">PROLOGUE</div>
+      <div class="storyIcon" id="storyIcon">🌫️</div>
+      <div class="storyText" id="storyText"></div>
+      <div class="storyDots" id="storyDots"></div>
+      <div class="storyNav">
+        <button class="btn" id="storySkip">ข้ามเรื่องราว</button>
+        <button class="btn" id="storyNext" style="background:linear-gradient(180deg,#3a5a2a,#1c3a0f);">ถัดไป ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tutorialBar">
+    <span class="tut-icon">📜</span>
+    <div class="tut-body">
+      <div class="tut-progress" id="tutorialProgress">MAIN QUEST 1/12</div>
+      <div class="tut-text" id="tutorialText">ใช้ W A S D เพื่อเดินไปรอบฟาร์ม</div>
+    </div>
+    <button class="tut-close" id="tutorialClose" title="ซ่อนคำแนะนำ">✕</button>
+  </div>
+
+  <div id="ui">
+    <div class="card" style="border-top:3px solid #8BC34A;">
+      <h3>🎒 กระเป๋าผู้เล่น</h3>
+      <div class="row"><span>🪙 เหรียญ</span><span class="pill" id="ui-coin" style="color:#ffcf4d;">20</span></div>
+      <div class="row"><span>🌱 เมล็ด</span><span class="pill" id="ui-seeds">3</span></div>
+      <div class="row"><span>🥦 ผัก</span><span class="pill" id="ui-veggie">0</span></div>
+      <div class="row"><span>🍖 เนื้อ</span><span class="pill" id="ui-meat">0</span></div>
+      <div class="row"><span>🌶️ พริกไฟ</span><span class="pill" id="ui-chili">0</span></div>
+      <div class="row"><span>💎 คริสตัล</span><span class="pill" id="ui-crystal">0</span></div>
+      <div class="row"><span>🪵 ไม้</span><span class="pill" id="ui-wood">0</span></div>
+      <div class="row"><span>🪨 แร่</span><span class="pill" id="ui-ore">0</span></div>
+      <div class="row"><span>🐟 ปลา</span><span class="pill" id="ui-fish">0</span></div>
+      <div class="row" style="margin-top:5px;"><span>⚡ พลังงาน</span><span id="ui-energy">100/100</span></div>
+      <div class="barTrack"><div class="barFill energy" id="ui-energybar" style="width:100%;"></div></div>
+    </div>
+
+    <div class="card" style="border-top:3px solid #ffcf4d;">
+      <h3>🐾 <span id="ui-beastName" style="color:#ffeb3b;">Seedling</span> <span class="pill" id="ui-stage">Stage 0</span></h3>
+      <div class="row"><span>⭐ Lv.<span id="ui-blevel">1</span></span><span id="ui-bexp">0/50 EXP</span></div>
+      <div class="barTrack"><div class="barFill exp" id="ui-bexpbar" style="width:0%;"></div></div>
+      <div class="row" style="margin-top:5px;"><span>HP</span><span id="ui-bhp">100</span></div>
+      <div class="barTrack"><div class="barFill" id="ui-bhpbar" style="width:100%;"></div></div>
+      <div class="row" style="margin-top:5px;"><span>ATK</span><span id="ui-batk">15</span></div>
+      <div class="row"><span>💗 Bond</span><span id="ui-bond">20/100</span></div>
+      <div class="barTrack"><div class="barFill bond" id="ui-bondbar" style="width:20%;"></div></div>
+      <div class="row" style="margin-top:5px;"><span>🥦 กินผัก</span><span id="ui-bveggie">0</span></div>
+      <div class="row"><span>🍖 กินเนื้อ</span><span id="ui-bmeat">0</span></div>
+      <div class="row" style="margin-top:5px;"><span id="ui-btrait" title="Trait ติดตัว">✨ Trait</span><span id="ui-bmutant"></span></div>
+      <div style="font-size:10.5px; opacity:0.7; margin-top:2px;" id="ui-biv">IV HP · ATK · SPD</div>
+    </div>
+
+    <div class="card" style="border-top:3px solid #39e6ff;">
+      <h3>🗺️ แผนที่</h3>
+      <div class="row"><span id="ui-map">Farm Zone</span></div>
+      <div style="margin-top:6px; font-size:11.5px; opacity:0.75;">
+        ขอบขวา → Forest Dungeon (→ ซากอารยธรรม)<br>ขอบซ้าย → Crystal Cave (→ ภูเขาไฟ)<br>ขอบบน → ภูเขาหิมะ<br>รังตรงกลางฟาร์ม → ผสมพันธุ์
+      </div>
+    </div>
+  </div>
+
+  <div id="ui2">
+    <div class="card" style="border-top:3px solid #ff8fc7;">
+      <h3>🐣 ปาร์ตี้สัตว์เลี้ยง (Q สลับ)</h3>
+      <div id="ui-party"></div>
+    </div>
+    <div class="card" style="border-top:3px solid #ff8a65;">
+      <h3>🍳 ครัว &amp; สกิล</h3>
+      <div style="font-size:11.5px; opacity:0.8; margin-bottom:4px;">กด <kbd>C</kbd> เพื่อทำอาหารสูตรที่มีของพอ</div>
+      <div style="font-size:11.5px; opacity:0.8;">กด <kbd>E</kbd> เพื่อใช้สกิล (ต้องปลดล็อกก่อน)</div>
+      <div class="row" style="margin-top:6px;"><span>Skill Lv (1 ระดับ)</span><span id="ui-skillstate">🔒 0/1</span></div>
+      <div class="barTrack"><div class="barFill skill" id="ui-skillbar" style="width:100%;"></div></div>
+    </div>
+    <div class="card" style="border-top:3px solid #ab47bc;">
+      <h3>🥚 ไข่ &amp; บันทึกเกม</h3>
+      <div class="row"><span>ไข่ที่ถืออยู่</span><span class="pill" id="ui-eggcount">0</span></div>
+      <div id="ui-eggtimer" style="font-size:11.5px; opacity:0.8; margin:4px 0;">ไม่มีไข่ในครอบครอง</div>
+      <button class="btn" id="save-btn">P · บันทึกเกม</button>
+      <div id="save-status" style="font-size:10.5px; opacity:0.7; margin-top:6px;">ยังไม่เคยบันทึก</div>
+    </div>
+  </div>
+
+  <div id="questPanel">
+    <div class="card" style="border-top:3px solid #6fbf47;">
+      <h3>📜 Main Quest</h3>
+      <div id="mainQuestList"></div>
+    </div>
+    <div class="card" style="border-top:3px solid #ba68c8;">
+      <h3>🔖 Side Quest</h3>
+      <div id="sideQuestList" style="font-size:11.5px; opacity:0.85;">คุยกับผู้เฒ่าโรวันเพื่อปลดล็อกภารกิจเสริม</div>
+    </div>
+  </div>
+
+  <div id="eva-panel">
+    <div class="eva-avatar"></div>
+    <div>
+      <span class="eva-tag">EVA · AI COMPANION</span>
+      <div class="eva-text" id="eva-text">กำลังโหลดข้อมูลเกม...</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> เดิน / เลื่อนช่องต่อสู้</span>
+    <span><kbd>SPACE</kbd> ปลูก/เก็บพืช / ยืนยันเดิน·โจมตี</span>
+    <span>ในศึก: <kbd>A</kbd><kbd>D</kbd> เลือกเป้าหมาย · <kbd>Q</kbd> ข้ามตา</span>
+    <span><kbd>1</kbd> ให้ผัก</span>
+    <span><kbd>2</kbd> ให้เนื้อ</span>
+    <span><kbd>Q</kbd> สลับสัตว์เลี้ยง</span>
+    <span><kbd>C</kbd> ทำอาหาร</span>
+    <span><kbd>E</kbd> ใช้สกิล</span>
+    <span><kbd>N</kbd> ผสมพันธุ์ที่รัง</span>
+    <span><kbd>T</kbd> คุยกับ NPC</span>
+    <span><kbd>B</kbd> ร้านค้า</span>
+    <span><kbd>F</kbd> ตกปลา</span>
+    <span><kbd>G</kbd> ตัดไม้</span>
+    <span><kbd>M</kbd> ขุดแร่ (ในถ้ำ)</span>
+    <span><kbd>R</kbd> ประดิษฐ์</span>
+    <span><kbd>X</kbd> ปรับปรุงดิน (ใช้ไม้)</span>
+    <span><kbd>P</kbd> บันทึกเกม</span>
+  </div>
+
+  <div id="helpOverlay">
+    <div id="helpCard">
+      <button class="closeHelp" id="closeHelpBtn">ปิด ✕</button>
+      <h2>วิธีเล่น</h2>
+      <h4>🎮 การควบคุมพื้นฐาน</h4>
+      <p><kbd>W A S D</kbd> เดิน &nbsp; <kbd>SPACE</kbd> ปลูก/เก็บเกี่ยวเมื่อยืนบนแปลงดิน</p>
+      <p><kbd>1</kbd> ป้อนผักให้สัตว์เลี้ยง (ฟื้น HP) &nbsp; <kbd>2</kbd> ป้อนเนื้อ (เพิ่ม ATK)</p>
+      <h4>🌱 ฟาร์มมิ่ง</h4>
+      <p>ปลูกเมล็ดในแปลงดินสีน้ำตาล รอให้โต แล้วเก็บเกี่ยวเป็นผัก นำไปป้อนสัตว์เลี้ยงหรือทำอาหาร</p>
+      <h4>🐾 สัตว์เลี้ยง &amp; วิวัฒนาการ</h4>
+      <p>ป้อนผัก 3 ครั้งจะกลายเป็น Nature Guardian, ป้อนเนื้อ 3 ครั้งจะกลายเป็น War Beast, ป้อนทั้งคู่อย่างละ 2 จะได้ Chimera Beast หายาก สัตว์เลี้ยงที่ Bond สูงและกินอาหารมากพอจะวิวัฒนาการขั้นสูงสุดพร้อมสกิลพิเศษ</p>
+      <p><kbd>Q</kbd> สลับสัตว์เลี้ยงตัวหลักในปาร์ตี้ (สูงสุด 3 ตัว)</p>
+      <h4>⚔️ การผจญภัย &amp; Tactical Grid Battle</h4>
+      <p>เดินไปขอบขวาของฟาร์มเพื่อเข้า Forest Dungeon หรือขอบซ้ายเพื่อเข้า Crystal Cave หรือขอบบนเพื่อเข้าภูเขาหิมะ เมื่อสัตว์เลี้ยงหรือคุณเดินเข้าใกล้ศัตรู จะเข้าสู่โหมดต่อสู้แบบ <b>Grid Tactical Turn-Based</b> ทันที</p>
+      <p>🗺️ <b>โซนสำรวจทั้งหมด:</b> จากฟาร์มไปได้ 3 ทาง — 🌲 Forest Dungeon (เดินไปสุดขอบขวาต่อเพื่อเข้า 🏛️ ซากอารยธรรม ที่มีผู้พิทักษ์โบราณชอบทำให้มึนงงและดรอปโบราณวัตถุ), 🔥 Crystal Cave (เดินไปสุดขอบขวาต่อเพื่อเข้า 🌋 ภูเขาไฟ ที่ศัตรูดุร้ายโจมตีแรงและดรอปออบซิเดียน), และ ❄️ ภูเขาหิมะ ทางขอบบนของฟาร์ม (ดรอปขนสัตว์อันอบอุ่น) แต่ละโซนมีทรัพยากรและของดรอปเฉพาะตัวที่ขายได้ในร้านค้า</p>
+      <p>ในสนามรบ ลำดับการเข้าตาขึ้นกับค่าความเร็ว เมื่อถึงตาของสัตว์เลี้ยงคุณ: กด <kbd>W A S D</kbd> เลื่อนเคอร์เซอร์ไปยังช่องสีเขียว (ระยะเดินได้) แล้วกด <kbd>SPACE</kbd> เพื่อยืนยันตำแหน่ง หากมีศัตรูอยู่ในระยะโจมตี ใช้ <kbd>A</kbd>/<kbd>D</kbd> เลือกเป้าหมายแล้วกด <kbd>SPACE</kbd> เพื่อโจมตี หรือกด <kbd>Q</kbd> เพื่อข้ามการเคลื่อนที่/โจมตีในตานั้น</p>
+      <p>🎭 <b>Role ในการต่อสู้:</b> สัตว์เลี้ยงและศัตรูแต่ละตัวมี Role ประจำตัว — 🛡️ <b>Tank</b> (พลังพืชผสม Chimera) HP สูง รับดาเมจน้อยลง 20% และดึงเป้าศัตรูให้โจมตีตัวเองก่อน · ⚔️ <b>DPS</b> (สาย Fire และ Seedling พื้นฐาน) โจมตีแรงกว่าปกติ 20% · ✚ <b>Support</b> (สาย Nature) แทนที่จะโจมตีศัตรู สามารถเลือกเป้าเป็นพวกเดียวกัน (วงกลมสีเขียว) เพื่อรักษา HP ได้ · 💫 <b>CC</b> (ศัตรูในป่า) โจมตีมีโอกาสทำให้เป้าหมาย "มึนงง" ข้ามเทิร์นถัดไป ดูไอคอน Role ได้ที่หัวชื่อของแต่ละตัวในสนามรบและในแผงปาร์ตี้</p>
+      <p>ชนะศึกจะได้รับ EXP และไอเทมดรอปใกล้ตัวคุณ หากปาร์ตี้ทั้งหมดพ่ายแพ้ จะถูกส่งกลับฟาร์มพร้อมเสียเหรียญเล็กน้อยเพื่อพักฟื้น</p>
+      <h4>🍳 ครัว &amp; สกิล</h4>
+      <p><kbd>C</kbd> ทำอาหารตามสูตรที่มีวัตถุดิบพอ &nbsp; <kbd>E</kbd> ใช้สกิลพิเศษเมื่อปลดล็อกแล้ว</p>
+      <h4>🥚 ผสมพันธุ์ &amp; บันทึกเกม</h4>
+      <p>เมื่อมีสัตว์เลี้ยง 2 ตัวขึ้นไปที่วิวัฒนาการแล้วและ Bond ≥80 ยืนใกล้รังกลางฟาร์มแล้วกด <kbd>N</kbd> เพื่อผสมพันธุ์ ไข่จะฟักออกมาเป็นสัตว์เลี้ยงใหม่หลังผ่านไปสักครู่</p>
+      <p>🧬 <b>IV / Trait / Mutation:</b> สัตว์เลี้ยงทุกตัวมีค่า IV ซ่อนอยู่ 3 ค่า (HP/ATK/SPD ตั้งแต่ 0-31) ที่ส่งผลต่อสถานะจริงเล็กน้อย และมี Trait ติดตัว 1 อย่างจาก 5 แบบ (💪Hardy HP+10%, 🔥Brave ATK+10%, 💨Swift ความเร็วในศึก+3, 💗Gentle ได้ Bond จากการป้อนอาหารเพิ่ม 50%, ✨Clever ได้ EXP เพิ่ม 20%) เวลาผสมพันธุ์ ไข่จะสืบทอด IV และ Trait จากพ่อแม่แบบสุ่ม (มีโอกาสเล็กน้อยได้ค่าใหม่ที่ไม่ได้มาจากพ่อแม่) และมีโอกาสประมาณ 5% เกิด <b>การกลายพันธุ์ (Mutation)</b> ซึ่งจะได้ IV สมบูรณ์แบบทั้ง 3 ค่าและสีตัวสีทองอมเหลืองพิเศษ ดูค่า IV/Trait ของตัวที่ใช้งานอยู่ได้ที่การ์ดสัตว์เลี้ยงด้านล่างเกม</p>
+      <p>ไข่ที่ดรอปจากมอนสเตอร์ในดันเจี้ยน/ถ้ำก็มี IV และ Trait สุ่มของตัวเองเช่นกัน (แต่ไม่มีโอกาสกลายพันธุ์ — กลายพันธุ์เกิดจากการผสมพันธุ์ที่รังเท่านั้น)</p>
+      <p>กด <kbd>P</kbd> เพื่อบันทึกความคืบหน้าได้ตลอดเวลา (บันทึกอัตโนมัติทุก 20 วิด้วย)</p>
+      <h4>📜 Quest &amp; NPC</h4>
+      <p>ผู้เฒ่าโรวันยืนอยู่มุมฟาร์ม เดินเข้าใกล้แล้วกด <kbd>T</kbd> เพื่อคุย เขาจะนำทาง Main Quest และมอบ Side Quest ให้เมื่อพร้อม ติดตามความคืบหน้าได้ที่แผง Quest Log ด้านล่างเกม</p>
+      <h4>🛒 ร้านค้า &amp; พลังงาน</h4>
+      <p>กดปุ่ม <kbd>B</kbd> หรือ 🛒 ร้านค้า มุมขวาบนเพื่อซื้อเมล็ด/ของฟื้นพลังงาน หรือขายผัก เนื้อ พริกไฟ คริสตัล แลกเป็นเหรียญ</p>
+      <p>การปลูก เก็บเกี่ยว ป้อนอาหาร ทำอาหาร และผสมพันธุ์ ใช้ ⚡ พลังงาน พลังงานจะค่อยๆ ฟื้นเองตามเวลา หรือกินอาหารที่ปรุงเสร็จเพื่อฟื้นเร็วขึ้น</p>
+      <h4>🎣 เก็บเกี่ยววัตถุดิบ</h4>
+      <p>ยืนใกล้บ่อน้ำในฟาร์มแล้วกด <kbd>F</kbd> เพื่อตกปลา ยืนใกล้ต้นไม้แล้วกด <kbd>G</kbd> เพื่อตัดไม้ (ต้นไม้จะงอกใหม่หลังผ่านไปสักพัก) และเข้าไปใน Crystal Cave แล้วกด <kbd>M</kbd> ใกล้ก้อนแร่เพื่อขุด</p>
+      <h4>🔨 ช่างฝีมือ (Crafting)</h4>
+      <p>กดปุ่ม <kbd>R</kbd> หรือ 🔨 ช่างฝีมือ มุมขวาบนเพื่อนำไม้ แร่ และปลา มาประดิษฐ์เป็นอุปกรณ์ถาวรที่เพิ่มผลผลิตต่อครั้ง หรือปุ๋ยเร่งโตแบบใช้ครั้งเดียว</p>
+      <p>🌸🌾 <b>ฤดูกาล:</b> เวลาในเกมหมุนเวียนผ่าน 4 ฤดู (ใบไม้ผลิ → ร้อน → ใบไม้ร่วง → หนาว) ทุกๆ 5 วัน พืชที่ปลูกจะกลายเป็นผักหรือพริกไฟตามฤดูนั้นๆ โดยฤดูร้อนปลูกพริกไฟ ฤดูใบไม้ร่วงให้ผลผลิตโบนัส และฤดูหนาวปลูกไม่ได้เลยถ้ายังไม่มีโรงเรือน</p>
+      <p>🪴 <b>ดินและปุ๋ยหมัก:</b> ยืนบนแปลงที่ว่างแล้วกด <kbd>X</kbd> โดยมีไม้อย่างน้อย 3 ท่อน เพื่อปรับปรุงดินให้ดีขึ้น (สูงสุด 2 ระดับ) ดินที่ดีขึ้นทำให้พืชโตเร็วขึ้นและได้ผลผลิตต่อรอบมากขึ้น</p>
+      <p>⚙️ <b>ระบบอัตโนมัติ:</b> ในเมนูช่างฝีมือ ประดิษฐ์ 💧 สปริงเกอร์ (รดน้ำอัตโนมัติ โตเร็วเทียบเท่าฝนตลอด), 🏡 โรงเรือน (ปลูกได้แม้ฤดูหนาว ไม่โดนโทษกลางคืน) และ 🍽️ เครื่องให้อาหารอัตโนมัติ (ป้อนผักให้สัตว์เลี้ยงหลักเป็นระยะโดยไม่ต้องกดเอง)</p>
+    </div>
+  </div>
+
+  <div id="craftOverlay">
+    <div id="craftCard">
+      <button class="closeShop" id="closeCraftBtn">ปิด ✕</button>
+      <h2>🔨 โต๊ะช่างฝีมือ</h2>
+      <div id="craftList"></div>
+    </div>
+  </div>
+
+  <div id="shopOverlay">
+    <div id="shopCard">
+      <button class="closeShop" id="closeShopBtn">ปิด ✕</button>
+      <h2>🛒 ร้านค้าฟาร์ม</h2>
+      <div class="shopCoin">🪙 เหรียญของเจ้า: <span id="shop-coin">0</span></div>
+      <h4>ซื้อของ</h4>
+      <div id="shopBuyList"></div>
+      <h4>ขายของ</h4>
+      <div id="shopSellList"></div>
+    </div>
+  </div>
+
+  <div id="dialogueOverlay">
+    <div id="dialogueCard">
+      <div class="npcPortrait"></div>
+      <div class="npcBody">
+        <div class="npcName" id="npcName">ผู้เฒ่าโรวัน</div>
+        <div class="npcText" id="npcText"></div>
+        <div class="npcNav">
+          <button class="btn" id="npcCloseBtn">ปิด ✕</button>
+          <button class="btn" id="npcNextBtn" style="background:linear-gradient(180deg,#3a5a2a,#1c3a0f);">ถัดไป ▶</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    // ---------- Audio (synthesized SFX, no external assets) ----------
+    let audioCtx = null;
+    let soundOn = true;
+    function ensureAudio(){
+      if (!audioCtx){
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        catch(e){ audioCtx = null; }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    function tone(freq, dur, type, vol, delay){
+      if (!soundOn || !audioCtx) return;
+      const t0 = audioCtx.currentTime + (delay||0);
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(vol!=null?vol:0.16, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t0); osc.stop(t0 + dur + 0.02);
+    }
+    const sfx = {
+      plant: ()=> tone(520,.12,'triangle',.14),
+      harvest: ()=> { tone(660,.1,'triangle',.15); tone(880,.12,'triangle',.13,.06); },
+      feed: ()=> tone(420,.14,'sine',.16),
+      hit: ()=> tone(160,.08,'square',.10),
+      enemyDown: ()=> { tone(300,.1,'sawtooth',.14); tone(180,.16,'sawtooth',.11,.08); },
+      evolve: ()=> [523,659,784,1046].forEach((f,i)=> tone(f,.28,'triangle',.18,i*0.09)),
+      cook: ()=> { tone(440,.1,'sine',.15); tone(660,.12,'sine',.14,.07); tone(880,.14,'sine',.12,.14); },
+      skill: ()=> { tone(200,.2,'sawtooth',.16); tone(500,.2,'sawtooth',.13,.05); },
+      breed: ()=> [660,880,1100].forEach((f,i)=> tone(f,.22,'sine',.15,i*0.08)),
+      hatch: ()=> [400,700,1000].forEach((f,i)=> tone(f,.18,'triangle',.16,i*0.07)),
+      save: ()=> { tone(700,.08,'sine',.14); tone(900,.1,'sine',.13,.06); },
+      zone: ()=> { tone(300,.15,'sine',.13); tone(450,.15,'sine',.11,.08); },
+      chime: ()=> { tone(880,.12,'sine',.14); tone(1180,.14,'sine',.12,.08); },
+      pickup: ()=> tone(740,.07,'triangle',.12),
+      start: ()=> [392,523,659,784].forEach((f,i)=> tone(f,.22,'triangle',.18,i*0.08))
+    };
+
+    // ---------- Title screen / start gate ----------
+    let gameStarted = false;
+    const titleScreenEl = document.getElementById('titleScreen');
+    function startGame(){
+      if (gameStarted) return;
+      gameStarted = true;
+      ensureAudio();
+      sfx.start();
+      titleScreenEl.style.display = 'none';
+      openStory();
+    }
+    document.getElementById('startBtn').addEventListener('click', startGame);
+    titleScreenEl.addEventListener('click', startGame);
+    canvas.addEventListener('click', ()=> { if (!gameStarted) startGame(); });
+
+    // ---------- Sound / Help toolbar ----------
+    const soundBtn = document.getElementById('soundToggle');
+    soundBtn.addEventListener('click', ()=>{
+      soundOn = !soundOn;
+      soundBtn.textContent = soundOn ? '🔊 Sound: On' : '🔇 Sound: Off';
+    });
+    const helpOverlay = document.getElementById('helpOverlay');
+    document.getElementById('helpBtn').addEventListener('click', ()=> helpOverlay.classList.add('open'));
+    document.getElementById('closeHelpBtn').addEventListener('click', ()=> helpOverlay.classList.remove('open'));
+    helpOverlay.addEventListener('click', e=>{ if (e.target === helpOverlay) helpOverlay.classList.remove('open'); });
+    window.addEventListener('keydown', e=>{ if (e.key === 'Escape'){ helpOverlay.classList.remove('open'); closeShop(); closeCraft(); } });
+
+    // ---------- Shop (Economy) ----------
+    let shopOpen = false;
+    const shopOverlay = document.getElementById('shopOverlay');
+    const buyItems = [
+      { id:'seeds5', name:'🌱 เมล็ดพันธุ์ x5', price:10, sub:'ปลูกได้ตามฤดูกาล: ผัก(ใบไม้ผลิ/ใบไม้ร่วง) หรือพริกไฟ(ร้อน) — หนาวปลูกไม่ได้ถ้าไม่มีโรงเรือน', buy:()=>{ inv.seeds+=5; } },
+      { id:'energyBar', name:'🍪 บาร์พลังงาน', price:15, sub:'ฟื้นพลังงาน +30 ทันที', buy:()=>{ energy=Math.min(maxEnergy,energy+30); } }
+    ];
+    const sellPrices = { veggie:2, meat:3, chili:4, crystal:8, wood:3, ore:6, fish:5, obsidian:10, relic:15, fur:7 };
+    const sellLabels = { veggie:'🥦 ผัก', meat:'🍖 เนื้อ', chili:'🌶️ พริกไฟ', crystal:'💎 คริสตัล', wood:'🪵 ไม้', ore:'🪨 แร่', fish:'🐟 ปลา', obsidian:'🖤 ออบซิเดียน', relic:'🏺 โบราณวัตถุ', fur:'🦊 ขนสัตว์' };
+    function openShop(){ shopOpen = true; renderShop(); shopOverlay.classList.add('open'); }
+    function closeShop(){ shopOpen = false; shopOverlay.classList.remove('open'); }
+    function renderShop(){
+      document.getElementById('shop-coin').textContent = inv.coin;
+      const buyEl = document.getElementById('shopBuyList');
+      buyEl.innerHTML = '';
+      for (const item of buyItems){
+        const row = document.createElement('div');
+        row.className = 'shopRow';
+        row.innerHTML = `<div class="shopInfo"><div class="shopName">${item.name}</div><div class="shopSub">${item.sub} · 🪙${item.price}</div></div>
+          <button ${inv.coin<item.price?'disabled':''}>ซื้อ</button>`;
+        row.querySelector('button').addEventListener('click', ()=>{
+          if (inv.coin < item.price) return;
+          inv.coin -= item.price; item.buy(); sfx.pickup();
+          updateEVA(`ซื้อ ${item.name} เรียบร้อย!`);
+          renderShop(); updateUI();
+        });
+        buyEl.appendChild(row);
+      }
+      const sellEl = document.getElementById('shopSellList');
+      sellEl.innerHTML = '';
+      for (const key in sellPrices){
+        const owned = inv[key] || 0;
+        const row = document.createElement('div');
+        row.className = 'shopRow';
+        row.innerHTML = `<div class="shopInfo"><div class="shopName">${sellLabels[key]}</div><div class="shopSub">มี ${owned} ชิ้น · ได้ 🪙${sellPrices[key]}/ชิ้น</div></div>
+          <button ${owned<1?'disabled':''}>ขาย 1</button>`;
+        row.querySelector('button').addEventListener('click', ()=>{
+          if ((inv[key]||0) < 1) return;
+          inv[key] -= 1; inv.coin += sellPrices[key]; sfx.pickup();
+          updateEVA(`ขาย ${sellLabels[key]} ได้ 🪙${sellPrices[key]}`);
+          renderShop(); updateUI();
+        });
+        sellEl.appendChild(row);
+      }
+    }
+    document.getElementById('shopToggle').addEventListener('click', openShop);
+    document.getElementById('closeShopBtn').addEventListener('click', closeShop);
+    shopOverlay.addEventListener('click', e=>{ if (e.target === shopOverlay) closeShop(); });
+
+    // ---------- Story (Intro) ----------
+    let storyActive = false;
+    const storySlides = [
+      { icon:"🌫️", text:"สายลมพัดผ่านฟาร์มร้างที่ปกคลุมด้วยหมอกสีเขียว... เจ้าลืมตาตื่นขึ้นกลางแปลงดินที่ไม่คุ้นเคย โดยจำอะไรก่อนหน้านี้ไม่ได้เลย" },
+      { icon:"🤖", text:"\"ตื่นแล้วสินะ\" เสียงหนึ่งดังขึ้นในหัวของเจ้า — \"ข้าคือ EVA ระบบสนับสนุนที่ถูกส่งมาพร้อมเจ้า ดูเหมือนเราจะตกลงมาที่ดินแดนที่เรียกว่า Eden\"" },
+      { icon:"🌾", text:"Eden เคยเป็นฟาร์มอันอุดมสมบูรณ์ ก่อนที่สิ่งมีชีวิตประหลาดจะยึดครองป่าและถ้ำโดยรอบ ผู้คนหายไปเกือบหมด เหลือเพียงผู้เฒ่าคนหนึ่งที่ยังคงเฝ้าดูแลผืนดินนี้" },
+      { icon:"🏚️", text:"\"ถ้าเจ้าอยากรู้ความจริง เจ้าต้องช่วยฟื้นฟูฟาร์มนี้ขึ้นมาใหม่\" เสียงแหบพร่าดังมาจากกระท่อมเก่าไม่ไกลนัก... ผู้เฒ่าโรวันกำลังรอเจ้าอยู่" }
+    ];
+    let storyIndex = 0;
+    const storyScreenEl = document.getElementById('storyScreen');
+    const storyTextEl = document.getElementById('storyText');
+    const storyIconEl = document.getElementById('storyIcon');
+    const storyDotsEl = document.getElementById('storyDots');
+    function renderStory(){
+      const s = storySlides[storyIndex];
+      storyIconEl.textContent = s.icon;
+      storyTextEl.textContent = s.text;
+      storyDotsEl.innerHTML = storySlides.map((_,i)=> `<span class="${i===storyIndex?'on':''}"></span>`).join('');
+      document.getElementById('storyNext').textContent = storyIndex === storySlides.length-1 ? "เริ่มการเดินทาง ▶" : "ถัดไป ▶";
+    }
+    function openStory(){
+      storyActive = true; storyIndex = 0; renderStory();
+      storyScreenEl.classList.add('open');
+    }
+    function closeStory(){
+      storyActive = false;
+      storyScreenEl.classList.remove('open');
+      updateEVA("ยินดีต้อนรับสู่ Eden! ลองเดินสำรวจฟาร์มด้วย WASD ดูก่อนนะ");
+    }
+    document.getElementById('storyNext').addEventListener('click', ()=>{
+      sfx.pickup();
+      if (storyIndex < storySlides.length-1){ storyIndex++; renderStory(); } else { closeStory(); }
+    });
+    document.getElementById('storySkip').addEventListener('click', closeStory);
+
+    // ---------- NPC dialogue ----------
+    let dialogueOpen = false;
+    const dialogueOverlayEl = document.getElementById('dialogueOverlay');
+    const npcTextEl = document.getElementById('npcText');
+    const npcNameEl = document.getElementById('npcName');
+    let dialogueLines = [], dialogueIndex = 0;
+    function openDialogue(name, lines){
+      dialogueOpen = true;
+      npcNameEl.textContent = name;
+      dialogueLines = lines; dialogueIndex = 0;
+      npcTextEl.textContent = dialogueLines[0];
+      document.getElementById('npcNextBtn').textContent = dialogueLines.length>1 ? "ถัดไป ▶" : "ปิด";
+      dialogueOverlayEl.classList.add('open');
+    }
+    function advanceDialogue(){
+      dialogueIndex++;
+      if (dialogueIndex >= dialogueLines.length){ closeDialogue(); return; }
+      npcTextEl.textContent = dialogueLines[dialogueIndex];
+      document.getElementById('npcNextBtn').textContent = dialogueIndex === dialogueLines.length-1 ? "ปิด" : "ถัดไป ▶";
+    }
+    function closeDialogue(){
+      dialogueOpen = false;
+      dialogueOverlayEl.classList.remove('open');
+    }
+    document.getElementById('npcNextBtn').addEventListener('click', advanceDialogue);
+    document.getElementById('npcCloseBtn').addEventListener('click', closeDialogue);
+    dialogueOverlayEl.addEventListener('click', e=>{ if (e.target===dialogueOverlayEl) closeDialogue(); });
+
+    const npc = { x:110, y:120, size:22, name:"ผู้เฒ่าโรวัน", range:58 };
+
+    function talkToNPC(){
+      sfx.chime();
+      if (!tut.talkedToRowan){
+        tut.talkedToRowan = true;
+        sideQuestsUnlocked = true;
+        openDialogue(npc.name, [
+          "อ้อ...เจ้าตื่นแล้วสินะ ข้าคือผู้เฒ่าโรวัน ผู้เฝ้าดูแลฟาร์มเอเดนแห่งนี้มาหลายปี",
+          "ที่นี่เคยอุดมสมบูรณ์ ก่อนสัตว์ประหลาดจะยึดครองป่าและถ้ำรอบข้าง จนผู้คนหนีหายไปเกือบหมด",
+          "ถ้าเจ้าช่วยฟื้นฟูฟาร์ม ดูแลสัตว์เลี้ยง และกล้าเผชิญหน้ากับสิ่งเหล่านั้น บางทีเราอาจพลิกฟื้นเอเดนได้อีกครั้ง",
+          "ข้าปักหมุดภารกิจเสริมไว้ให้แล้ว ลองดูที่กระดาน Side Quest ด้านล่างได้เลย"
+        ]);
+        renderSideQuestList();
+        return;
+      }
+      if (tutorialIndex >= tutorialSteps.length){
+        const flavor = [
+          "ฟาร์มนี้กลับมามีชีวิตชีวาอีกครั้งเพราะเจ้าเลยนะ",
+          "สัตว์เลี้ยงของเจ้าดูมีความสุขดี ดูแลมันต่อไปนะ",
+          "ยังมีภารกิจเสริมเหลืออยู่ ลองสำรวจดูได้เรื่อยๆ"
+        ];
+        openDialogue(npc.name, [ flavor[Math.floor(Math.random()*flavor.length)] ]);
+        return;
+      }
+      const step = tutorialSteps[tutorialIndex];
+      if (step.id === 'finalReport'){
+        tut.talkedToRowanFinal = true;
+        openDialogue(npc.name, [
+          "เจ้าทำได้เกินคาด ปลูก เก็บเกี่ยว เลี้ยงดู ต่อสู้ ปรุงอาหาร ผสมพันธุ์ และบันทึกเรื่องราวไว้ครบถ้วน",
+          "Main Quest จบลงแล้ว แต่เรื่องราวของเอเดนยังไม่จบ...ยังมีภารกิจเสริมให้ทำอีกมากมาย",
+          "ขอบใจที่ช่วยฟื้นฟูบ้านของข้านะ นักเดินทาง"
+        ]);
+        return;
+      }
+      openDialogue(npc.name, [ `ภารกิจตอนนี้คือ "${step.title}"`, step.desc ]);
+    }
+
+    // ---------- Main Quest chain (also drives the tutorial banner) ----------
+    const tut = { moved:false, planted:false, harvested:false, fedVeggie:false, fedMeat:false,
+      enteredDungeon:false, defeated:false, cooked:false, skilled:false, bred:false, saved:false,
+      talkedToRowan:false, talkedToRowanFinal:false };
+    let tutorialIndex = 0, tutorialDismissed = false;
+    const tutorialSteps = [
+      { id:'wake', title:"ตื่นจากภวังค์", desc:"ใช้ W A S D เพื่อเดินสำรวจฟาร์ม", done:()=> tut.moved },
+      { id:'plant', title:"หว่านความหวัง", desc:"เดินไปที่แปลงดินสีน้ำตาลแล้วกด SPACE เพื่อปลูกเมล็ด", done:()=> tut.planted },
+      { id:'harvest', title:"ผลแรกของฟาร์ม", desc:"รอพืชโตเต็มที่แล้วกด SPACE อีกครั้งเพื่อเก็บเกี่ยว", done:()=> tut.harvested },
+      { id:'meet', title:"พบผู้เฒ่าโรวัน", desc:"เดินเข้าใกล้ผู้เฒ่าโรวันแล้วกด T เพื่อพูดคุย", done:()=> tut.talkedToRowan },
+      { id:'feed', title:"สายสัมพันธ์แรก", desc:"กด 1 ป้อนผัก หรือ 2 ป้อนเนื้อให้สัตว์เลี้ยง", done:()=> tut.fedVeggie || tut.fedMeat },
+      { id:'venture', title:"ก้าวออกจากเขตปลอดภัย", desc:"เดินไปขอบขวาเข้า Forest Dungeon หรือขอบซ้ายเข้า Crystal Cave", done:()=> tut.enteredDungeon },
+      { id:'defeat', title:"ปราบสิ่งมีชีวิตแปลกปลอม", desc:"เดินเข้าใกล้ศัตรูเพื่อเริ่ม Tactical Battle แล้วเอาชนะศัตรูสักตัว", done:()=> tut.defeated },
+      { id:'cook', title:"มื้ออาหารแห่งสายใย", desc:"กลับฟาร์มแล้วกด C เพื่อทำอาหารเมื่อมีวัตถุดิบพอ", done:()=> tut.cooked },
+      { id:'skill', title:"พลังที่หลับใหล", desc:"เมื่อปลดล็อกสกิลแล้ว กด E เพื่อใช้สกิลพิเศษ", done:()=> tut.skilled },
+      { id:'breed', title:"จุดกำเนิดใหม่", desc:"มีสัตว์เลี้ยง 2 ตัว Bond ≥80 ไปที่รังกลางฟาร์มแล้วกด N", done:()=> tut.bred },
+      { id:'save', title:"จารึกตำนาน", desc:"อย่าลืมกด P เพื่อบันทึกความคืบหน้า!", done:()=> tut.saved },
+      { id:'finalReport', title:"รายงานผลต่อผู้เฒ่า", desc:"กลับไปคุยกับผู้เฒ่าโรวันอีกครั้งเพื่อรายงานความคืบหน้า (กด T)", done:()=> tut.talkedToRowanFinal }
+    ];
+    const tutorialBarEl = document.getElementById('tutorialBar');
+    const tutorialTextEl = document.getElementById('tutorialText');
+    const tutorialProgEl = document.getElementById('tutorialProgress');
+    document.getElementById('tutorialClose').addEventListener('click', ()=>{
+      tutorialDismissed = true;
+      tutorialBarEl.style.display = 'none';
+    });
+    function renderMainQuestList(){
+      const el = document.getElementById('mainQuestList');
+      el.innerHTML = tutorialSteps.map((s,i)=>{
+        const state = i<tutorialIndex ? 'done' : (i===tutorialIndex ? '' : 'locked');
+        const icon = i<tutorialIndex ? '✅' : (i===tutorialIndex ? '▶️' : '🔒');
+        return `<div class="questItem ${state}"><div class="qTitle">${icon} ${s.title}</div><div class="qDesc">${s.desc}</div></div>`;
+      }).join('');
+    }
+    function updateTutorialUI(){
+      renderMainQuestList();
+      if (tutorialDismissed) return;
+      if (tutorialIndex >= tutorialSteps.length){
+        tutorialProgEl.textContent = "MAIN QUEST COMPLETE";
+        tutorialTextEl.textContent = "🎉 Main Quest เสร็จสมบูรณ์! ลองทำภารกิจเสริมที่เหลือให้ครบดู";
+        tutorialBarEl.classList.add('done');
+        setTimeout(()=>{ tutorialBarEl.style.display='none'; }, 6000);
+        return;
+      }
+      tutorialProgEl.textContent = "MAIN QUEST " + (tutorialIndex+1) + "/" + tutorialSteps.length;
+      tutorialTextEl.textContent = tutorialSteps[tutorialIndex].title + " — " + tutorialSteps[tutorialIndex].desc;
+    }
+    function updateTutorial(){
+      if (tutorialIndex >= tutorialSteps.length) return;
+      if (tutorialSteps[tutorialIndex].done()){
+        sfx.chime();
+        tutorialIndex++;
+        updateTutorialUI();
+      }
+    }
+    updateTutorialUI();
+
+    // ---------- Side Quests ----------
+    let sideQuestsUnlocked = false;
+    let harvestCount = 0, defeatCount = 0, cookCount = 0;
+    const sideQuests = [
+      { id:'harvest5', title:"นักเก็บเกี่ยวมือใหม่", desc:"เก็บเกี่ยวผลผลิต 5 ครั้ง", done:false,
+        check:()=> harvestCount>=5, reward:()=>{ inv.seeds+=3; updateEVA("🔖 ภารกิจเสริมสำเร็จ! ได้รับเมล็ดพันธุ์ 3 เมล็ด"); } },
+      { id:'defeat3', title:"นักล่าสัตว์ประหลาด", desc:"กำจัดศัตรู 3 ตัว", done:false,
+        check:()=> defeatCount>=3, reward:()=>{ const c=active(); c.bond=Math.min(100,c.bond+10); updateEVA("🔖 ภารกิจเสริมสำเร็จ! สายสัมพันธ์กับสัตว์เลี้ยงเพิ่มขึ้น"); } },
+      { id:'cook3', title:"เชฟประจำฟาร์ม", desc:"ทำอาหารสำเร็จ 3 ครั้ง", done:false,
+        check:()=> cookCount>=3, reward:()=>{ inv.crystal+=1; updateEVA("🔖 ภารกิจเสริมสำเร็จ! ได้รับคริสตัล 1 ก้อน"); } },
+      { id:'bond100', title:"เพื่อนแท้ตลอดกาล", desc:"ทำให้สัตว์เลี้ยงตัวใดตัวหนึ่งมี Bond ครบ 100", done:false,
+        check:()=> party.some(c=>c.bond>=100), reward:()=>{ spawnStars(active().x,active().y,20); updateEVA("🔖 ภารกิจเสริมสำเร็จ! สายสัมพันธ์ถึงขีดสุดแล้ว"); } },
+      { id:'fish3', title:"ชาวประมงมือใหม่", desc:"ตกปลาให้ได้ 3 ตัว", done:false,
+        check:()=> fishCount>=3, reward:()=>{ inv.coin+=10; updateEVA("🔖 ภารกิจเสริมสำเร็จ! ได้รับ 10 เหรียญ"); } },
+      { id:'mine3', title:"นักขุดมือใหม่", desc:"ขุดแร่ในถ้ำให้ได้ 3 ก้อน", done:false,
+        check:()=> mineCount>=3, reward:()=>{ inv.coin+=10; updateEVA("🔖 ภารกิจเสริมสำเร็จ! ได้รับ 10 เหรียญ"); } }
+    ];
+    function renderSideQuestList(){
+      const el = document.getElementById('sideQuestList');
+      if (!sideQuestsUnlocked){ el.innerHTML = "คุยกับผู้เฒ่าโรวันเพื่อปลดล็อกภารกิจเสริม"; return; }
+      el.innerHTML = sideQuests.map(q=> `<div class="questItem ${q.done?'done':''}"><div class="qTitle">${q.done?'✅':'🔸'} ${q.title}</div><div class="qDesc">${q.desc}</div></div>`).join('');
+    }
+    function updateSideQuests(){
+      if (!sideQuestsUnlocked) return;
+      let changed = false;
+      for (const q of sideQuests){
+        if (!q.done && q.check()){ q.done = true; sfx.chime(); q.reward(); changed = true; }
+      }
+      if (changed) renderSideQuestList();
+    }
+
+    // ---------- Input ----------
+    const keys = { w:false, a:false, s:false, d:false, ' ':false, '1':false, '2':false };
+    const actionKeys = ['q','c','e','n','p','t','b','f','g','m','r','w','a','s','d','x',' '];
+    const gameKeys = ['w','a','s','d',' ','1','2','q','c','e','n','p','t','b','f','g','m','r','x'];
+    let pressedOnce = {};
+    window.addEventListener('keydown', e => {
+      const k = e.key.toLowerCase();
+      if (gameKeys.includes(k)) e.preventDefault();
+      if (!gameStarted && k === ' ' && !e.repeat) startGame();
+      if (keys.hasOwnProperty(k)) keys[k] = true;
+      if (actionKeys.includes(k) && !e.repeat) pressedOnce[k] = true;
+    });
+    window.addEventListener('keyup', e => { const k = e.key.toLowerCase(); if (gameKeys.includes(k)) e.preventDefault(); if (keys.hasOwnProperty(k)) keys[k] = false; });
+
+    // ---------- World State ----------
+    let currentMap = "Farm";
+    let frameCount = 0;
+    let shakeTime = 0, shakeMag = 0;
+    let transitionAlpha = 0;
+    let cookCooldown = 0, breedCooldown = 0;
+
+    let inv = { coin: 20, seeds: 5, veggie: 0, meat: 0, chili: 0, crystal: 0, wood: 0, ore: 0, fish: 0, obsidian: 0, relic: 0, fur: 0, eggs: [] };
+    let energy = 100, maxEnergy = 100, energyRegenTimer = 0;
+    function spendEnergy(amount){
+      if (energy < amount){ updateEVA("⚡ พลังงานไม่พอ ลองพักรอให้ฟื้น หรือกินอาหารที่ปรุงเสร็จ"); return false; }
+      energy -= amount; return true;
+    }
+
+    // ---------- Day/Night cycle ----------
+    let dayCount = 1;
+    const DAY_LENGTH = 7200; // frames per full day/night cycle (slowed to ~2x for a calmer pace)
+    let dayTimer = 0;
+    function dayPhase(){
+      const t = dayTimer/DAY_LENGTH;
+      if (t < 0.05) return 'dawn';
+      if (t < 0.45) return 'day';
+      if (t < 0.55) return 'dusk';
+      return 'night';
+    }
+    function isNight(){ return dayPhase() === 'night'; }
+
+    // ---------- Seasons ----------
+    const SEASON_NAMES = ["ใบไม้ผลิ","ร้อน","ใบไม้ร่วง","หนาว"];
+    const SEASON_ICONS = ["🌸","☀️","🍂","❄️"];
+    const DAYS_PER_SEASON = 5;
+    function seasonIdx(){ return Math.floor((dayCount-1)/DAYS_PER_SEASON) % 4; }
+    function seasonName(){ return SEASON_NAMES[seasonIdx()]; }
+    function seasonIcon(){ return SEASON_ICONS[seasonIdx()]; }
+    // which crop grows from a planted seed depends on the current season
+    function seasonCrop(){
+      const s = seasonIdx();
+      if (s===0) return 'veggie';   // spring: gentle growing season
+      if (s===1) return 'chili';    // summer: hot season favors chili
+      if (s===2) return 'veggie';   // fall: harvest season, bonus yield
+      return greenhouseBuilt ? 'veggie' : null; // winter: soil too cold unless greenhouse built
+    }
+    let lastSeasonIdx = seasonIdx();
+
+    // ---------- Weather system ----------
+    let weather = 'clear'; // clear | rain | storm
+    let weatherTimer = 0;
+    const WEATHER_INTERVAL = 1800;
+    const weatherOptions = [ {type:'clear', weight:55}, {type:'rain', weight:30}, {type:'storm', weight:15} ];
+    function pickWeather(){
+      const total = weatherOptions.reduce((s,w)=>s+w.weight,0);
+      let r = Math.random()*total;
+      for (const w of weatherOptions){ if (r < w.weight) return w.type; r -= w.weight; }
+      return 'clear';
+    }
+    let rainDrops = [];
+    for (let i=0;i<60;i++) rainDrops.push({x:Math.random()*640, y:Math.random()*480, len:10+Math.random()*8});
+
+    const player = { x: 100, y: 240, size: 24, speed: 4, color: "#4fa3ff", facing:{x:0,y:1}, moving:false };
+
+    const plots = [
+      {x: 190, y: 190, size: 36, state: 0, timer: 0, maxTimer: 180, soil: 0, crop: null},
+      {x: 236, y: 190, size: 36, state: 0, timer: 0, maxTimer: 180, soil: 0, crop: null},
+      {x: 190, y: 236, size: 36, state: 0, timer: 0, maxTimer: 180, soil: 0, crop: null},
+      {x: 236, y: 236, size: 36, state: 0, timer: 0, maxTimer: 180, soil: 0, crop: null}
+    ];
+    // ---------- Farm automation ----------
+    let sprinklerBuilt = false, greenhouseBuilt = false, autoFeederBuilt = false;
+    let autoFeederTimer = 0;
+    const SOIL_NAMES = ["ดินธรรมดา","ดินอุดม","ดินเข้มข้น"];
+    const SOIL_SPEED = [1, 1.25, 1.55];
+    const nest = { x: 420, y: 330, size: 26 };
+
+    let enemies = [];
+    let items = [];
+    let particles = [];
+
+    // ---------- Tactical Grid Battle state ----------
+    let battleActive = false;
+    let battle = null;
+    const BATTLE_COLS = 8, BATTLE_ROWS = 5, BATTLE_CELL = 60, BATTLE_OX = 80, BATTLE_OY = 100;
+    let torches = [ {x:20,y:40}, {x:620,y:40}, {x:20,y:440}, {x:620,y:440} ];
+    let grassTufts = [];
+    for (let i=0;i<70;i++) grassTufts.push({x:Math.random()*640, y:Math.random()*480, s:1+Math.random()*1.5});
+
+    // ---------- Ambience ----------
+    let mapBanner = { text:"", sub:"", timer:0 };
+    let flashAlpha = 0;
+    let clouds = [];
+    for (let i=0;i<4;i++) clouds.push({x:Math.random()*640, y:24+Math.random()*70, w:55+Math.random()*45, speed:0.12+Math.random()*0.15});
+    let fireflies = [];
+    for (let i=0;i<14;i++) fireflies.push({x:Math.random()*640, y:230+Math.random()*220, phase:Math.random()*Math.PI*2});
+    let emberMotes = [];
+    for (let i=0;i<24;i++) emberMotes.push({x:Math.random()*640, y:480+Math.random()*60, phase:Math.random()*Math.PI*2, speed:0.3+Math.random()*0.5});
+    let fogMotes = [];
+    for (let i=0;i<6;i++) fogMotes.push({x:Math.random()*640, y:150+Math.random()*250, r:40+Math.random()*40, speed:0.08+Math.random()*0.1});
+    let snowMotes = [];
+    for (let i=0;i<28;i++) snowMotes.push({x:Math.random()*640, y:Math.random()*480, r:1.5+Math.random()*2.5, speed:0.4+Math.random()*0.8, drift:Math.random()*Math.PI*2});
+    let runeMotes = [];
+    for (let i=0;i<10;i++) runeMotes.push({x:Math.random()*640, y:100+Math.random()*300, phase:Math.random()*Math.PI*2, speed:0.15+Math.random()*0.2});
+    const flowerSpots = [
+      {x:340,y:75,c:'#ff8fab'},{x:400,y:55,c:'#fff176'},{x:150,y:95,c:'#ba68c8'},
+      {x:520,y:390,c:'#ff8fab'},{x:560,y:430,c:'#fff176'},{x:300,y:430,c:'#ba68c8'},
+      {x:250,y:55,c:'#ff8fab'},{x:470,y:65,c:'#fff176'}
+    ];
+    const pond = { x:80, y:390, rw:52, rh:24 };
+    const trees = [
+      { x:550, y:90, size:28, chopped:0, maxCooldown:480 },
+      { x:550, y:400, size:28, chopped:0, maxCooldown:480 },
+      { x:300, y:90, size:28, chopped:0, maxCooldown:480 }
+    ];
+    const oreNodes = [
+      { x:100, y:400, size:24, mined:0, maxCooldown:480 },
+      { x:380, y:420, size:24, mined:0, maxCooldown:480 },
+      { x:580, y:400, size:24, mined:0, maxCooldown:480 }
+    ];
+    let fishCooldown = 0;
+
+    let interactCooldown = 0;
+    let feedCooldown = 0;
+
+    // ---------- Breeding: IV / Trait / Mutation ----------
+    const TRAITS = {
+      hardy:  { icon:'💪', name:'Hardy',  desc:'HP สูงสุด +10%' },
+      brave:  { icon:'🔥', name:'Brave',  desc:'พลังโจมตี +10%' },
+      swift:  { icon:'💨', name:'Swift',  desc:'ความเร็วในสนามรบ +3' },
+      gentle: { icon:'💗', name:'Gentle', desc:'ได้ Bond จากการป้อนอาหาร +50%' },
+      clever: { icon:'✨', name:'Clever', desc:'ได้ EXP เพิ่ม +20%' }
+    };
+    const TRAIT_KEYS = Object.keys(TRAITS);
+    function randomTrait(){ return TRAIT_KEYS[Math.floor(Math.random()*TRAIT_KEYS.length)]; }
+    function rand32(){ return Math.floor(Math.random()*32); }
+    function inheritIV(v1,v2){ return Math.random()<0.15 ? rand32() : (Math.random()<0.5?v1:v2); }
+    function ivMult(iv){ return 1 + (iv||0)/31*0.12; } // up to +12% from a perfect IV
+    function traitMultHp(trait,mutant){ let m=1; if (trait==='hardy') m*=1.10; if (mutant) m*=1.08; return m; }
+    function traitMultAtk(trait,mutant){ let m=1; if (trait==='brave') m*=1.10; if (mutant) m*=1.08; return m; }
+    function traitSpdBonus(trait){ return trait==='swift' ? 3 : 0; }
+    function traitBondMult(trait){ return trait==='gentle' ? 1.5 : 1; }
+    function traitExpMult(trait){ return trait==='clever' ? 1.2 : 1; }
+
+    // ---------- Creatures ----------
+    function makeCreature(name, element, color, x, y, overrides={}) {
+      const iv = overrides.iv || { hp: rand32(), atk: rand32(), spd: rand32() };
+      const trait = overrides.trait || randomTrait();
+      const mutant = !!overrides.mutant;
+      const hpM = ivMult(iv.hp) * traitMultHp(trait,mutant);
+      const atkM = ivMult(iv.atk) * traitMultAtk(trait,mutant);
+      const maxHp = Math.round(100*hpM);
+      const base = {
+        x, y, size:20, speed:3.5, color, name, element, stage:0,
+        hp:maxHp, maxHp, atk:Math.round(15*atkM),
+        veggieEaten:0, meatEaten:0, bond:20,
+        level:1, exp:0,
+        skillUnlocked:false, skillCooldown:0,
+        target:null, attackCooldown:0, facing:{x:1,y:0},
+        iv, trait, mutant
+      };
+      return Object.assign(base, overrides);
+    }
+    function expNeeded(level){ return 40 + level*30; }
+    function gainExp(c, amount){
+      if (!c) return;
+      c.exp += amount * traitExpMult(c.trait);
+      let leveled = false;
+      while (c.exp >= expNeeded(c.level)){
+        c.exp -= expNeeded(c.level);
+        c.level++;
+        const hpGain = Math.round(12 * ivMult(c.iv.hp) * traitMultHp(c.trait,c.mutant));
+        const atkGain = Math.round(2 * ivMult(c.iv.atk) * traitMultAtk(c.trait,c.mutant));
+        c.maxHp += hpGain; c.hp = Math.min(c.maxHp, c.hp + hpGain); c.atk += atkGain;
+        leveled = true;
+      }
+      if (leveled){
+        spawnText(c.x,c.y-30,"LEVEL UP! Lv."+c.level,"#ffe066");
+        spawnStars(c.x,c.y,12); sfx.evolve(); shake(4,10);
+        updateEVA(`🎉 ${c.name} เลเวลอัพเป็น Lv.${c.level}! พลังแกร่งขึ้น`);
+      }
+    }
+    let party = [ makeCreature("Seedling", "Normal", "#ffeb3b", 80, 240) ];
+    let activeIndex = 0;
+    const MAX_PARTY = 3;
+    function active(){ return party[activeIndex]; }
+
+    // ---------- Helpers ----------
+    function spawnBurst(x,y,color,count=10,speed=3,life=30,size=4){
+      for(let i=0;i<count;i++){
+        const a = Math.random()*Math.PI*2, sp = speed*(0.4+Math.random());
+        particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life,maxLife:life,color,size:size*(0.6+Math.random()*0.8)});
+      }
+    }
+    function spawnText(x,y,text,color){ particles.push({x,y,vx:(Math.random()-0.5)*0.5,vy:-1.1,life:45,maxLife:45,color,text}); }
+    function spawnStars(x,y,count=14,color='#fff59d'){
+      for(let i=0;i<count;i++){
+        const a=Math.random()*Math.PI*2, sp=1+Math.random()*3.5;
+        particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1,life:55,maxLife:55,color,size:4+Math.random()*4,shape:'star',rot:Math.random()*Math.PI});
+      }
+    }
+    function shake(mag=4,time=8){ shakeMag = mag; shakeTime = time; }
+    function updateEVA(msg){ document.getElementById('eva-text').innerText = msg; }
+    function shade(hex, percent){
+      const num = parseInt(hex.replace("#",""),16);
+      let r=(num>>16)+percent, g=(num>>8 & 0x00FF)+percent, b=(num & 0x0000FF)+percent;
+      r=Math.min(255,Math.max(0,r)); g=Math.min(255,Math.max(0,g)); b=Math.min(255,Math.max(0,b));
+      return "rgb("+r+","+g+","+b+")";
+    }
+
+    // ---------- Evolution (5 forms) ----------
+    function checkEvolution(c){
+      const hpM = ivMult(c.iv.hp) * traitMultHp(c.trait,c.mutant);
+      const atkM = ivMult(c.iv.atk) * traitMultAtk(c.trait,c.mutant);
+      const mutTint = c.mutant ? "#ffd700" : null;
+      if (c.stage === 0){
+        if (c.veggieEaten>=2 && c.meatEaten>=2){
+          const maxHp = Math.round(160*hpM);
+          Object.assign(c,{name:"Chimera Beast", element:"Chimera", color: mutTint||"#AB47BC", size:26, stage:1, maxHp, hp:maxHp, atk:Math.round(25*atkM)});
+          fanfare(c,"#AB47BC","✨ EVOLUTION! เกิดการผสมธาตุ กลายเป็น Chimera Beast ตัวลูกผสมหายาก!");
+        } else if (c.veggieEaten>=3){
+          const maxHp = Math.round(200*hpM);
+          Object.assign(c,{name:"Nature Guardian", element:"Nature", color: mutTint||"#4CAF50", size:28, stage:1, maxHp, hp:maxHp});
+          fanfare(c,"#4CAF50","✨ EVOLUTION! วิวัฒนาการเป็น Nature Guardian ธาตุพืช แข็งแกร่งขึ้นมาก!");
+        } else if (c.meatEaten>=3){
+          const maxHp = Math.round(130*hpM);
+          Object.assign(c,{name:"War Beast", element:"Fire", color: mutTint||"#FF5722", size:28, stage:1, maxHp, hp:maxHp, atk:Math.round(35*atkM)});
+          fanfare(c,"#FF5722","✨ EVOLUTION! วิวัฒนาการเป็น War Beast สายโจมตีดุดัน!");
+        }
+      } else if (c.stage === 1 && c.bond>=60 && (c.veggieEaten+c.meatEaten)>=8){
+        if (c.element==="Nature"){
+          const maxHp = Math.round(320*hpM);
+          Object.assign(c,{name:"Elder Treant", color: mutTint||"#2E7D32", size:34, stage:2, maxHp, hp:maxHp, atk:Math.round(30*atkM), skillUnlocked:true});
+          fanfare(c,"#2E7D32","🌳 EVOLUTION ขั้นสูงสุด! กลายเป็น Elder Treant! ปลดล็อกสกิล Heal Pulse!");
+        } else if (c.element==="Fire"){
+          const maxHp = Math.round(260*hpM);
+          Object.assign(c,{name:"Inferno Fiend", color: mutTint||"#D84315", size:34, stage:2, maxHp, hp: Math.min(maxHp,c.hp), atk:Math.round(55*atkM), skillUnlocked:true});
+          fanfare(c,"#D84315","🔥 EVOLUTION ขั้นสูงสุด! กลายเป็น Inferno Fiend! ปลดล็อกสกิล Fireball!");
+        }
+      }
+    }
+    function fanfare(c,color,msg){ spawnBurst(c.x,c.y,color,34,4,55,6); spawnStars(c.x,c.y,16); shake(5,14); flashAlpha=1; sfx.evolve(); updateEVA(msg); }
+
+    // ---------- Combat helpers ----------
+    function dropLoot(e){
+      if (currentMap === "Dungeon"){
+        items.push({x:e.x,y:e.y,type:"Meat",size:15,bob:0});
+        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Neutral"});
+      } else if (currentMap === "Cave"){
+        items.push({x:e.x,y:e.y,type: e.boss ? "Crystal" : "Chili", size:15, bob:0});
+        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Fire"});
+      } else if (currentMap === "Volcano"){
+        items.push({x:e.x,y:e.y,type:"Obsidian",size:15,bob:0});
+        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Fire"});
+      } else if (currentMap === "Ruins"){
+        items.push({x:e.x,y:e.y,type:"Relic",size:15,bob:0});
+        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Neutral"});
+      } else if (currentMap === "Snow"){
+        items.push({x:e.x,y:e.y,type:"Fur",size:15,bob:0});
+        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Ice"});
+      }
+    }
+    function damageEnemy(e, dmg){
+      e.hp -= dmg; e.squish = 8;
+      spawnText(e.x, e.y-18, "-"+dmg, "#ff5252");
+      sfx.hit();
+      if (e.hp <= 0){
+        spawnBurst(e.x, e.y, e.color, 16, 3, 30, 4);
+        sfx.enemyDown(); tut.defeated = true; defeatCount++;
+        gainExp(active(), e.boss ? 40 : 15);
+        dropLoot(e);
+        enemies = enemies.filter(x => x !== e);
+        updateEVA("กำจัดศัตรูได้! เดินไปเก็บของดรอปเลย!");
+      }
+    }
+
+    // ---------- Tactical Grid Battle system ----------
+    function cellToPixel(gx,gy){ return { x: BATTLE_OX + gx*BATTLE_CELL + BATTLE_CELL/2, y: BATTLE_OY + gy*BATTLE_CELL + BATTLE_CELL/2 }; }
+    function gridDist(a,b){ return Math.abs(a.gx-b.gx)+Math.abs(a.gy-b.gy); }
+    function spreadRows(n, rows){
+      if (n<=0) return [];
+      if (n===1) return [Math.floor(rows/2)];
+      const arr=[]; const step=(rows-1)/(n-1);
+      for (let i=0;i<n;i++) arr.push(Math.round(i*step));
+      return arr;
+    }
+    function currentUnit(){ return battle ? battle.turnQueue[battle.turnIndex] : null; }
+    function buildTurnQueue(){
+      battle.turnQueue = battle.units.filter(u=>u.alive).sort((a,b)=> b.spd - a.spd);
+      battle.turnIndex = 0;
+    }
+    function computeReachable(unit){
+      const occ = new Set(battle.units.filter(u=>u.alive && u!==unit).map(u=>u.gx+','+u.gy));
+      const start = {gx:unit.gx, gy:unit.gy};
+      const visited = new Map(); visited.set(start.gx+','+start.gy, 0);
+      const queue = [start];
+      const result = [{gx:start.gx, gy:start.gy}];
+      while (queue.length){
+        const cur = queue.shift();
+        const d = visited.get(cur.gx+','+cur.gy);
+        if (d >= unit.moveRange) continue;
+        const neighbors = [{gx:cur.gx+1,gy:cur.gy},{gx:cur.gx-1,gy:cur.gy},{gx:cur.gx,gy:cur.gy+1},{gx:cur.gx,gy:cur.gy-1}];
+        for (const n of neighbors){
+          if (n.gx<0||n.gx>=BATTLE_COLS||n.gy<0||n.gy>=BATTLE_ROWS) continue;
+          const key = n.gx+','+n.gy;
+          if (visited.has(key) || occ.has(key)) continue;
+          visited.set(key, d+1);
+          result.push({gx:n.gx, gy:n.gy});
+          queue.push(n);
+        }
+      }
+      return result;
+    }
+    // ---------- Tactical Roles (Tank / DPS / Support / CC) ----------
+    const ROLE_ICONS = { Tank:'🛡️', DPS:'⚔️', Support:'✚', CC:'💫' };
+    const ROLE_NAMES = { Tank:'Tank', DPS:'DPS', Support:'Support', CC:'CC' };
+    function roleForCreature(c){
+      if (c.element==="Nature") return "Support"; // heals allies, fits Heal Pulse skill line
+      if (c.element==="Fire") return "DPS";        // highest raw attack, fits Fireball skill line
+      if (c.element==="Chimera") return "Tank";    // hybrid, sturdiest, no further evolution
+      return "DPS";                                // base Seedling before evolving
+    }
+    function zoneElement(){
+      if (currentMap==="Cave" || currentMap==="Volcano") return "Fire";
+      if (currentMap==="Snow") return "Ice";
+      return "Neutral";
+    }
+    function zoneEnemyName(){
+      if (currentMap==="Cave") return "สัตว์ถ้ำ";
+      if (currentMap==="Volcano") return "อสูรลาวา";
+      if (currentMap==="Ruins") return "ผู้พิทักษ์โบราณ";
+      if (currentMap==="Snow") return "สัตว์หิมะ";
+      return "สัตว์ป่า";
+    }
+    function roleForEnemy(isBoss){
+      if (isBoss) return "Tank";                          // pack leader draws aggro, high HP
+      if (currentMap==="Cave" || currentMap==="Volcano") return "DPS";   // fire beasts hit hard
+      return "CC";                                          // forest/ruins/snow beasts disorient
+    }
+    function startBattle(triggerEnemy){
+      if (battleActive) return;
+      const playerCreatures = party.filter(p=>p.hp>0);
+      if (playerCreatures.length===0){ updateEVA("⚠️ สัตว์เลี้ยงของคุณหมดแรงทั้งหมด รีบกลับฟาร์มไปพักฟื้นก่อน!"); return; }
+      const cluster = enemies.filter(e => e===triggerEnemy || Math.hypot(e.x-triggerEnemy.x,e.y-triggerEnemy.y)<130).slice(0,4);
+      enemies = enemies.filter(e => !cluster.includes(e));
+      battleActive = true;
+      const pRows = spreadRows(playerCreatures.length, BATTLE_ROWS);
+      const eRows = spreadRows(cluster.length, BATTLE_ROWS);
+      const pUnits = playerCreatures.map((cr,i)=>{
+        const role = roleForCreature(cr);
+        let atk = Math.round(cr.atk*(1+cr.bond/200));
+        if (role==='DPS') atk = Math.round(atk*1.2);
+        let maxHp = role==='Tank' ? Math.round(cr.maxHp*1.15) : cr.maxHp;
+        return {
+          isPlayer:true, ref:cr, name:cr.name, color:cr.color, element:cr.element, size:cr.size, role,
+          hp:Math.min(maxHp,cr.hp), maxHp, atk, spd:10+cr.level+(cr.stage*3)+traitSpdBonus(cr.trait),
+          moveRange:3, atkRange: cr.element==="Nature" ? 2 : 1,
+          gx:1, gy:pRows[i], x:0, y:0, facing:{x:1,y:0}, alive:true, isBoss:false, stunned:false
+        };
+      });
+      const eUnits = cluster.map((e,i)=>{
+        const role = roleForEnemy(!!e.boss);
+        let atk = e.boss?18:10;
+        if (role==='DPS') atk = Math.round(atk*1.2);
+        let maxHp = role==='Tank' ? Math.round(e.maxHp*1.15) : e.maxHp;
+        return {
+          isPlayer:false, ref:e, name: e.boss ? "หัวหน้าฝูง" : zoneEnemyName(), color:e.color, element: zoneElement(), size:e.size, role,
+          hp:Math.min(maxHp,e.hp), maxHp, atk, spd: e.boss?9:13,
+          moveRange:2, atkRange:1,
+          gx:5, gy:eRows[i], x:0, y:0, squish:0, alive:true, isBoss:!!e.boss, boss:!!e.boss, stunned:false
+        };
+      });
+      battle = {
+        units:[...pUnits, ...eUnits], turnQueue:[], turnIndex:0, activeUnit:null,
+        phase:'move', cursor:{gx:1,gy:pRows[0]}, reachable:[], targets:[], targetIndex:0,
+        aiTimer:0, phaseTimer:0, ended:false, endTimer:0, retreat:false, rewardExp:0, rewardLoot:[]
+      };
+      buildTurnQueue();
+      beginUnitTurn();
+      sfx.zone();
+      mapBanner = { text:"TACTICAL BATTLE", sub:"วางแผนการเคลื่อนที่และโจมตี! (Tank ดึงเป้า / Support รักษา / CC ทำให้มึนงง)", timer:110 };
+    }
+    function beginUnitTurn(){
+      if (checkBattleEnd()) return;
+      let u = currentUnit();
+      let guard = 0;
+      while (u && !u.alive && guard<30){ battle.turnIndex++; if (battle.turnIndex>=battle.turnQueue.length) buildTurnQueue(); u = currentUnit(); guard++; }
+      if (!u){ return; }
+      if (u.stunned){
+        u.stunned = false;
+        const pos = cellToPixel(u.gx,u.gy);
+        spawnText(pos.x,pos.y-30,"มึนงง! ข้ามตา","#ba68c8");
+        spawnBurst(pos.x,pos.y,'#ba68c8',10,2,24,3);
+        advanceTurnIndex();
+        beginUnitTurn();
+        return;
+      }
+      battle.activeUnit = u;
+      battle.cursor = {gx:u.gx, gy:u.gy};
+      battle.targets = []; battle.targetIndex = 0;
+      if (u.isPlayer){
+        battle.phase = 'move';
+        battle.reachable = computeReachable(u);
+        updateEVA(`⚔️ ตาของ ${u.name} [${ROLE_ICONS[u.role]} ${ROLE_NAMES[u.role]}]: WASD เลือกทิศเคลื่อนที่ กด SPACE ยืนยัน (Q เพื่อข้ามเทิร์น)`);
+      } else {
+        battle.phase = 'ai_think';
+        battle.aiTimer = 40;
+      }
+    }
+    function advanceTurnIndex(){
+      battle.turnIndex++;
+      if (battle.turnIndex >= battle.turnQueue.length) buildTurnQueue();
+    }
+    function endUnitTurn(){
+      if (checkBattleEnd()) return;
+      advanceTurnIndex();
+      beginUnitTurn();
+    }
+    function checkBattleEnd(){
+      if (!battle || battle.ended) return true;
+      const playersAlive = battle.units.some(u=>u.isPlayer && u.alive);
+      const enemiesAlive = battle.units.some(u=>!u.isPlayer && u.alive);
+      if (!enemiesAlive){ winBattle(); return true; }
+      if (!playersAlive){ loseBattle(); return true; }
+      return false;
+    }
+    function winBattle(){
+      battle.ended = true; battle.endTimer = 70;
+      for (const u of battle.units){ if (u.isPlayer && u.ref) u.ref.hp = Math.max(1, Math.round(u.hp)); }
+      if (battle.rewardExp>0) gainExp(active(), battle.rewardExp);
+      for (const t of battle.rewardLoot){
+        if (currentMap === "Dungeon"){
+          items.push({x:player.x+(Math.random()*30-15), y:player.y+22, type:"Meat", size:15, bob:0});
+          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Neutral"});
+        } else if (currentMap === "Cave"){
+          items.push({x:player.x+(Math.random()*30-15), y:player.y+22, type: t.isBoss?"Crystal":"Chili", size:15, bob:0});
+          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Fire"});
+        } else if (currentMap === "Volcano"){
+          items.push({x:player.x+(Math.random()*30-15), y:player.y+22, type:"Obsidian", size:15, bob:0});
+          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Fire"});
+        } else if (currentMap === "Ruins"){
+          items.push({x:player.x+(Math.random()*30-15), y:player.y+22, type:"Relic", size:15, bob:0});
+          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Neutral"});
+        } else if (currentMap === "Snow"){
+          items.push({x:player.x+(Math.random()*30-15), y:player.y+22, type:"Fur", size:15, bob:0});
+          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Ice"});
+        }
+      }
+      sfx.enemyDown(); flashAlpha = 0.7;
+      updateEVA("🏆 ชนะการต่อสู้แบบ Tactical! ได้รับ EXP และของรางวัลตกอยู่ใกล้ๆ ตัวคุณแล้ว");
+      mapBanner = { text:"VICTORY!", sub:"เก็บของรางวัลที่ดรอปไว้", timer:110 };
+    }
+    function loseBattle(){
+      battle.ended = true; battle.endTimer = 70; battle.retreat = true;
+      for (const u of battle.units){ if (u.isPlayer && u.ref) u.ref.hp = 1; }
+      const penalty = Math.min(inv.coin, 10);
+      inv.coin -= penalty;
+      updateEVA(`💥 ปาร์ตี้ของคุณพ่ายแพ้ในการต่อสู้! ถอยกลับไปพักฟื้นที่ฟาร์ม (เสียเหรียญ ${penalty})`);
+      mapBanner = { text:"RETREAT...", sub:"กลับไปพักฟื้นที่ฟาร์ม", timer:110 };
+    }
+    function tryMoveCursor(dx,dy){
+      const ngx = battle.cursor.gx+dx, ngy = battle.cursor.gy+dy;
+      const ok = battle.reachable.some(r=>r.gx===ngx && r.gy===ngy);
+      if (!ok) return;
+      battle.cursor = {gx:ngx, gy:ngy};
+    }
+    function confirmMove(){
+      const u = battle.activeUnit;
+      u.gx = battle.cursor.gx; u.gy = battle.cursor.gy;
+      let targets = battle.units.filter(o=>o.alive && o.isPlayer!==u.isPlayer && gridDist(u,o)<=u.atkRange);
+      if (u.role==='Support'){
+        const healTargets = battle.units.filter(o=>o.alive && o.isPlayer===u.isPlayer && o!==u && o.hp<o.maxHp && gridDist(u,o)<=u.atkRange);
+        targets = targets.concat(healTargets);
+      }
+      if (targets.length>0){
+        battle.targets = targets; battle.targetIndex = 0; battle.phase = 'target';
+        updateEVA(u.role==='Support' ? "🎯 A/D เลือกเป้าหมาย (ศัตรู=โจมตี ✚พวกเดียวกัน=รักษา) แล้วกด SPACE" : "🎯 เลือกเป้าหมายด้วย A/D แล้วกด SPACE เพื่อโจมตี (Q เพื่อไม่โจมตี)");
+      } else {
+        battle.phase = 'resolve'; battle.phaseTimer = 10;
+      }
+    }
+    function skipTurn(){ battle.phase = 'resolve'; battle.phaseTimer = 5; }
+    function cycleTarget(dir){
+      if (battle.targets.length===0) return;
+      battle.targetIndex = (battle.targetIndex + dir + battle.targets.length) % battle.targets.length;
+    }
+    function confirmAttack(){
+      const u = battle.activeUnit;
+      const t = battle.targets[battle.targetIndex];
+      if (t.isPlayer === u.isPlayer){
+        // Support healing an ally instead of attacking
+        const healAmt = Math.max(4, Math.round(u.atk*0.6));
+        t.hp = Math.min(t.maxHp, t.hp + healAmt);
+        if (t.ref) t.ref.hp = Math.max(0, Math.round(t.hp));
+        const pos = cellToPixel(t.gx,t.gy);
+        spawnText(pos.x,pos.y-24,"+"+healAmt,"#8BC34A");
+        spawnBurst(pos.x,pos.y,'#8BC34A',12,2.5,26,4);
+        sfx.feed();
+        updateEVA(`✚ ${u.name} รักษา ${t.name} ไป ${healAmt} HP!`);
+        battle.phase = 'resolve'; battle.phaseTimer = 20;
+        return;
+      }
+      let dmg = Math.max(1, Math.round(u.atk * (0.85 + Math.random()*0.3)));
+      if (u.element==="Fire" && t.element==="Nature") dmg = Math.round(dmg*1.4);
+      else if (u.element==="Nature" && t.element==="Fire") dmg = Math.round(dmg*0.75);
+      if (t.role==='Tank') dmg = Math.max(1, Math.round(dmg*0.8));
+      t.hp -= dmg;
+      const pos = cellToPixel(t.gx,t.gy);
+      spawnText(pos.x,pos.y-24,"-"+dmg,"#ff5252");
+      spawnBurst(pos.x,pos.y,t.color,14,3,26,4);
+      sfx.hit(); shake(3,6);
+      if (t.ref) t.ref.hp = Math.max(0, Math.round(t.hp));
+      if (t.hp<=0){
+        t.hp = 0; t.alive = false;
+        spawnBurst(pos.x,pos.y,t.color,20,4,32,5);
+        sfx.enemyDown();
+        if (!t.isPlayer){
+          defeatCount++; tut.defeated = true;
+          battle.rewardExp += (t.isBoss?40:15);
+          battle.rewardLoot.push(t);
+        }
+      } else if (u.role==='CC' && Math.random()<0.35){
+        t.stunned = true;
+        spawnText(pos.x,pos.y-42,"STUN!","#ba68c8");
+        spawnBurst(pos.x,pos.y,'#ba68c8',10,2,24,3);
+      }
+      battle.phase = 'resolve'; battle.phaseTimer = 20;
+    }
+    function aiAct(u){
+      let targets = battle.units.filter(o=>o.alive && o.isPlayer);
+      if (targets.length===0){ battle.phase='resolve'; battle.phaseTimer=10; return; }
+      const taunters = targets.filter(t=>t.role==='Tank');
+      if (taunters.length>0) targets = taunters; // Tank draws enemy aggro
+      let target = targets[0], minD = Infinity;
+      for (const t of targets){ const d=gridDist(u,t); if (d<minD){ minD=d; target=t; } }
+      if (gridDist(u,target) > u.atkRange){
+        const reach = computeReachable(u);
+        let best=null, bestD=gridDist(u,target);
+        for (const cell of reach){
+          const d = Math.abs(cell.gx-target.gx)+Math.abs(cell.gy-target.gy);
+          if (d < bestD){ bestD=d; best=cell; }
+        }
+        if (best){ u.gx=best.gx; u.gy=best.gy; }
+      }
+      if (gridDist(u,target) <= u.atkRange){
+        let dmg = Math.max(1, Math.round(u.atk * (0.85 + Math.random()*0.3)));
+        if (u.element==="Fire" && target.element==="Nature") dmg = Math.round(dmg*1.4);
+        if (target.role==='Tank') dmg = Math.max(1, Math.round(dmg*0.8));
+        target.hp -= dmg;
+        const pos = cellToPixel(target.gx,target.gy);
+        spawnText(pos.x,pos.y-24,"-"+dmg,"#ff5252");
+        spawnBurst(pos.x,pos.y,'#ff5252',12,3,26,4);
+        sfx.hit(); shake(2,5);
+        if (target.ref) target.ref.hp = Math.max(0, Math.round(target.hp));
+        if (target.hp<=0){
+          target.hp = 0; target.alive = false;
+          spawnBurst(pos.x,pos.y,target.color,18,4,30,5);
+          sfx.enemyDown();
+        } else if (u.role==='CC' && Math.random()<0.35){
+          target.stunned = true;
+          spawnText(pos.x,pos.y-42,"STUN!","#ba68c8");
+          spawnBurst(pos.x,pos.y,'#ba68c8',10,2,24,3);
+        }
+      }
+      battle.phase = 'resolve'; battle.phaseTimer = 25;
+    }
+    function updateBattle(){
+      if (!battle) return;
+      if (shakeTime>0) shakeTime--;
+      if (flashAlpha>0) flashAlpha -= 0.05;
+      if (mapBanner.timer>0) mapBanner.timer--;
+      for (let i=particles.length-1;i>=0;i--){
+        const p = particles[i];
+        p.x+=p.vx; p.y+=p.vy; p.vx*=0.96; p.vy*=0.96; p.life--;
+        if (p.life<=0) particles.splice(i,1);
+      }
+      if (battle.ended){
+        battle.endTimer--;
+        if (battle.endTimer<=0){
+          const wasRetreat = battle.retreat;
+          battleActive = false; battle = null;
+          if (wasRetreat) switchMap("Farm");
+        }
+        return;
+      }
+      const u = battle.activeUnit;
+      if (battle.phase === 'move' && u && u.isPlayer){
+        if (pressedOnce.w) tryMoveCursor(0,-1);
+        if (pressedOnce.s) tryMoveCursor(0,1);
+        if (pressedOnce.a) tryMoveCursor(-1,0);
+        if (pressedOnce.d) tryMoveCursor(1,0);
+        if (pressedOnce[' ']) confirmMove();
+        if (pressedOnce.q) skipTurn();
+      } else if (battle.phase === 'target' && u && u.isPlayer){
+        if (pressedOnce.a || pressedOnce.w) cycleTarget(-1);
+        if (pressedOnce.d || pressedOnce.s) cycleTarget(1);
+        if (pressedOnce[' ']) confirmAttack();
+        if (pressedOnce.q){ battle.phase='resolve'; battle.phaseTimer=5; }
+      } else if (battle.phase === 'ai_think'){
+        battle.aiTimer--;
+        if (battle.aiTimer<=0) aiAct(u);
+      } else if (battle.phase === 'resolve'){
+        battle.phaseTimer--;
+        if (battle.phaseTimer<=0) endUnitTurn();
+      }
+    }
+    function drawBattleScene(){
+      const sky = ctx.createLinearGradient(0,0,0,canvas.height);
+      if (currentMap==="Cave"){ sky.addColorStop(0,"#3a1f14"); sky.addColorStop(1,"#160a06"); }
+      else { sky.addColorStop(0,"#16241a"); sky.addColorStop(1,"#0a140e"); }
+      ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      ctx.font="11px Kanit, sans-serif"; ctx.fillStyle="#cfe9d6"; ctx.textAlign="center";
+      if (battle.turnQueue && battle.turnQueue.length){
+        const order = battle.turnQueue.map((u,i)=> (i===battle.turnIndex?"▶":"") + (u.alive? (u.isPlayer?"🐾":"👹") : "💀")).join(" ");
+        ctx.fillText("ลำดับเทิร์น: "+order, canvas.width/2, 54);
+      }
+      ctx.textAlign="left";
+
+      const u = battle.activeUnit;
+      for (let gx=0; gx<BATTLE_COLS; gx++){
+        for (let gy=0; gy<BATTLE_ROWS; gy++){
+          const px = BATTLE_OX+gx*BATTLE_CELL, py = BATTLE_OY+gy*BATTLE_CELL;
+          let fill = "rgba(255,255,255,0.04)";
+          if (battle.phase==='move' && u && u.isPlayer && battle.reachable.some(r=>r.gx===gx&&r.gy===gy)) fill = "rgba(111,191,71,0.28)";
+          ctx.fillStyle = fill;
+          ctx.beginPath(); ctx.roundRect(px+2,py+2,BATTLE_CELL-4,BATTLE_CELL-4,6); ctx.fill();
+          ctx.strokeStyle="rgba(255,255,255,0.08)"; ctx.lineWidth=1;
+          ctx.beginPath(); ctx.roundRect(px+2,py+2,BATTLE_CELL-4,BATTLE_CELL-4,6); ctx.stroke();
+        }
+      }
+
+      if (battle.phase==='target' && battle.targets.length){
+        battle.targets.forEach((t,i)=>{
+          const pos = cellToPixel(t.gx,t.gy);
+          const isHeal = t.isPlayer === battle.activeUnit.isPlayer;
+          const baseColor = isHeal ? "#8BC34A" : "#ff5252";
+          ctx.strokeStyle = i===battle.targetIndex ? baseColor : (isHeal ? "rgba(139,195,74,0.4)" : "rgba(255,82,82,0.4)");
+          ctx.lineWidth = i===battle.targetIndex ? 3 : 2;
+          ctx.beginPath(); ctx.arc(pos.x,pos.y,BATTLE_CELL*0.42,0,Math.PI*2); ctx.stroke();
+        });
+      }
+
+      if (battle.phase==='move' && u && u.isPlayer){
+        const cp = cellToPixel(battle.cursor.gx, battle.cursor.gy);
+        ctx.strokeStyle="#ffe066"; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.roundRect(cp.x-BATTLE_CELL/2+4, cp.y-BATTLE_CELL/2+4, BATTLE_CELL-8, BATTLE_CELL-8, 6); ctx.stroke();
+      }
+
+      for (const unit of battle.units){
+        if (!unit.alive) continue;
+        const pos = cellToPixel(unit.gx, unit.gy);
+        unit.x = pos.x; unit.y = pos.y;
+        if (unit===u){
+          ctx.strokeStyle="rgba(255,235,102,0.9)"; ctx.lineWidth=2;
+          ctx.beginPath(); ctx.arc(pos.x,pos.y,BATTLE_CELL*0.46,0,Math.PI*2); ctx.stroke();
+        }
+        if (unit.isPlayer){
+          drawCreature(unit, 2);
+        } else {
+          drawEnemy(unit);
+        }
+        const barW = 40;
+        ctx.fillStyle="rgba(0,0,0,0.5)"; ctx.fillRect(pos.x-barW/2, pos.y-unit.size-16, barW, 6);
+        ctx.fillStyle = unit.isPlayer ? "#66bb6a" : "#ff8a65";
+        ctx.fillRect(pos.x-barW/2, pos.y-unit.size-16, barW*Math.max(0,unit.hp/unit.maxHp), 6);
+        ctx.font="10px Kanit, sans-serif"; ctx.fillStyle="#eafff0"; ctx.textAlign="center";
+        ctx.fillText((ROLE_ICONS[unit.role]||"") + " " + unit.name, pos.x, pos.y-unit.size-20);
+        ctx.textAlign="left";
+        if (unit.stunned){
+          ctx.font="13px Kanit, sans-serif"; ctx.fillStyle="#ba68c8"; ctx.textAlign="center";
+          ctx.fillText("💫", pos.x+barW/2-4, pos.y-unit.size-16);
+          ctx.textAlign="left";
+        }
+      }
+
+      drawParticles();
+
+      ctx.font="12.5px Kanit, sans-serif"; ctx.fillStyle="#fff2cf"; ctx.textAlign="center";
+      let hint = "";
+      if (u && u.isPlayer && battle.phase==='move') hint = "WASD: เคลื่อนที่ · SPACE: ยืนยัน · Q: ข้ามเทิร์น";
+      else if (u && u.isPlayer && battle.phase==='target') hint = u.role==='Support' ? "A/D: เลือกเป้า (แดง=โจมตี เขียว=รักษา) · SPACE: ยืนยัน · Q: ยกเลิก" : "A/D: เลือกเป้าหมาย · SPACE: โจมตี · Q: ไม่โจมตี";
+      else if (u && !u.isPlayer) hint = (u.name||"ศัตรู") + " กำลังคิด...";
+      ctx.fillText(hint, canvas.width/2, canvas.height-14);
+      ctx.textAlign="left";
+      drawMapBanner();
+    }
+
+    // ---------- Map switching ----------
+    function switchMap(newMap){
+      const fromMap = currentMap;
+      currentMap = newMap; enemies = []; items = []; transitionAlpha = 1;
+      sfx.zone();
+      if (newMap !== "Farm") tut.enteredDungeon = true;
+      const c = active();
+      if (newMap === "Dungeon"){
+        player.x = 50; c.x = 30;
+        document.getElementById('ui-map').innerText = "Forest Dungeon";
+        mapBanner = { text:"FOREST DUNGEON", sub:"ระวังสัตว์ป่าดุร้าย!", timer:120 };
+        updateEVA("ระวังด้วย! คุณเข้าสู่ Forest Dungeon แล้ว สัตว์เลี้ยงจะคอยปกป้องคุณ");
+        enemies.push({ x:300,y:150,size:24,hp:50,maxHp:50,color:"#ff4f4f",speed:1,squish:0 });
+        enemies.push({ x:450,y:300,size:24,hp:50,maxHp:50,color:"#ff4f4f",speed:1,squish:0 });
+        enemies.push({ x:500,y:100,size:30,hp:80,maxHp:80,color:"#8b0000",speed:0.8,squish:0,boss:true });
+      } else if (newMap === "Cave"){
+        player.x = 50; c.x = 30;
+        document.getElementById('ui-map').innerText = "Crystal Cave";
+        mapBanner = { text:"CRYSTAL CAVE", sub:"ธาตุไฟปกคลุมทุกหนแห่ง", timer:120 };
+        updateEVA("เข้าสู่ Crystal Cave! ระวังธาตุไฟ ที่นี่มีพริกไฟและคริสตัลให้เก็บ");
+        enemies.push({ x:300,y:140,size:22,hp:40,maxHp:40,color:"#ff9800",speed:1.2,squish:0 });
+        enemies.push({ x:460,y:280,size:22,hp:40,maxHp:40,color:"#ff9800",speed:1.2,squish:0 });
+        enemies.push({ x:520,y:120,size:32,hp:120,maxHp:120,color:"#b71c1c",speed:0.9,squish:0,boss:true });
+      } else if (newMap === "Ruins"){
+        player.x = 50; c.x = 30;
+        document.getElementById('ui-map').innerText = "ซากอารยธรรม";
+        mapBanner = { text:"ANCIENT RUINS", sub:"พลังเวทมนตร์โบราณยังหลงเหลืออยู่...", timer:120 };
+        updateEVA("เข้าสู่ซากอารยธรรมโบราณ! สิ่งมีชีวิตพิทักษ์ที่นี่ชอบทำให้มึนงง ระวังตัวด้วย");
+        enemies.push({ x:310,y:160,size:24,hp:60,maxHp:60,color:"#9575cd",speed:0.9,squish:0 });
+        enemies.push({ x:470,y:290,size:24,hp:60,maxHp:60,color:"#9575cd",speed:0.9,squish:0 });
+        enemies.push({ x:520,y:110,size:33,hp:150,maxHp:150,color:"#5e35b1",speed:0.7,squish:0,boss:true });
+      } else if (newMap === "Volcano"){
+        player.x = 50; c.x = 30;
+        document.getElementById('ui-map').innerText = "ภูเขาไฟ";
+        mapBanner = { text:"VOLCANO", sub:"ลาวาร้อนระอุ ระวังทุกฝีก้าว!", timer:120 };
+        updateEVA("เข้าสู่ภูเขาไฟ! สัตว์ที่นี่ดุร้ายและโจมตีแรงมาก เก็บออบซิเดียนจากศัตรูที่ปราบได้");
+        enemies.push({ x:300,y:150,size:24,hp:55,maxHp:55,color:"#ff5722",speed:1.3,squish:0 });
+        enemies.push({ x:460,y:300,size:24,hp:55,maxHp:55,color:"#ff5722",speed:1.3,squish:0 });
+        enemies.push({ x:520,y:110,size:34,hp:170,maxHp:170,color:"#bf360c",speed:1,squish:0,boss:true });
+      } else if (newMap === "Snow"){
+        player.y = canvas.height-60; c.y = canvas.height-40;
+        document.getElementById('ui-map').innerText = "ภูเขาหิมะ";
+        mapBanner = { text:"SNOW MOUNTAIN", sub:"อากาศหนาวเหน็บ ทัศนวิสัยต่ำ", timer:120 };
+        updateEVA("เข้าสู่ภูเขาหิมะ! สัตว์ที่นี่ชอบทำให้มึนงงเหมือนกัน แต่ให้ขนสัตว์อันอบอุ่น");
+        enemies.push({ x:300,y:150,size:23,hp:50,maxHp:50,color:"#81d4fa",speed:1,squish:0 });
+        enemies.push({ x:460,y:280,size:23,hp:50,maxHp:50,color:"#81d4fa",speed:1,squish:0 });
+        enemies.push({ x:520,y:120,size:32,hp:140,maxHp:140,color:"#0288d1",speed:0.8,squish:0,boss:true });
+      } else {
+        if (fromMap === "Snow"){ player.x = 300; c.x = 280; player.y = 20; c.y = 40; }
+        else { player.x = 580; c.x = 600; player.y = 240; c.y = 240; }
+        document.getElementById('ui-map').innerText = "Farm Zone";
+        mapBanner = { text:"FARM ZONE", sub:"กลับสู่บ้านอันอบอุ่น", timer:120 };
+        updateEVA("กลับมาที่ฟาร์มแล้ว นำผลผลิตที่ได้ไปดูแลสัตว์เลี้ยงกันเถอะ!");
+      }
+    }
+
+    // ---------- Cooking ----------
+    function cook(){
+      if (cookCooldown > 0){ updateEVA("รอครัวเย็นตัวก่อนนะ"); return; }
+      if (energy < 5){ updateEVA("⚡ พลังงานไม่พอสำหรับทำอาหาร ลองพักหรือกินของฟื้นพลังงานก่อน"); return; }
+      const c = active();
+      const recipes = [
+        { name:"Hearty Feast", need:{veggie:3,meat:3}, run:()=>{ c.hp=c.maxHp; c.atk+=3; c.bond=Math.min(100,c.bond+8); energy=Math.min(maxEnergy,energy+15); } },
+        { name:"Crystal Cake", need:{veggie:1,meat:1,crystal:1}, run:()=>{ c.skillUnlocked=true; c.bond=Math.min(100,c.bond+5); energy=Math.min(maxEnergy,energy+5); } },
+        { name:"Fire Stew", need:{meat:2,chili:1}, run:()=>{ c.atk+=5; c.bond=Math.min(100,c.bond+2); energy=Math.min(maxEnergy,energy+10); } },
+        { name:"Forest Salad", need:{veggie:2}, run:()=>{ c.hp=Math.min(c.maxHp,c.hp+40); c.bond=Math.min(100,c.bond+2); energy=Math.min(maxEnergy,energy+8); } },
+      ];
+      for (const r of recipes){
+        let ok = true;
+        for (const k in r.need) if ((inv[k]||0) < r.need[k]) ok = false;
+        if (ok){
+          for (const k in r.need) inv[k] -= r.need[k];
+          energy -= 5;
+          r.run(); cookCooldown = 60;
+          spawnBurst(c.x,c.y,'#ffd54f',16,3,30,4);
+          spawnText(c.x,c.y-30,r.name+"!","#ffd54f");
+          sfx.cook(); tut.cooked = true; cookCount++;
+          gainExp(c, 6);
+          updateEVA(`ทำอาหาร ${r.name} สำเร็จ! ป้อนให้ ${c.name} เรียบร้อย`);
+          checkEvolution(c);
+          return;
+        }
+      }
+      updateEVA("วัตถุดิบไม่พอสำหรับสูตรไหนเลย ลองหาผัก เนื้อ พริกไฟ หรือคริสตัลเพิ่ม");
+    }
+
+    // ---------- Skill ----------
+    function useSkill(){
+      const c = active();
+      if (!c.skillUnlocked){ updateEVA(`${c.name} ยังไม่ได้ปลดล็อกสกิล ลองทำ Crystal Cake ให้กินสิ`); return; }
+      if (c.skillCooldown > 0){ updateEVA("สกิลกำลังชาร์จอยู่ รอสักครู่นะ"); return; }
+      c.skillCooldown = 300;
+      sfx.skill(); tut.skilled = true;
+      if (c.element === "Nature" || c.element === "Chimera"){
+        const heal = Math.floor(c.maxHp * (c.element==="Chimera"?0.18:0.3));
+        c.hp = Math.min(c.maxHp, c.hp + heal);
+        spawnBurst(c.x,c.y,'#8BC34A',24,3,40,5);
+        spawnText(c.x,c.y-30,"Heal Pulse +"+heal,"#8BC34A");
+      }
+      if (c.element === "Fire" || c.element === "Chimera"){
+        const dmg = Math.floor(c.atk * (c.element==="Chimera"?1:1.5));
+        for (const e of [...enemies]) if (Math.hypot(e.x-c.x,e.y-c.y) < 160) damageEnemy(e,dmg);
+        spawnBurst(c.x,c.y,'#ff7043',24,4,40,5); shake(6,16);
+        spawnText(c.x,c.y-30,"Fireball!","#ff7043");
+      }
+      updateEVA(`${c.name} ใช้สกิลพิเศษ!`);
+    }
+
+    // ---------- Breeding & Eggs ----------
+    function tryBreed(){
+      const eligible = party.filter(c => c.stage>=1 && c.bond>=80);
+      if (eligible.length < 2){ updateEVA("ต้องมีสัตว์เลี้ยงอย่างน้อย 2 ตัวที่วิวัฒนาการแล้วและ Bond ≥80 ถึงจะผสมพันธุ์ได้"); return; }
+      if (breedCooldown > 0){ updateEVA("รังยังต้องพักฟื้นอยู่"); return; }
+      if (!spendEnergy(10)) return;
+      const [p1,p2] = eligible.sort(()=>Math.random()-0.5).slice(0,2);
+      p1.bond -= 30; p2.bond -= 30; breedCooldown = 180;
+      const hint = Math.random() < 0.5 ? p1.element : p2.element;
+      const childIV = {
+        hp: inheritIV(p1.iv.hp, p2.iv.hp),
+        atk: inheritIV(p1.iv.atk, p2.iv.atk),
+        spd: inheritIV(p1.iv.spd, p2.iv.spd)
+      };
+      let childTrait = Math.random()<0.5 ? p1.trait : p2.trait;
+      const isMutant = Math.random() < 0.05; // rare mutation, ~1 in 20 eggs
+      if (isMutant){
+        childIV.hp = 31; childIV.atk = 31; childIV.spd = 31; // guaranteed perfect IVs
+        childTrait = randomTrait();
+      } else if (Math.random() < 0.15){
+        childTrait = randomTrait(); // small chance of a fresh, non-inherited trait
+      }
+      inv.eggs.push({ timer: 1800, maxTimer:1800, elementHint: hint === "Normal" ? "Neutral" : hint, iv: childIV, trait: childTrait, mutant: isMutant });
+      spawnBurst(nest.x,nest.y, isMutant?'#ffd700':'#ff8fc7', isMutant?40:26,3,40,5);
+      sfx.breed(); tut.bred = true;
+      updateEVA(isMutant ? `✨ เหตุการณ์หายาก! ไข่ของ ${p1.name} และ ${p2.name} เกิดการกลายพันธุ์ผิดปกติ...` : `${p1.name} และ ${p2.name} ผสมพันธุ์กันสำเร็จ! ไข่ฟองใหม่กำลังฟักอยู่ (Trait: ${TRAITS[childTrait].icon} ${TRAITS[childTrait].name})`);
+    }
+
+    // ---------- Gathering (Fishing / Wood Cutting / Mining) ----------
+    let fishCount = 0, mineCount = 0, woodCount = 0;
+    let fishingUpgraded = false, miningUpgraded = false, woodcuttingUpgraded = false, fertilizerCharges = 0;
+    function fish(){
+      if (Math.hypot(player.x-pond.x, player.y-pond.y) > 70){ updateEVA("ต้องยืนใกล้บ่อน้ำถึงจะตกปลาได้"); return; }
+      if (fishCooldown > 0){ updateEVA("รอเบ็ดพร้อมอีกครู่นะ"); return; }
+      if (!spendEnergy(4)) return;
+      fishCooldown = 90;
+      sfx.pickup();
+      if (Math.random() < 0.15){ updateEVA("🎣 ปลาหลุดไปซะแล้ว... ลองใหม่อีกครั้ง"); return; }
+      const qty = fishingUpgraded ? 2 : 1;
+      inv.fish += qty; fishCount += qty;
+      gainExp(active(), 4);
+      spawnBurst(pond.x,pond.y,'#4fc3f7',10,2,26,3);
+      spawnText(player.x,player.y-24, "+"+qty+" Fish", "#4fc3f7");
+      updateEVA(`ตกปลาได้ ${qty} ตัว!`);
+    }
+    function chopTree(){
+      let target = null;
+      for (const t of trees){ if (t.chopped<=0 && Math.hypot(player.x-t.x, player.y-t.y) < 60){ target=t; break; } }
+      if (!target){ updateEVA("ต้องยืนใกล้ต้นไม้ที่ยังไม่ถูกตัดถึงจะตัดไม้ได้"); return; }
+      if (!spendEnergy(4)) return;
+      const qty = woodcuttingUpgraded ? 2 : 1;
+      inv.wood += qty; woodCount += qty;
+      target.chopped = target.maxCooldown;
+      gainExp(active(), 3);
+      spawnBurst(target.x,target.y,'#8d6e63',12,2.5,28,4);
+      spawnText(target.x,target.y-30,"+"+qty+" Wood","#a1887f");
+      sfx.harvest();
+      updateEVA(`ตัดไม้ได้ ${qty} ท่อน! ต้นไม้จะงอกใหม่หลังผ่านไปสักพัก`);
+    }
+    function mineOre(){
+      if (currentMap !== "Cave"){ updateEVA("ต้องอยู่ใน Crystal Cave ถึงจะขุดแร่ได้"); return; }
+      let target = null;
+      for (const o of oreNodes){ if (o.mined<=0 && Math.hypot(player.x-o.x, player.y-o.y) < 55){ target=o; break; } }
+      if (!target){ updateEVA("ต้องยืนใกล้ก้อนแร่ที่ยังไม่ถูกขุดถึงจะขุดได้"); return; }
+      if (!spendEnergy(5)) return;
+      const qty = miningUpgraded ? 2 : 1;
+      inv.ore += qty; mineCount += qty;
+      target.mined = target.maxCooldown;
+      gainExp(active(), 4);
+      spawnBurst(target.x,target.y,'#90a4ae',12,2.5,28,4);
+      spawnText(target.x,target.y-30,"+"+qty+" Ore","#cfd8dc");
+      sfx.hit();
+      updateEVA(`ขุดแร่ได้ ${qty} ก้อน!`);
+    }
+
+    // ---------- Crafting ----------
+    let craftOpen = false;
+    const craftOverlayEl = document.getElementById('craftOverlay');
+    const craftRecipes = [
+      { id:'rod', name:'🎣 เบ็ดตกปลาแข็งแรง', need:{wood:3,ore:1}, sub:'อัปเกรดถาวร: ตกปลาได้ครั้งละ 2 ตัว', permanent:true, done:()=>fishingUpgraded, run:()=>{ fishingUpgraded=true; } },
+      { id:'pick', name:'⛏️ จอบขุดแร่', need:{ore:3,wood:1}, sub:'อัปเกรดถาวร: ขุดแร่ได้ครั้งละ 2 ก้อน', permanent:true, done:()=>miningUpgraded, run:()=>{ miningUpgraded=true; } },
+      { id:'axe', name:'🪓 ขวานฟันไม้', need:{wood:2,ore:2}, sub:'อัปเกรดถาวร: ตัดไม้ได้ครั้งละ 2 ท่อน', permanent:true, done:()=>woodcuttingUpgraded, run:()=>{ woodcuttingUpgraded=true; } },
+      { id:'fertilizer', name:'🌾 ปุ๋ยเร่งโต', need:{wood:2,fish:1}, sub:'ใช้ครั้งเดียว: พืชที่ปลูกครั้งถัดไปโตเร็วขึ้นเท่าตัว (สะสมได้)', permanent:false, done:()=>false, run:()=>{ fertilizerCharges++; } },
+      { id:'sprinkler', name:'💧 ระบบสปริงเกอร์', need:{wood:6,ore:3,crystal:1}, sub:'อัปเกรดถาวร: รดน้ำแปลงทั้งหมดอัตโนมัติทุกวัน โตเร็วเทียบเท่าฝนตกตลอดเวลา', permanent:true, done:()=>sprinklerBuilt, run:()=>{ sprinklerBuilt=true; } },
+      { id:'greenhouse', name:'🏡 โรงเรือน', need:{wood:10,ore:5,crystal:2}, sub:'อัปเกรดถาวร: ปลูกพืชได้แม้ในฤดูหนาว และไม่โดนโทษการเติบโตตอนกลางคืน', permanent:true, done:()=>greenhouseBuilt, run:()=>{ greenhouseBuilt=true; } },
+      { id:'autofeeder', name:'🍽️ เครื่องให้อาหารอัตโนมัติ', need:{wood:5,ore:4,fish:2}, sub:'อัปเกรดถาวร: ป้อนผักให้สัตว์เลี้ยงหลักอัตโนมัติเป็นระยะเมื่อมีผักในคลัง', permanent:true, done:()=>autoFeederBuilt, run:()=>{ autoFeederBuilt=true; } }
+    ];
+    function openCraft(){ craftOpen = true; renderCraft(); craftOverlayEl.classList.add('open'); }
+    function closeCraft(){ craftOpen = false; craftOverlayEl.classList.remove('open'); }
+    function renderCraft(){
+      const el = document.getElementById('craftList');
+      el.innerHTML = '';
+      for (const r of craftRecipes){
+        const isDone = r.permanent && r.done();
+        const canAfford = Object.keys(r.need).every(k => (inv[k]||0) >= r.need[k]);
+        const needText = Object.entries(r.need).map(([k,v])=> `${k} x${v}`).join(', ');
+        const row = document.createElement('div');
+        row.className = 'shopRow';
+        row.innerHTML = `<div class="shopInfo"><div class="shopName">${r.name}${isDone?' ✅':''}</div><div class="shopSub">${r.sub} · ต้องการ: ${needText}${r.id==='fertilizer'&&fertilizerCharges>0?` · มีอยู่ ${fertilizerCharges} ชุด`:''}</div></div>
+          <button ${(!canAfford || isDone)?'disabled':''}>${isDone?'มีแล้ว':'ประดิษฐ์'}</button>`;
+        row.querySelector('button').addEventListener('click', ()=>{
+          if (!canAfford || isDone) return;
+          for (const k in r.need) inv[k] -= r.need[k];
+          r.run(); sfx.cook();
+          updateEVA(`ประดิษฐ์ ${r.name} สำเร็จ!`);
+          renderCraft(); updateUI();
+        });
+        el.appendChild(row);
+      }
+    }
+    document.getElementById('craftToggle').addEventListener('click', openCraft);
+    document.getElementById('closeCraftBtn').addEventListener('click', closeCraft);
+    craftOverlayEl.addEventListener('click', e=>{ if (e.target===craftOverlayEl) closeCraft(); });
+
+    // ---------- Save / Load ----------
+    function serializeCreature(c){
+      return { name:c.name, element:c.element, color:c.color, size:c.size, stage:c.stage,
+        hp:c.hp, maxHp:c.maxHp, atk:c.atk, veggieEaten:c.veggieEaten, meatEaten:c.meatEaten,
+        bond:c.bond, skillUnlocked:c.skillUnlocked, level:c.level, exp:c.exp,
+        iv:c.iv, trait:c.trait, mutant:c.mutant };
+    }
+    async function saveGame(){
+      if (!window.storage){ updateEVA("ระบบบันทึกไม่พร้อมใช้งานในหน้าต่างนี้"); return; }
+      try{
+        const data = { inv, energy, party: party.map(serializeCreature), activeIndex,
+          fishingUpgraded, miningUpgraded, woodcuttingUpgraded, fertilizerCharges, dayCount,
+          sprinklerBuilt, greenhouseBuilt, autoFeederBuilt,
+          plots: plots.map(p=>({state:p.state, timer:p.timer, maxTimer:p.maxTimer, soil:p.soil, crop:p.crop})) };
+        const res = await window.storage.set('eden-save', JSON.stringify(data));
+        if (res){
+          sfx.save(); tut.saved = true;
+          updateEVA("💾 บันทึกเกมเรียบร้อยแล้ว!");
+          document.getElementById('save-status').innerText = "บันทึกล่าสุด: " + new Date().toLocaleTimeString();
+        }
+      }catch(err){ console.error(err); updateEVA("บันทึกเกมไม่สำเร็จ ลองใหม่อีกครั้ง"); }
+    }
+    async function loadGame(){
+      if (!window.storage) return;
+      try{
+        const res = await window.storage.get('eden-save');
+        if (res && res.value){
+          const data = JSON.parse(res.value);
+          inv = Object.assign({coin:20,seeds:5,veggie:0,meat:0,chili:0,crystal:0,wood:0,ore:0,fish:0,eggs:[]}, data.inv);
+          energy = typeof data.energy === 'number' ? data.energy : maxEnergy;
+          fishingUpgraded = !!data.fishingUpgraded;
+          miningUpgraded = !!data.miningUpgraded;
+          woodcuttingUpgraded = !!data.woodcuttingUpgraded;
+          fertilizerCharges = data.fertilizerCharges || 0;
+          dayCount = data.dayCount || 1;
+          lastSeasonIdx = seasonIdx();
+          sprinklerBuilt = !!data.sprinklerBuilt;
+          greenhouseBuilt = !!data.greenhouseBuilt;
+          autoFeederBuilt = !!data.autoFeederBuilt;
+          if (data.plots && Array.isArray(data.plots)){
+            data.plots.forEach((sp,i)=>{ if (plots[i]) Object.assign(plots[i], { state:sp.state||0, timer:sp.timer||0, maxTimer:sp.maxTimer||180, soil:sp.soil||0, crop:sp.crop||null }); });
+          }
+          party = data.party.map((c,i)=> makeCreature(c.name, c.element, c.color, 80 - i*20, 240, c));
+          activeIndex = Math.min(data.activeIndex||0, party.length-1);
+          updateEVA("โหลดข้อมูลที่บันทึกไว้เรียบร้อย! ยินดีต้อนรับกลับสู่ Eden");
+          document.getElementById('save-status').innerText = "โหลดเซฟล่าสุดแล้ว";
+        } else {
+          updateEVA("ยังไม่มีเซฟเก่า เริ่มเกมใหม่ได้เลย! ลองเดินไปปลูกพืชหรือกด P เพื่อบันทึก");
+        }
+      }catch(err){
+        updateEVA("ยังไม่มีเซฟเก่า เริ่มเกมใหม่ได้เลย! ลองเดินไปปลูกพืชหรือกด P เพื่อบันทึก");
+      }
+    }
+    document.getElementById('save-btn').addEventListener('click', saveGame);
+
+    // ---------- Update ----------
+    function update(){
+      frameCount++;
+      if (storyActive || dialogueOpen || shopOpen || craftOpen){ pressedOnce = {}; updateUI(); return; }
+      if (battleActive){ updateBattle(); pressedOnce = {}; updateUI(); return; }
+      const c = active();
+
+      dayTimer++;
+      if (dayTimer >= DAY_LENGTH){
+        dayTimer = 0; dayCount++;
+        const si = seasonIdx();
+        if (si !== lastSeasonIdx){
+          lastSeasonIdx = si;
+          mapBanner = { text: `${seasonIcon()} ฤดู${seasonName()}มาถึงแล้ว`, sub: si===1?"อากาศร้อน เหมาะกับการปลูกพริกไฟ":si===3?"ฤดูหนาว ปลูกพืชไม่ได้ถ้าไม่มีโรงเรือน":"พืชผลเติบโตได้ตามปกติ", timer:150 };
+          updateEVA(`${seasonIcon()} ฤดูกาลเปลี่ยนเป็น "${seasonName()}" แล้ว! การปลูกพืชและสภาพอากาศจะเปลี่ยนไปตามฤดูนี้`);
+        }
+      }
+      weatherTimer++;
+      if (weatherTimer >= WEATHER_INTERVAL){
+        weatherTimer = 0;
+        const nw = pickWeather();
+        if (nw !== weather){
+          weather = nw;
+          updateEVA(weather==='rain' ? "🌧️ ฝนเริ่มตก พืชจะเติบโตเร็วขึ้น!" : weather==='storm' ? "⛈️ พายุมาแล้ว! เดินช้าลงชั่วคราว" : "☀️ ท้องฟ้าแจ่มใสอีกครั้ง");
+        }
+      }
+      if (weather !== 'clear'){
+        const rspd = weather==='storm' ? 14 : 8;
+        for (const d of rainDrops){
+          d.y += rspd; d.x -= rspd*0.15;
+          if (d.y > canvas.height){ d.y = -10; d.x = Math.random()*canvas.width+60; }
+          if (d.x < -10) d.x = canvas.width+10;
+        }
+      }
+
+      const moveMul = (currentMap==='Farm' && weather==='storm') ? 0.7 : 1;
+      let moved = false;
+      if (keys.w && player.y > 0){ player.y -= player.speed*moveMul; player.facing={x:0,y:-1}; moved=true; }
+      if (keys.s && player.y < canvas.height-player.size){ player.y += player.speed*moveMul; player.facing={x:0,y:1}; moved=true; }
+      if (keys.a && player.x > 0){ player.x -= player.speed*moveMul; player.facing={x:-1,y:0}; moved=true; }
+      if (keys.d && player.x < canvas.width-player.size){ player.x += player.speed*moveMul; player.facing={x:1,y:0}; moved=true; }
+      player.moving = moved;
+      if (moved) tut.moved = true;
+
+      if (currentMap === "Farm"){
+        if (player.x > canvas.width-30) switchMap("Dungeon");
+        else if (player.x < 10) switchMap("Cave");
+        else if (player.y < 10) switchMap("Snow");
+      } else if (currentMap === "Dungeon"){
+        if (player.x < 10) switchMap("Farm");
+        else if (player.x > canvas.width-30) switchMap("Ruins");
+      } else if (currentMap === "Cave"){
+        if (player.x < 10) switchMap("Farm");
+        else if (player.x > canvas.width-30) switchMap("Volcano");
+      } else if (currentMap === "Ruins"){
+        if (player.x < 10) switchMap("Dungeon");
+      } else if (currentMap === "Volcano"){
+        if (player.x < 10) switchMap("Cave");
+      } else if (currentMap === "Snow"){
+        if (player.y > canvas.height-player.size-5) switchMap("Farm");
+      }
+
+      if (currentMap === "Farm"){
+        for (let p of plots){
+          if (p.state === 1){
+            let growRate = (weather==='rain'?2:1) * (isNight()?0.5:1);
+            if (sprinklerBuilt) growRate = Math.max(growRate, 2) * (isNight() && !greenhouseBuilt ? 0.5 : 1);
+            if (greenhouseBuilt) growRate = growRate * (isNight() ? 2 : 1); // greenhouse cancels the night penalty
+            growRate *= SOIL_SPEED[p.soil];
+            p.timer -= growRate;
+            if (p.timer<=0){ p.state=2; spawnBurst(p.x+18,p.y+18, p.crop==='chili' ? '#ff8a50' : '#ffe082',8,2,26,3);}
+          }
+          if (keys[' '] && interactCooldown<=0){
+            if (player.x<p.x+p.size && player.x+player.size>p.x && player.y<p.y+p.size && player.y+player.size>p.y){
+              if (p.state===0 && inv.seeds>0){
+                const crop = seasonCrop();
+                if (!crop){ updateEVA("❄️ ตอนนี้เป็นฤดูหนาว ดินแข็งเกินกว่าจะปลูกได้ — ต้องมีโรงเรือนถึงจะปลูกได้ตลอดปี"); continue; }
+                if (!spendEnergy(3)) continue;
+                const useFert = fertilizerCharges > 0;
+                p.crop = crop;
+                p.state = 1;
+                p.maxTimer = useFert ? 90 : 180;
+                p.timer = p.maxTimer; inv.seeds--; interactCooldown=30;
+                if (useFert) fertilizerCharges--;
+                spawnBurst(p.x+18,p.y+18,'#8d6e63',6,1.5,18,3);
+                sfx.plant(); tut.planted = true;
+                const cropLabel = crop==='chili' ? 'พริกไฟ (ตามฤดูร้อน)' : 'ผัก';
+                updateEVA(useFert ? `ใช้ปุ๋ยเร่งโต! ${cropLabel}จะโตเร็วขึ้นเท่าตัว` : `ปลูก${cropLabel}แล้ว รอให้เติบโตสักพักนะ`);
+              } else if (p.state===2){
+                if (!spendEnergy(2)) continue;
+                const cropType = p.crop || 'veggie';
+                let qty = 1;
+                if (p.soil>=2) qty++;
+                else if (p.soil===1 && Math.random()<0.35) qty++;
+                if (seasonIdx()===2) qty++; // fall harvest bonus
+                inv[cropType] += qty; inv.seeds++;
+                p.state=0; p.crop=null; interactCooldown=30;
+                spawnBurst(p.x+18,p.y+18, cropType==='chili' ? '#ff5722' : '#4CAF50',14,3,32,4);
+                sfx.harvest(); tut.harvested = true; harvestCount++;
+                gainExp(active(), 3);
+                const cropLabel = cropType==='chili' ? 'พริกไฟ' : 'ผัก';
+                updateEVA(`เก็บเกี่ยว${cropLabel}ได้ ${qty}! ลองกดปุ่ม [1] เพื่อป้อนให้สัตว์เลี้ยงสิ`);
+              }
+            }
+          }
+          // compost: press X while standing on a plot to raise its soil quality using wood
+          if (pressedOnce.x && p.state===0 && player.x<p.x+p.size && player.x+player.size>p.x && player.y<p.y+p.size && player.y+player.size>p.y){
+            if (p.soil>=2){ updateEVA(`${SOIL_NAMES[p.soil]}อยู่แล้ว ไม่สามารถปรับปรุงเพิ่มได้อีก`); }
+            else if (inv.wood < 3){ updateEVA("ต้องใช้ไม้ 3 ท่อนในการหมักปุ๋ยปรับปรุงดิน"); }
+            else { inv.wood -= 3; p.soil++; spawnBurst(p.x+18,p.y+18,'#795548',10,2,28,3); sfx.plant(); updateEVA(`🌱 ปรับปรุงดินเป็น "${SOIL_NAMES[p.soil]}"! พืชจะโตเร็วขึ้นและให้ผลผลิตมากขึ้น`); }
+          }
+        }
+        // nest breeding trigger
+        if (pressedOnce.n){
+          if (Math.hypot(player.x-nest.x, player.y-nest.y) < 50) tryBreed();
+          else updateEVA("ต้องยืนใกล้รังตรงกลางฟาร์มถึงจะผสมพันธุ์ได้");
+        }
+      } else if (pressedOnce.n){
+        updateEVA("ผสมพันธุ์ได้เฉพาะที่รังในฟาร์มเท่านั้น");
+      }
+
+      if (interactCooldown>0) interactCooldown--;
+      if (feedCooldown>0) feedCooldown--;
+      if (cookCooldown>0) cookCooldown--;
+      if (breedCooldown>0) breedCooldown--;
+      if (c.skillCooldown>0) c.skillCooldown--;
+
+      energyRegenTimer++;
+      if (energyRegenTimer >= 240){
+        energyRegenTimer = 0;
+        if (energy < maxEnergy) energy = Math.min(maxEnergy, energy+1);
+      }
+      if (fishCooldown>0) fishCooldown--;
+      for (const t of trees) if (t.chopped>0) t.chopped--;
+      for (const o of oreNodes) if (o.mined>0) o.mined--;
+
+      if (autoFeederBuilt){
+        autoFeederTimer++;
+        if (autoFeederTimer >= 900){ // periodic auto-feed while a supply of veggies is stocked
+          autoFeederTimer = 0;
+          if (inv.veggie>0 && c.hp < c.maxHp){
+            inv.veggie--; c.veggieEaten++; c.hp=Math.min(c.maxHp,c.hp+20); c.bond=Math.min(100,c.bond+1*traitBondMult(c.trait));
+            spawnText(c.x,c.y-24,"+20 HP (Auto)","#8BC34A"); spawnBurst(c.x,c.y,'#8BC34A',6,1.5,20,3);
+            checkEvolution(c);
+          }
+        }
+      }
+      if (keys['1'] && feedCooldown<=0 && inv.veggie>0 && energy>=1){
+        inv.veggie--; c.veggieEaten++; c.hp=Math.min(c.maxHp,c.hp+20); c.bond=Math.min(100,c.bond+2*traitBondMult(c.trait)); energy=Math.max(0,energy-1);
+        feedCooldown=30; spawnText(c.x,c.y-24,"+20 HP","#8BC34A"); spawnBurst(c.x,c.y,'#8BC34A',8,2,24,3);
+        sfx.feed(); tut.fedVeggie = true;
+        checkEvolution(c);
+      }
+      if (keys['2'] && feedCooldown<=0 && inv.meat>0 && energy>=1){
+        inv.meat--; c.meatEaten++; c.atk+=2; c.bond=Math.min(100,c.bond+2*traitBondMult(c.trait)); energy=Math.max(0,energy-1);
+        feedCooldown=30; spawnText(c.x,c.y-24,"+2 ATK","#ff8a65"); spawnBurst(c.x,c.y,'#ff8a65',8,2,24,3);
+        sfx.feed(); tut.fedMeat = true;
+        checkEvolution(c);
+      }
+      if (pressedOnce.c) cook();
+      if (pressedOnce.e) useSkill();
+      if (pressedOnce.q && party.length>1){
+        activeIndex = (activeIndex+1) % party.length;
+        const nc = active();
+        nc.x = player.x - 30; nc.y = player.y;
+        updateEVA(`สลับไปใช้ ${nc.name} เป็นตัวหลักแล้ว`);
+      }
+      if (pressedOnce.p) saveGame();
+      if (pressedOnce.t){
+        if (currentMap === "Farm" && Math.hypot(player.x-npc.x, player.y-npc.y) < npc.range) talkToNPC();
+        else updateEVA("ต้องเข้าไปใกล้ผู้เฒ่าโรวันที่ฟาร์มก่อนถึงจะคุยได้");
+      }
+      if (pressedOnce.b) openShop();
+      if (pressedOnce.f) fish();
+      if (pressedOnce.g) chopTree();
+      if (pressedOnce.m) mineOre();
+      if (pressedOnce.r) openCraft();
+
+      // active creature follows player; enemies roam and trigger Tactical Grid Battle on contact
+      c.target = null;
+      if (currentMap !== "Farm" && enemies.length>0){
+        let closest=null, minDist=Infinity;
+        for (let e of enemies){ const d=Math.hypot(e.x-c.x,e.y-c.y); if(d<minDist){minDist=d;closest=e;} }
+        if (closest && minDist < 36){ startBattle(closest); }
+        else c.target = closest;
+      }
+      if (c.target){
+        const angle = Math.atan2(c.target.y-c.y, c.target.x-c.x);
+        c.x+=Math.cos(angle)*c.speed; c.y+=Math.sin(angle)*c.speed; c.facing={x:Math.cos(angle),y:Math.sin(angle)};
+      } else {
+        const angle = Math.atan2(player.y-c.y, player.x-c.x);
+        const dist = Math.hypot(player.x-c.x, player.y-c.y);
+        if (dist>50){ c.x+=Math.cos(angle)*c.speed; c.y+=Math.sin(angle)*c.speed; c.facing={x:Math.cos(angle),y:Math.sin(angle)}; }
+      }
+      if (c.attackCooldown>0) c.attackCooldown--;
+
+      if (!battleActive){
+        for (let e of enemies){
+          const angle = Math.atan2(player.y-e.y, player.x-e.x);
+          const nightMul = isNight() ? 1.15 : 1;
+          e.x += Math.cos(angle)*e.speed*nightMul; e.y += Math.sin(angle)*e.speed*nightMul;
+          if (e.squish>0) e.squish--;
+          if (Math.hypot(player.x-e.x, player.y-e.y) < 30) startBattle(e);
+        }
+      }
+
+      for (let i=items.length-1;i>=0;i--){
+        const item = items[i]; item.bob += 0.15;
+        if (Math.hypot(player.x-item.x, player.y-item.y) < 30){
+          if (item.type==="Meat"){ inv.meat++; spawnText(item.x,item.y-10,"+1 Meat","#ff8a65"); }
+          else if (item.type==="Chili"){ inv.chili++; spawnText(item.x,item.y-10,"+1 Chili","#ff9800"); }
+          else if (item.type==="Crystal"){ inv.crystal++; spawnText(item.x,item.y-10,"+1 Crystal","#4fc3f7"); }
+          else if (item.type==="Obsidian"){ inv.obsidian++; spawnText(item.x,item.y-10,"+1 Obsidian","#4a148c"); }
+          else if (item.type==="Relic"){ inv.relic++; spawnText(item.x,item.y-10,"+1 Relic","#9575cd"); }
+          else if (item.type==="Fur"){ inv.fur++; spawnText(item.x,item.y-10,"+1 Fur","#e1f5fe"); }
+          else if (item.type==="Egg"){ inv.eggs.push({timer:1800,maxTimer:1800,elementHint:item.elementHint, iv:{hp:rand32(),atk:rand32(),spd:rand32()}, trait:randomTrait(), mutant:false}); spawnText(item.x,item.y-10,"+1 Egg","#ffd54f"); }
+          sfx.pickup();
+          items.splice(i,1);
+        }
+      }
+
+      // egg incubation
+      for (let i=inv.eggs.length-1;i>=0;i--){
+        const egg = inv.eggs[i];
+        if (egg.timer>0) egg.timer--;
+        if (egg.timer<=0 && party.length<MAX_PARTY){
+          const hint = egg.elementHint;
+          let baseColor = hint==="Fire" ? "#ffb74d" : hint==="Nature" ? "#c5e1a5" : hint==="Ice" ? "#b3e5fc" : "#ffeb3b";
+          if (egg.mutant) baseColor = "#ffd700";
+          const hatched = makeCreature("Seedling","Normal", baseColor, player.x-20, player.y+10, {
+            iv: egg.iv || { hp:rand32(), atk:rand32(), spd:rand32() },
+            trait: egg.trait || randomTrait(),
+            mutant: !!egg.mutant
+          });
+          party.push(hatched);
+          spawnBurst(player.x,player.y, egg.mutant?'#ffd700':'#ffd54f', egg.mutant?36:20,3,35,4);
+          sfx.hatch();
+          const traitInfo = TRAITS[hatched.trait];
+          updateEVA(egg.mutant
+            ? `✨🐣 ไข่กลายพันธุ์ฟักออกมาแล้ว! ${hatched.name} มีค่าสถานะสมบูรณ์แบบและ Trait ${traitInfo.icon} ${traitInfo.name}!`
+            : `🐣 ไข่ฟักออกมาแล้ว! ${hatched.name} เข้าร่วมปาร์ตี้ พร้อม Trait ${traitInfo.icon} ${traitInfo.name} (${traitInfo.desc})`);
+          inv.eggs.splice(i,1);
+        }
+      }
+
+      for (let i=particles.length-1;i>=0;i--){
+        const p = particles[i];
+        p.x+=p.vx; p.y+=p.vy; p.vx*=0.96; p.vy*=0.96; p.life--;
+        if (p.life<=0) particles.splice(i,1);
+      }
+
+      if (shakeTime>0) shakeTime--;
+      if (transitionAlpha>0) transitionAlpha -= 0.04;
+      if (mapBanner.timer>0) mapBanner.timer--;
+      if (flashAlpha>0) flashAlpha -= 0.05;
+
+      // ambience updates
+      if (currentMap === "Farm"){
+        for (const cl of clouds){ cl.x += cl.speed; if (cl.x - cl.w > canvas.width) cl.x = -cl.w; }
+        for (const f of fireflies){ f.phase += 0.02; }
+        if (player.moving && frameCount % 8 === 0){
+          particles.push({x:player.x+player.size/2,y:player.y+player.size,vx:(Math.random()-0.5)*0.4,vy:-0.3,life:22,maxLife:22,color:"rgba(255,255,255,0.5)",size:3});
+        }
+      } else if (currentMap === "Cave" || currentMap === "Volcano"){
+        for (const em of emberMotes){
+          em.y -= em.speed; em.x += Math.sin(frameCount*0.02+em.phase)*0.3;
+          if (em.y < -10){ em.y = 480+Math.random()*40; em.x = Math.random()*640; }
+        }
+      } else if (currentMap === "Dungeon"){
+        for (const fg of fogMotes){ fg.x += fg.speed; if (fg.x - fg.r > canvas.width) fg.x = -fg.r; }
+      } else if (currentMap === "Snow"){
+        for (const s of snowMotes){ s.y += s.speed; if (s.y > 480){ s.y = -10; s.x = Math.random()*640; } }
+      } else if (currentMap === "Ruins"){
+        for (const r of runeMotes){ r.phase += 0.015; }
+      }
+
+      pressedOnce = {};
+      updateUI();
+      updateTutorial();
+      updateSideQuests();
+    }
+
+    // ---------- UI ----------
+    function updateUI(){
+      const c = active();
+      document.getElementById('ui-coin').innerText = inv.coin;
+      document.getElementById('ui-seeds').innerText = inv.seeds;
+      document.getElementById('ui-veggie').innerText = inv.veggie;
+      document.getElementById('ui-meat').innerText = inv.meat;
+      document.getElementById('ui-chili').innerText = inv.chili;
+      document.getElementById('ui-crystal').innerText = inv.crystal;
+      document.getElementById('ui-wood').innerText = inv.wood;
+      document.getElementById('ui-ore').innerText = inv.ore;
+      document.getElementById('ui-fish').innerText = inv.fish;
+      document.getElementById('ui-energy').innerText = Math.round(energy)+"/"+maxEnergy;
+      document.getElementById('ui-energybar').style.width = (energy/maxEnergy*100)+"%";
+
+      document.getElementById('ui-beastName').innerText = c.name;
+      document.getElementById('ui-beastName').style.color = c.color;
+      document.getElementById('ui-stage').innerText = "Stage "+c.stage;
+      document.getElementById('ui-blevel').innerText = c.level;
+      document.getElementById('ui-bexp').innerText = Math.floor(c.exp)+"/"+expNeeded(c.level)+" EXP";
+      document.getElementById('ui-bexpbar').style.width = Math.min(100, c.exp/expNeeded(c.level)*100)+"%";
+      document.getElementById('ui-bhp').innerText = Math.max(0,Math.round(c.hp));
+      document.getElementById('ui-bhpbar').style.width = Math.max(0,(c.hp/c.maxHp*100))+"%";
+      document.getElementById('ui-batk').innerText = c.atk;
+      document.getElementById('ui-bond').innerText = Math.round(c.bond)+"/100";
+      document.getElementById('ui-bondbar').style.width = c.bond+"%";
+      document.getElementById('ui-bveggie').innerText = c.veggieEaten;
+      document.getElementById('ui-bmeat').innerText = c.meatEaten;
+      const tInfo = TRAITS[c.trait] || TRAITS.hardy;
+      document.getElementById('ui-btrait').innerText = `${tInfo.icon} ${tInfo.name}`;
+      document.getElementById('ui-btrait').title = tInfo.desc;
+      document.getElementById('ui-bmutant').innerText = c.mutant ? "🌟 กลายพันธุ์" : "";
+      document.getElementById('ui-bmutant').style.color = "#ffd700";
+      document.getElementById('ui-biv').innerText = c.iv ? `IV  HP ${c.iv.hp}/31 · ATK ${c.iv.atk}/31 · SPD ${c.iv.spd}/31` : "";
+
+      document.getElementById('ui-skillstate').innerText = c.skillUnlocked ? (c.skillCooldown>0 ? "⏳ 1/1 ชาร์จ" : "✅ 1/1 พร้อมใช้") : "🔒 0/1";
+      document.getElementById('ui-skillbar').style.width = c.skillUnlocked ? (100 - c.skillCooldown/300*100)+"%" : "0%";
+
+      const phase = dayPhase();
+      const phaseIcon = phase==='night' ? '🌙' : phase==='dusk' ? '🌆' : phase==='dawn' ? '🌅' : '☀️';
+      const phaseLabel = phase==='night' ? 'กลางคืน' : phase==='dusk' ? 'พลบค่ำ' : phase==='dawn' ? 'รุ่งอรุณ' : 'กลางวัน';
+      document.getElementById('hud-daynight').innerText = phaseIcon;
+      document.getElementById('hud-day').innerText = 'Day '+dayCount+' · '+phaseLabel;
+      const weatherIcon = weather==='rain' ? '🌧️' : weather==='storm' ? '⛈️' : '🌤️';
+      const weatherLabel = weather==='rain' ? 'ฝนตก' : weather==='storm' ? 'พายุ' : 'แจ่มใส';
+      document.getElementById('hud-weather').innerText = weatherIcon;
+      document.getElementById('hud-weathertext').innerText = weatherLabel;
+      document.getElementById('hud-season').innerText = seasonIcon();
+      document.getElementById('hud-seasontext').innerText = seasonName();
+
+      document.getElementById('ui-eggcount').innerText = inv.eggs.length;
+      const eggEl = document.getElementById('ui-eggtimer');
+      if (inv.eggs.length===0) eggEl.innerText = "ไม่มีไข่ในครอบครอง";
+      else {
+        const soon = inv.eggs.reduce((a,b)=> a.timer<b.timer?a:b);
+        eggEl.innerText = "ใกล้ฟักที่สุด: " + Math.ceil(soon.timer/60) + " วิ" + (soon.mutant ? " ✨ (กลายพันธุ์!)" : "");
+      }
+
+      const partyEl = document.getElementById('ui-party');
+      partyEl.innerHTML = "";
+      party.forEach((cr,i)=>{
+        const div = document.createElement('div');
+        div.className = "partyItem" + (i===activeIndex ? " active":"");
+        const hpPct = Math.max(0, Math.round(cr.hp/cr.maxHp*100));
+        const role = roleForCreature(cr);
+        const tInfo = TRAITS[cr.trait] || TRAITS.hardy;
+        div.innerHTML = `<span class="dot" style="background:${cr.color}"></span>
+          <span style="flex:1;">${ROLE_ICONS[role]} ${cr.mutant?'🌟':''}${cr.name} <span style="opacity:.65;" title="${tInfo.desc}">${tInfo.icon} Lv.${cr.stage}</span>
+          <div class="barTrack" style="height:4px;margin-top:2px;"><div class="barFill" style="width:${hpPct}%; background:linear-gradient(90deg,#66bb6a,#a5d6a7);"></div></div>
+          </span>`;
+        partyEl.appendChild(div);
+      });
+    }
+
+    // ---------- Drawing ----------
+    function drawShadow(x,y,w,h){ ctx.fillStyle="rgba(0,0,0,0.28)"; ctx.beginPath(); ctx.ellipse(x,y,w,h,0,0,Math.PI*2); ctx.fill(); }
+
+    function drawCreature(cr, bobAmp){
+      const bob = Math.sin(frameCount*0.15 + cr.x*0.01) * bobAmp;
+      drawShadow(cr.x, cr.y+cr.size*0.8, cr.size*0.9, cr.size*0.32);
+      ctx.save(); ctx.translate(cr.x, cr.y+bob);
+      const grad = ctx.createRadialGradient(-cr.size*0.3,-cr.size*0.3,2,0,0,cr.size);
+      grad.addColorStop(0, shade(cr.color,40)); grad.addColorStop(1, shade(cr.color,-10));
+      ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(0,0,cr.size,0,Math.PI*2); ctx.fill();
+      ctx.lineWidth=2; ctx.strokeStyle=shade(cr.color,-30); ctx.stroke();
+
+      if (cr.element==="Nature"){
+        ctx.fillStyle="#2e7d32";
+        for (let i=-1;i<=1;i+=2){ ctx.beginPath(); ctx.ellipse(i*cr.size*0.55,-cr.size*0.75,7,12,i*0.4,0,Math.PI*2); ctx.fill(); }
+      } else if (cr.element==="Fire"){
+        ctx.fillStyle="#ffab40";
+        for (let i=-1;i<=1;i+=2){
+          ctx.beginPath(); ctx.moveTo(i*cr.size*0.6,-cr.size*0.5); ctx.lineTo(i*cr.size*0.9,-cr.size*1.1); ctx.lineTo(i*cr.size*0.35,-cr.size*0.75);
+          ctx.closePath(); ctx.fill();
+        }
+      } else if (cr.element==="Chimera"){
+        ctx.strokeStyle="#7b1fa2"; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.moveTo(-cr.size*0.5,-cr.size*0.7); ctx.lineTo(-cr.size*0.1,-cr.size*1.05); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cr.size*0.5,-cr.size*0.7); ctx.lineTo(cr.size*0.1,-cr.size*1.05); ctx.stroke();
+      }
+
+      const ex=cr.facing.x*3, ey=cr.facing.y*3;
+      for (let i=-1;i<=1;i+=2){
+        ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(i*cr.size*0.32,-cr.size*0.08,cr.size*0.22,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle="#222"; ctx.beginPath(); ctx.arc(i*cr.size*0.32+ex*0.5,-cr.size*0.08+ey*0.5,cr.size*0.1,0,Math.PI*2); ctx.fill();
+      }
+      ctx.strokeStyle="#222"; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(0,cr.size*0.15,cr.size*0.28,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawPlayer(){
+      const bob = player.moving ? Math.abs(Math.sin(frameCount*0.3))*3 : Math.sin(frameCount*0.08)*1;
+      drawShadow(player.x+player.size/2, player.y+player.size*0.95, player.size*0.6, player.size*0.22);
+      ctx.save(); ctx.translate(player.x+player.size/2, player.y+player.size/2-bob);
+      if (player.moving){
+        const legPhase = Math.sin(frameCount*0.35)*3;
+        ctx.fillStyle="#2c5aa0";
+        ctx.fillRect(-7+legPhase, player.size*0.28, 5, 8);
+        ctx.fillRect(2-legPhase, player.size*0.28, 5, 8);
+      }
+      ctx.fillStyle="#3d7fd6"; ctx.beginPath(); ctx.roundRect(-player.size*0.35,-player.size*0.15,player.size*0.7,player.size*0.6,6); ctx.fill();
+      ctx.fillStyle="#ffd8b0"; ctx.beginPath(); ctx.arc(0,-player.size*0.35,player.size*0.32,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle="#c98a3c"; ctx.beginPath(); ctx.ellipse(0,-player.size*0.55,player.size*0.4,player.size*0.12,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-player.size*0.18,-player.size*0.55); ctx.lineTo(player.size*0.18,-player.size*0.55); ctx.lineTo(0,-player.size*0.85); ctx.closePath(); ctx.fill();
+      ctx.fillStyle="#3a2410"; ctx.beginPath(); ctx.arc(player.facing.x*4,-player.size*0.33+player.facing.y*3,2.4,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+
+    function drawEnemy(e){
+      const squish = e.squish>0 ? e.squish/8 : 0;
+      drawShadow(e.x,e.y+e.size*0.7,e.size*0.8,e.size*0.28);
+      ctx.save(); ctx.translate(e.x,e.y); ctx.scale(1+squish*0.25,1-squish*0.25);
+      const grad = ctx.createRadialGradient(-5,-5,2,0,0,e.size);
+      grad.addColorStop(0,shade(e.color,50)); grad.addColorStop(1,shade(e.color,-20));
+      ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(0,0,e.size,0,Math.PI*2); ctx.fill();
+      if (e.boss){
+        ctx.fillStyle="#ffd54f";
+        for(let i=0;i<5;i++){
+          const a=-Math.PI/2+(i-2)*0.4;
+          ctx.beginPath(); ctx.moveTo(Math.cos(a)*e.size*0.5,Math.sin(a)*e.size*0.5);
+          ctx.lineTo(Math.cos(a)*e.size*1.15,Math.sin(a)*e.size*1.15);
+          ctx.lineTo(Math.cos(a+0.15)*e.size*0.5,Math.sin(a+0.15)*e.size*0.5);
+          ctx.closePath(); ctx.fill();
+        }
+      }
+      ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(-e.size*0.3,-e.size*0.1,e.size*0.18,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(e.size*0.3,-e.size*0.1,e.size*0.18,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle="#111"; ctx.beginPath(); ctx.arc(-e.size*0.3,-e.size*0.1,e.size*0.08,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(e.size*0.3,-e.size*0.1,e.size*0.08,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      const maxHp = e.maxHp || (e.size>25?80:50);
+      ctx.fillStyle="rgba(0,0,0,0.5)"; ctx.fillRect(e.x-16,e.y-e.size-12,32,6);
+      ctx.fillStyle="#e53935"; ctx.fillRect(e.x-15,e.y-e.size-11,30,4);
+      ctx.fillStyle="#66bb6a"; ctx.fillRect(e.x-15,e.y-e.size-11,Math.max(0,(e.hp/maxHp)*30),4);
+    }
+
+    function drawNest(){
+      drawShadow(nest.x, nest.y+10, 30, 10);
+      ctx.fillStyle = "#8a5a30";
+      ctx.beginPath(); ctx.ellipse(nest.x, nest.y, nest.size, nest.size*0.6, 0, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = "#5a3a1c"; ctx.lineWidth = 2;
+      for (let i=0;i<6;i++){ ctx.beginPath(); ctx.arc(nest.x, nest.y, nest.size-3, i*1.1, i*1.1+0.7); ctx.stroke(); }
+      const pulse = 2+Math.sin(frameCount*0.08);
+      ctx.fillStyle = "#ffccbc";
+      ctx.beginPath(); ctx.ellipse(nest.x-6, nest.y-2, 6+pulse*0.3, 5, 0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(nest.x+7, nest.y-1, 5+pulse*0.3, 4.5, 0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle="#fff8"; ctx.font="10px Kanit, sans-serif"; ctx.textAlign="center";
+      ctx.fillText("รังผสมพันธุ์ (N)", nest.x, nest.y+nest.size+14);
+      ctx.textAlign="left";
+    }
+
+    function drawNPC(){
+      const bob = Math.sin(frameCount*0.06)*2;
+      drawShadow(npc.x, npc.y+npc.size*0.95, npc.size*0.7, npc.size*0.25);
+      ctx.save(); ctx.translate(npc.x, npc.y+bob);
+      ctx.fillStyle="#5a7a4a"; ctx.beginPath(); ctx.roundRect(-npc.size*0.4,-npc.size*0.1,npc.size*0.8,npc.size*0.7,6); ctx.fill();
+      ctx.fillStyle="#d9b98a"; ctx.beginPath(); ctx.arc(0,-npc.size*0.35,npc.size*0.36,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle="#e8e8e8";
+      ctx.beginPath(); ctx.moveTo(-npc.size*0.3,-npc.size*0.55); ctx.quadraticCurveTo(0,-npc.size*0.95,npc.size*0.3,-npc.size*0.55); ctx.quadraticCurveTo(0,-npc.size*0.4,-npc.size*0.3,-npc.size*0.55); ctx.fill();
+      ctx.fillStyle="#3a2410";
+      ctx.beginPath(); ctx.arc(-npc.size*0.1,-npc.size*0.33,2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(npc.size*0.1,-npc.size*0.33,2,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle="#8a5a30"; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(npc.size*0.42,-npc.size*0.05); ctx.lineTo(npc.size*0.5,npc.size*0.55); ctx.stroke();
+      ctx.restore();
+
+      const dist = Math.hypot(player.x-npc.x, player.y-npc.y);
+      if (dist < npc.range && gameStarted && !storyActive){
+        const iconBob = Math.sin(frameCount*0.15)*3;
+        const needsAttention = !tut.talkedToRowan || (tutorialIndex<tutorialSteps.length && tutorialSteps[tutorialIndex].id==='finalReport');
+        ctx.textAlign="center";
+        ctx.font="16px sans-serif";
+        ctx.fillText(needsAttention ? "❗" : "💬", npc.x, npc.y-npc.size*1.2+iconBob);
+        ctx.font="bold 11px Kanit, sans-serif"; ctx.fillStyle="#fff2cf";
+        ctx.fillText("กด T เพื่อคุย", npc.x, npc.y-npc.size*1.5+iconBob);
+        ctx.textAlign="left";
+      }
+    }
+
+    function drawHint(x,y,rangeDist,label){
+      if (Math.hypot(player.x-x, player.y-y) < rangeDist){
+        const b = Math.sin(frameCount*0.15)*3;
+        ctx.textAlign="center";
+        ctx.font="bold 11px Kanit, sans-serif"; ctx.fillStyle="#fff2cf";
+        ctx.fillText(label, x, y-34+b);
+        ctx.textAlign="left";
+      }
+    }
+
+    function drawTrees(){
+      for (const t of trees){
+        drawShadow(t.x, t.y+t.size*0.9, t.size*0.7, t.size*0.24);
+        if (t.chopped > 0){
+          ctx.fillStyle="#6d4c30"; ctx.beginPath(); ctx.roundRect(t.x-6,t.y-6,12,16,3); ctx.fill();
+        } else {
+          ctx.fillStyle="#5a3c20"; ctx.fillRect(t.x-5,t.y-4,10,t.size*0.6);
+          ctx.fillStyle="#3f7d34";
+          ctx.beginPath(); ctx.arc(t.x,t.y-t.size*0.55,t.size*0.62,0,Math.PI*2); ctx.fill();
+          ctx.fillStyle="#4f9a41";
+          ctx.beginPath(); ctx.arc(t.x-t.size*0.28,t.y-t.size*0.75,t.size*0.4,0,Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(t.x+t.size*0.28,t.y-t.size*0.75,t.size*0.4,0,Math.PI*2); ctx.fill();
+          drawHint(t.x,t.y,60,"กด G ตัดไม้");
+        }
+      }
+    }
+
+    function drawOreNodes(){
+      for (const o of oreNodes){
+        drawShadow(o.x, o.y+o.size*0.8, o.size*0.7, o.size*0.24);
+        if (o.mined > 0){
+          ctx.fillStyle="rgba(120,120,120,0.35)"; ctx.beginPath(); ctx.ellipse(o.x,o.y,o.size*0.5,o.size*0.3,0,0,Math.PI*2); ctx.fill();
+        } else {
+          const grad = ctx.createRadialGradient(o.x-6,o.y-6,2,o.x,o.y,o.size);
+          grad.addColorStop(0,"#b0bec5"); grad.addColorStop(1,"#5f6f78");
+          ctx.fillStyle=grad;
+          ctx.beginPath();
+          ctx.moveTo(o.x-o.size*0.6,o.y);
+          ctx.lineTo(o.x-o.size*0.25,o.y-o.size*0.65);
+          ctx.lineTo(o.x+o.size*0.3,o.y-o.size*0.5);
+          ctx.lineTo(o.x+o.size*0.62,o.y+o.size*0.15);
+          ctx.lineTo(o.x+o.size*0.1,o.y+o.size*0.55);
+          ctx.lineTo(o.x-o.size*0.4,o.y+o.size*0.4);
+          ctx.closePath(); ctx.fill();
+          ctx.strokeStyle="#37474f"; ctx.lineWidth=1.5; ctx.stroke();
+          ctx.fillStyle="#4fc3f7";
+          ctx.beginPath(); ctx.arc(o.x+o.size*0.05,o.y-o.size*0.1,o.size*0.14,0,Math.PI*2); ctx.fill();
+          drawHint(o.x,o.y,55,"กด M ขุดแร่");
+        }
+      }
+    }
+
+    function drawStarShape(cx,cy,r,rot){
+      ctx.beginPath();
+      for (let i=0;i<10;i++){
+        const rad = i%2===0 ? r : r*0.45;
+        const a = rot + i*Math.PI/5;
+        const px = cx+Math.cos(a)*rad, py = cy+Math.sin(a)*rad;
+        if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.closePath(); ctx.fill();
+    }
+
+    function drawParticles(){
+      for (const p of particles){
+        const t = p.life/p.maxLife;
+        if (p.text){
+          ctx.globalAlpha=t; ctx.font="bold 13px Kanit, sans-serif"; ctx.fillStyle=p.color; ctx.textAlign="center";
+          ctx.fillText(p.text,p.x,p.y); ctx.globalAlpha=1;
+        } else if (p.shape === 'star'){
+          ctx.globalAlpha=t; ctx.fillStyle=p.color; drawStarShape(p.x,p.y,p.size*t,p.rot+frameCount*0.05); ctx.globalAlpha=1;
+        } else {
+          ctx.globalAlpha=t; ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(p.x,p.y,p.size*t,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+        }
+      }
+    }
+
+    function drawClouds(){
+      ctx.fillStyle = "rgba(255,255,255,0.4)";
+      for (const cl of clouds){
+        ctx.beginPath(); ctx.ellipse(cl.x,cl.y,cl.w*0.5,cl.w*0.22,0,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cl.x+cl.w*0.3,cl.y+4,cl.w*0.32,cl.w*0.16,0,0,Math.PI*2); ctx.fill();
+      }
+    }
+    function drawFireflies(){
+      for (const f of fireflies){
+        const a = 0.35+0.5*Math.abs(Math.sin(f.phase));
+        const fx = f.x + Math.sin(f.phase*0.7)*6, fy = f.y + Math.cos(f.phase*0.6)*6;
+        ctx.globalAlpha = a;
+        const g = ctx.createRadialGradient(fx,fy,0,fx,fy,6);
+        g.addColorStop(0,"#fff9c4"); g.addColorStop(1,"rgba(255,249,196,0)");
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(fx,fy,6,0,Math.PI*2); ctx.fill();
+        ctx.globalAlpha=1;
+      }
+    }
+    function drawEmbers(){
+      for (const em of emberMotes){
+        const a = 0.3+0.4*Math.abs(Math.sin(em.phase+frameCount*0.05));
+        ctx.globalAlpha=a; ctx.fillStyle="#ff8a50";
+        ctx.beginPath(); ctx.arc(em.x,em.y,2.2,0,Math.PI*2); ctx.fill();
+        ctx.globalAlpha=1;
+      }
+    }
+    function drawRain(){
+      ctx.strokeStyle = weather==='storm' ? 'rgba(190,210,255,0.6)' : 'rgba(190,210,255,0.38)';
+      ctx.lineWidth = weather==='storm' ? 2 : 1;
+      for (const d of rainDrops){
+        ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x-3,d.y+d.len); ctx.stroke();
+      }
+    }
+    function drawFog(){
+      for (const fg of fogMotes){
+        const g = ctx.createRadialGradient(fg.x,fg.y,0,fg.x,fg.y,fg.r);
+        g.addColorStop(0,"rgba(180,200,190,0.10)"); g.addColorStop(1,"rgba(180,200,190,0)");
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(fg.x,fg.y,fg.r,0,Math.PI*2); ctx.fill();
+      }
+    }
+    function drawSnow(){
+      ctx.fillStyle="rgba(255,255,255,0.85)";
+      for (const s of snowMotes){
+        const sway = Math.sin(frameCount*0.03+s.drift)*8;
+        ctx.beginPath(); ctx.arc(s.x+sway,s.y,s.r,0,Math.PI*2); ctx.fill();
+      }
+    }
+    function drawRunes(){
+      for (const r of runeMotes){
+        const a = 0.25+0.35*Math.abs(Math.sin(r.phase+frameCount*0.03));
+        ctx.globalAlpha=a; ctx.fillStyle="#9575cd";
+        ctx.beginPath(); ctx.arc(r.x,r.y,3,0,Math.PI*2); ctx.fill();
+        ctx.globalAlpha=1;
+      }
+    }
+    function drawPond(){
+      ctx.save();
+      const grad = ctx.createRadialGradient(pond.x,pond.y,4,pond.x,pond.y,pond.rw);
+      grad.addColorStop(0,"#4fc3d9"); grad.addColorStop(1,"#1f7a8c");
+      ctx.fillStyle=grad;
+      ctx.beginPath(); ctx.ellipse(pond.x,pond.y,pond.rw,pond.rh,0,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle="rgba(255,255,255,0.35)"; ctx.lineWidth=1.5;
+      for (let i=0;i<2;i++){
+        const prog = ((frameCount*0.6+i*45) % 90)/90;
+        ctx.globalAlpha = 1-prog;
+        ctx.beginPath(); ctx.ellipse(pond.x,pond.y,pond.rw*0.3+pond.rw*0.6*prog,pond.rh*0.3+pond.rh*0.6*prog,0,0,Math.PI*2); ctx.stroke();
+      }
+      ctx.globalAlpha=1;
+      ctx.fillStyle="#4caf50";
+      ctx.beginPath(); ctx.ellipse(pond.x-18,pond.y-5,9,5,0.3,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(pond.x+15,pond.y+7,7,4,-0.2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+    function drawFlowers(){
+      for (const f of flowerSpots){
+        ctx.strokeStyle="#3f7a2b"; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(f.x,f.y+8); ctx.lineTo(f.x,f.y+2); ctx.stroke();
+        ctx.fillStyle=f.c;
+        for (let i=0;i<4;i++){
+          const a=i*Math.PI/2;
+          ctx.beginPath(); ctx.ellipse(f.x+Math.cos(a)*3.5,f.y+Math.sin(a)*3.5,3,2.2,a,0,Math.PI*2); ctx.fill();
+        }
+        ctx.fillStyle="#ffe082";
+        ctx.beginPath(); ctx.arc(f.x,f.y,2,0,Math.PI*2); ctx.fill();
+      }
+    }
+    function drawMapBanner(){
+      if (mapBanner.timer<=0) return;
+      const t = mapBanner.timer;
+      let alpha = 1;
+      if (t>100) alpha = (120-t)/20;
+      else if (t<30) alpha = t/30;
+      ctx.save();
+      ctx.globalAlpha = alpha; ctx.textAlign="center";
+      ctx.fillStyle="rgba(0,0,0,0.4)"; ctx.fillRect(0,44,canvas.width,50);
+      ctx.font="16px 'Press Start 2P', monospace"; ctx.fillStyle="#ffd54f";
+      ctx.fillText(mapBanner.text, canvas.width/2, 72);
+      ctx.font="12px Kanit, sans-serif"; ctx.fillStyle="#fff";
+      ctx.fillText(mapBanner.sub, canvas.width/2, 90);
+      ctx.restore(); ctx.textAlign="left";
+    }
+
+    function draw(){
+      ctx.save();
+      if (shakeTime>0) ctx.translate((Math.random()-0.5)*shakeMag,(Math.random()-0.5)*shakeMag);
+
+      if (battleActive){
+        drawBattleScene();
+        if (flashAlpha>0){ ctx.fillStyle=`rgba(255,255,255,${flashAlpha*0.55})`; ctx.fillRect(0,0,canvas.width,canvas.height); }
+        ctx.restore();
+        return;
+      }
+
+      if (currentMap === "Farm"){
+        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
+        sky.addColorStop(0,"#4c8a3a"); sky.addColorStop(1,"#3e6a2c");
+        ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
+        const phase = dayPhase();
+        let tint = null;
+        if (phase==='night') tint = 'rgba(10,20,55,0.45)';
+        else if (phase==='dusk') tint = 'rgba(255,110,60,0.22)';
+        else if (phase==='dawn') tint = 'rgba(255,200,140,0.18)';
+        if (tint){ ctx.fillStyle=tint; ctx.fillRect(0,0,canvas.width,canvas.height); }
+        drawClouds();
+        ctx.fillStyle="rgba(20,45,15,0.35)";
+        ctx.beginPath(); ctx.moveTo(0,60);
+        for (let hx=0; hx<=canvas.width; hx+=40) ctx.lineTo(hx, 60 - Math.sin(hx*0.012)*14 - 8);
+        ctx.lineTo(canvas.width,0); ctx.lineTo(0,0); ctx.closePath(); ctx.fill();
+        ctx.fillStyle="rgba(30,60,20,0.5)";
+        for (const g of grassTufts){ ctx.beginPath(); ctx.ellipse(g.x,g.y,3*g.s,6*g.s,0,0,Math.PI*2); ctx.fill(); }
+        drawFlowers();
+        drawPond();
+
+        ctx.fillStyle="#9c7a4e"; ctx.fillRect(canvas.width-50,180,50,120);
+        ctx.strokeStyle="rgba(0,0,0,0.15)"; ctx.lineWidth=3; ctx.strokeRect(canvas.width-50,180,50,120);
+        ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#fff8"; ctx.fillText("Forest →", canvas.width-95,172);
+
+        ctx.fillStyle="#9c7a4e"; ctx.fillRect(0,180,50,120);
+        ctx.strokeRect(0,180,50,120);
+        ctx.fillText("← Cave", 8,172);
+
+        ctx.fillStyle="#7fa9c9"; ctx.fillRect(280,0,80,26);
+        ctx.strokeStyle="rgba(0,0,0,0.15)"; ctx.lineWidth=3; ctx.strokeRect(280,0,80,26);
+        ctx.fillStyle="#fff8"; ctx.fillText("↑ Snow Mtn", 288,18);
+
+        ctx.strokeStyle="#7a5230"; ctx.lineWidth=5; ctx.strokeRect(178,178,104,104);
+
+        for (let p of plots){
+          ctx.fillStyle = p.soil>=2 ? "#4a2f14" : p.soil===1 ? "#523822" : "#5a3c20";
+          ctx.beginPath(); ctx.roundRect(p.x,p.y,p.size,p.size,4); ctx.fill();
+          if (p.soil>0){ ctx.strokeStyle = p.soil>=2 ? "#ffcf4d" : "#a5d6a7"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.roundRect(p.x+2,p.y+2,p.size-4,p.size-4,3); ctx.stroke(); }
+          const isChili = p.crop==='chili';
+          if (p.state===1){
+            const grow=1-p.timer/p.maxTimer, sway=Math.sin(frameCount*0.1)*2;
+            ctx.strokeStyle = isChili ? "#c0392b" : "#5c8a2f"; ctx.lineWidth=3;
+            ctx.beginPath(); ctx.moveTo(p.x+18,p.y+32); ctx.quadraticCurveTo(p.x+18+sway,p.y+32-13*grow,p.x+18+sway,p.y+32-18*grow); ctx.stroke();
+            ctx.fillStyle = isChili ? "#ff7043" : "#7bc04b"; ctx.beginPath(); ctx.ellipse(p.x+18+sway,p.y+31-16*grow,5*grow+2,3*grow+1,0.6,0,Math.PI*2); ctx.fill();
+          } else if (p.state===2){
+            const bounce=Math.sin(frameCount*0.12)*3;
+            ctx.save(); ctx.shadowColor = isChili ? "#ffab91" : "#c8ff9e"; ctx.shadowBlur=12;
+            ctx.fillStyle = isChili ? "#ff5722" : "#4CAF50"; ctx.beginPath(); ctx.arc(p.x+18,p.y+18+bounce,12,0,Math.PI*2); ctx.fill();
+            ctx.restore();
+          }
+        }
+        drawNest();
+        drawNPC();
+        drawTrees();
+        drawHint(pond.x,pond.y,70,"กด F ตกปลา");
+        if (phase==='night' || phase==='dusk') drawFireflies();
+        if (weather !== 'clear') drawRain();
+      } else if (currentMap === "Dungeon") {
+        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
+        sky.addColorStop(0,"#122015"); sky.addColorStop(1,"#0a140c");
+        ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle="rgba(0,0,0,0.4)";
+        for (let i=0;i<8;i++){ const tx=(i*90+40)%canvas.width; ctx.beginPath(); ctx.moveTo(tx,320); ctx.lineTo(tx+18,240); ctx.lineTo(tx+36,320); ctx.closePath(); ctx.fill(); }
+        for (const t of torches){
+          const flick=8+Math.sin(frameCount*0.4+t.x)*3;
+          const g=ctx.createRadialGradient(t.x,t.y,2,t.x,t.y,flick*3);
+          g.addColorStop(0,"rgba(255,180,60,0.55)"); g.addColorStop(1,"rgba(255,180,60,0)");
+          ctx.fillStyle=g; ctx.beginPath(); ctx.arc(t.x,t.y,flick*3,0,Math.PI*2); ctx.fill();
+          ctx.fillStyle="#5a3a1c"; ctx.fillRect(t.x-3,t.y,6,26);
+          ctx.fillStyle="#ffb74d"; ctx.beginPath(); ctx.arc(t.x,t.y-2,flick*0.5,0,Math.PI*2); ctx.fill();
+        }
+        ctx.fillStyle="#4a3a2a"; ctx.fillRect(0,180,50,120);
+        ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#fff8"; ctx.fillText("← Farm",8,172);
+        ctx.fillStyle="#4a3a2a"; ctx.fillRect(canvas.width-50,180,50,120);
+        ctx.strokeStyle="rgba(0,0,0,0.15)"; ctx.lineWidth=3; ctx.strokeRect(canvas.width-50,180,50,120);
+        ctx.fillStyle="#fff8"; ctx.fillText("Ruins →", canvas.width-92,172);
+        drawFog();
+      } else if (currentMap === "Cave"){
+        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
+        sky.addColorStop(0,"#3a1f14"); sky.addColorStop(1,"#1a0d08");
+        ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle="rgba(255,120,40,0.08)";
+        for (let i=0;i<10;i++){ ctx.beginPath(); ctx.arc((i*63+frameCount*0.3)%canvas.width, 60+((i*47)%360), 30,0,Math.PI*2); ctx.fill(); }
+        ctx.fillStyle="rgba(0,0,0,0.5)";
+        for (let i=0;i<6;i++){ const tx=(i*110+20); ctx.beginPath(); ctx.moveTo(tx,60); ctx.lineTo(tx+14,0); ctx.lineTo(tx+28,60); ctx.fill(); }
+        ctx.fillStyle="#3a2a1a"; ctx.fillRect(0,180,50,120);
+        ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#fff8"; ctx.fillText("← Farm",8,172);
+        ctx.fillStyle="#3a2a1a"; ctx.fillRect(canvas.width-50,180,50,120);
+        ctx.strokeStyle="rgba(0,0,0,0.15)"; ctx.lineWidth=3; ctx.strokeRect(canvas.width-50,180,50,120);
+        ctx.fillStyle="#fff8"; ctx.fillText("Volcano →", canvas.width-96,172);
+        drawOreNodes();
+        drawEmbers();
+      } else if (currentMap === "Ruins"){
+        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
+        sky.addColorStop(0,"#241a3d"); sky.addColorStop(1,"#0f0a1c");
+        ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
+        // ancient pillar silhouettes
+        ctx.fillStyle="rgba(0,0,0,0.35)";
+        for (let i=0;i<6;i++){ const tx=i*115+30; ctx.fillRect(tx,80,20,280); ctx.fillRect(tx-6,70,32,14); }
+        // glowing floor runes
+        ctx.strokeStyle="rgba(149,117,205,0.5)"; ctx.lineWidth=1.5;
+        for (let i=0;i<5;i++){ const rx=90+i*110, ry=400; ctx.beginPath(); ctx.arc(rx,ry,16,0,Math.PI*2); ctx.stroke(); }
+        ctx.fillStyle="#2a2040"; ctx.fillRect(0,180,50,120);
+        ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#fff8"; ctx.fillText("← Forest",8,172);
+        drawRunes();
+      } else if (currentMap === "Volcano"){
+        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
+        sky.addColorStop(0,"#4a0e0e"); sky.addColorStop(1,"#1a0505");
+        ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
+        // lava glow pools near the bottom
+        const lavaGrad = ctx.createLinearGradient(0,canvas.height-70,0,canvas.height);
+        lavaGrad.addColorStop(0,"rgba(255,110,30,0)"); lavaGrad.addColorStop(1,"rgba(255,110,30,0.35)");
+        ctx.fillStyle=lavaGrad; ctx.fillRect(0,canvas.height-70,canvas.width,70);
+        ctx.fillStyle="rgba(0,0,0,0.4)";
+        for (let i=0;i<7;i++){ const tx=(i*95+20); ctx.beginPath(); ctx.moveTo(tx,70); ctx.lineTo(tx+16,-10); ctx.lineTo(tx+32,70); ctx.fill(); }
+        ctx.fillStyle="#3a1a10"; ctx.fillRect(0,180,50,120);
+        ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#fff8"; ctx.fillText("← Cave",8,172);
+        drawEmbers();
+      } else if (currentMap === "Snow"){
+        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
+        sky.addColorStop(0,"#7fb3d5"); sky.addColorStop(1,"#c9e6f5");
+        ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
+        // snowy mountain silhouettes
+        ctx.fillStyle="rgba(255,255,255,0.55)";
+        for (let i=0;i<5;i++){ const tx=i*140-20; ctx.beginPath(); ctx.moveTo(tx,220); ctx.lineTo(tx+70,90); ctx.lineTo(tx+140,220); ctx.closePath(); ctx.fill(); }
+        ctx.fillStyle="rgba(255,255,255,0.85)";
+        ctx.fillRect(0,canvas.height-40,canvas.width,40);
+        ctx.fillStyle="#e0f2f7"; ctx.fillRect(280,canvas.height-26,80,26);
+        ctx.strokeStyle="rgba(0,0,0,0.12)"; ctx.lineWidth=3; ctx.strokeRect(280,canvas.height-26,80,26);
+        ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#333"; ctx.fillText("↓ Farm", 292,canvas.height-8);
+        drawSnow();
+      }
+
+      for (const item of items){
+        const bobY = Math.sin(item.bob)*3;
+        const col = item.type==="Meat"?"#ff7043": item.type==="Chili"?"#ff5722": item.type==="Crystal"?"#4fc3f7": item.type==="Obsidian"?"#4a148c": item.type==="Relic"?"#9575cd": item.type==="Fur"?"#e1f5fe":"#ffd54f";
+        drawShadow(item.x,item.y+item.size*0.6,item.size*0.6,item.size*0.2);
+        ctx.fillStyle=col;
+        ctx.beginPath(); ctx.roundRect(item.x-item.size/2,item.y-item.size/2+bobY,item.size,item.size,4); ctx.fill();
+        ctx.strokeStyle=shade(col,-40); ctx.lineWidth=2;
+        ctx.beginPath(); ctx.roundRect(item.x-item.size/2,item.y-item.size/2+bobY,item.size,item.size,4); ctx.stroke();
+      }
+
+      for (const e of enemies) drawEnemy(e);
+      drawPlayer();
+      drawCreature(active(), 3);
+
+      const c = active();
+      if (c.attackCooldown>45 && c.target){
+        ctx.strokeStyle="rgba(255,235,59,0.9)"; ctx.lineWidth=3; ctx.setLineDash([6,4]);
+        ctx.beginPath(); ctx.moveTo(c.x,c.y); ctx.lineTo(c.target.x,c.target.y); ctx.stroke(); ctx.setLineDash([]);
+      }
+
+      drawParticles();
+
+      const vg = ctx.createRadialGradient(320,240,150,320,240,420);
+      vg.addColorStop(0,"rgba(0,0,0,0)"); vg.addColorStop(1,"rgba(0,0,0,0.35)");
+      ctx.fillStyle=vg; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      if (transitionAlpha>0){ ctx.fillStyle=`rgba(0,0,0,${transitionAlpha})`; ctx.fillRect(0,0,canvas.width,canvas.height); }
+      if (flashAlpha>0){ ctx.fillStyle=`rgba(255,255,255,${flashAlpha*0.55})`; ctx.fillRect(0,0,canvas.width,canvas.height); }
+      drawMapBanner();
+      ctx.restore();
+    }
+
+    function gameLoop(){ update(); draw(); requestAnimationFrame(gameLoop); }
+
+    (async () => {
+      await loadGame();
+      gameLoop();
+      setInterval(saveGame, 20000);
+    })();
+  </script>
+</body>
+</html>
