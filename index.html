@@ -208,6 +208,13 @@
   #craftOverlay.open{ display:flex; }
   #craftCard{ width:min(560px,92vw); max-height:82vh; overflow-y:auto; background:linear-gradient(160deg,#152a1c,#0a1409); border:1px solid rgba(255,207,77,0.5); border-radius:14px; padding:20px 22px; box-shadow:0 20px 50px rgba(0,0,0,0.6);}
   #craftCard h2{ font-family:'Press Start 2P',monospace; font-size:15px; color:#c9ffb0; margin:0 0 12px;}
+
+  #storageOverlay{ position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:54; padding:20px;}
+  #storageOverlay.open{ display:flex; }
+  #storageCard{ width:min(560px,92vw); max-height:82vh; overflow-y:auto; background:linear-gradient(160deg,#152a1c,#0a1409); border:1px solid rgba(100,181,246,0.5); border-radius:14px; padding:20px 22px; box-shadow:0 20px 50px rgba(0,0,0,0.6);}
+  #storageCard h2{ font-family:'Press Start 2P',monospace; font-size:15px; color:#c9ffb0; margin:0 0 6px;}
+  #storageCard h4{ font-size:12px; color:#ffe082; margin:14px 0 6px;}
+  #storageCard .storageHint{ font-size:11px; opacity:0.75; margin-bottom:10px; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -300,6 +307,7 @@
       <div style="font-size:10.5px; opacity:0.7; margin-top:2px;" id="ui-baffinity">Affinity: -</div>
       <button class="btn" id="berryFeedBtn" style="width:100%; margin-top:6px; font-size:11px; background:linear-gradient(180deg,#3a1a3a,#1c0a1c);">🍓 ป้อนผลไม้ธาตุ</button>
       <div id="berryPanel"></div>
+      <button class="btn" id="storageToggle" style="width:100%; margin-top:6px; font-size:11px; background:linear-gradient(180deg,#1a2a3a,#0a141c);">📦 คลังสัตว์เลี้ยง (สลับตัว)</button>
     </div>
 
     <div class="card" style="border-top:3px solid #39e6ff;">
@@ -439,6 +447,15 @@
     </div>
   </div>
 
+  <div id="storageOverlay">
+    <div id="storageCard">
+      <button class="closeShop" id="closeStorageBtn">ปิด ✕</button>
+      <h2>📦 คลังสัตว์เลี้ยง</h2>
+      <div class="storageHint">ฝากสัตว์เลี้ยงไว้ในคลังเพื่อสลับไปเลี้ยง/ลองตัวอื่นในปาร์ตี้ (สูงสุด 3 ตัว) — สถิติ Bond, EXP, Level ของตัวที่ฝากไว้จะไม่หายไป รับกลับมาเมื่อไหร่ก็ได้</div>
+      <div id="storageContent"></div>
+    </div>
+  </div>
+
   <div id="dialogueOverlay">
     <div id="dialogueCard">
       <div class="npcPortrait"></div>
@@ -526,7 +543,7 @@
     document.getElementById('helpBtn').addEventListener('click', ()=> helpOverlay.classList.add('open'));
     document.getElementById('closeHelpBtn').addEventListener('click', ()=> helpOverlay.classList.remove('open'));
     helpOverlay.addEventListener('click', e=>{ if (e.target === helpOverlay) helpOverlay.classList.remove('open'); });
-    window.addEventListener('keydown', e=>{ if (e.key === 'Escape'){ helpOverlay.classList.remove('open'); closeShop(); closeCraft(); } });
+    window.addEventListener('keydown', e=>{ if (e.key === 'Escape'){ helpOverlay.classList.remove('open'); closeShop(); closeCraft(); closeStorage(); } });
 
     // ---------- Shop (Economy) ----------
     let shopOpen = false;
@@ -2065,6 +2082,48 @@
     document.getElementById('closeCraftBtn').addEventListener('click', closeCraft);
     craftOverlayEl.addEventListener('click', e=>{ if (e.target===craftOverlayEl) closeCraft(); });
 
+    // ---------- Pet Storage Box (deposit/withdraw beyond the 3-slot party) ----------
+    let storageBox = [];
+    let storageOpen = false;
+    const storageOverlayEl = document.getElementById('storageOverlay');
+    function openStorage(){ storageOpen = true; renderStorage(); storageOverlayEl.classList.add('open'); }
+    function closeStorage(){ storageOpen = false; storageOverlayEl.classList.remove('open'); }
+    function creatureSummaryRow(c, i, actionLabel, actionFn, actionDisabled){
+      const spec = speciesInfo(c.species);
+      return `<div class="shopRow"><div class="shopInfo">
+        <div class="shopName">${spec.icon} ${c.name} <span style="opacity:.65;">Lv.${c.level}</span></div>
+        <div class="shopSub">${elementIcon(c.element)} ${elementName(c.element)} · Stage ${c.stage} · Bond ${Math.round(c.bond)}/100</div>
+        </div><button ${actionDisabled?'disabled':''} onclick="${actionFn}(${i})">${actionLabel}</button></div>`;
+    }
+    function renderStorage(){
+      const el = document.getElementById('storageContent');
+      if (!el) return;
+      const partyHtml = party.map((c,i)=> creatureSummaryRow(c,i,"📦 ฝาก","depositCreature", party.length<=1)).join('')
+        || '<div style="opacity:.6; font-size:12px;">ไม่มีสัตว์เลี้ยงในปาร์ตี้</div>';
+      const boxHtml = storageBox.map((c,i)=> creatureSummaryRow(c,i,"🐾 รับกลับ","withdrawCreature", party.length>=MAX_PARTY)).join('')
+        || '<div style="opacity:.6; font-size:12px;">คลังว่างเปล่า — ยังไม่มีสัตว์เลี้ยงฝากไว้</div>';
+      el.innerHTML = `<h4>ปาร์ตี้ปัจจุบัน (${party.length}/${MAX_PARTY})</h4>${partyHtml}<h4>📦 คลังเก็บ (${storageBox.length})</h4>${boxHtml}`;
+    }
+    function depositCreature(idx){
+      if (party.length <= 1){ updateEVA("ต้องมีสัตว์เลี้ยงติดตัวอย่างน้อย 1 ตัวเสมอ ฝากตัวนี้ไม่ได้"); return; }
+      const [cr] = party.splice(idx,1);
+      storageBox.push(cr);
+      if (activeIndex >= party.length) activeIndex = party.length-1;
+      updateEVA(`📦 ฝาก ${cr.name} ไว้ในคลังแล้ว ปลอดภัยดี รอวันได้กลับมาลุยด้วยกันอีกครั้ง!`);
+      renderStorage(); updateUI();
+    }
+    function withdrawCreature(idx){
+      if (party.length >= MAX_PARTY){ updateEVA(`ปาร์ตี้เต็มแล้ว (${MAX_PARTY} ตัว) ต้องฝากตัวอื่นก่อนถึงจะรับตัวนี้กลับมาได้`); return; }
+      const [cr] = storageBox.splice(idx,1);
+      cr.x = player.x - 20; cr.y = player.y + 10;
+      party.push(cr);
+      updateEVA(`🐾 รับ ${cr.name} กลับเข้าปาร์ตี้แล้ว! (Lv.${cr.level}, Bond ${Math.round(cr.bond)}/100 — ค่าเดิมทุกอย่างยังอยู่ครบ)`);
+      renderStorage(); updateUI();
+    }
+    document.getElementById('storageToggle').addEventListener('click', openStorage);
+    document.getElementById('closeStorageBtn').addEventListener('click', closeStorage);
+    storageOverlayEl.addEventListener('click', e=>{ if (e.target===storageOverlayEl) closeStorage(); });
+
     // ---------- Save / Load ----------
     // Prefer the Artifact storage API when available (claude.ai), but fall back to
     // localStorage so the game can still save/load when opened as a plain HTML file
@@ -2091,6 +2150,7 @@
     async function saveGame(){
       try{
         const data = { inv, energy, party: party.map(serializeCreature), activeIndex,
+          storageBox: storageBox.map(serializeCreature),
           fishingUpgraded, miningUpgraded, woodcuttingUpgraded, fertilizerCharges, dayCount,
           sprinklerBuilt, greenhouseBuilt, autoFeederBuilt,
           npcFriendship: { rowan: npc.friendship, maya: npc2.friendship },
@@ -2134,6 +2194,7 @@
           }
           party = data.party.map((c,i)=> makeCreature(c.name, c.element, c.color, 80 - i*20, 240, c));
           activeIndex = Math.min(data.activeIndex||0, party.length-1);
+          storageBox = Array.isArray(data.storageBox) ? data.storageBox.map(c => makeCreature(c.name, c.element, c.color, -999, -999, c)) : [];
           updateEVA("โหลดข้อมูลที่บันทึกไว้เรียบร้อย! ยินดีต้อนรับกลับสู่ Eden");
           document.getElementById('save-status').innerText = "โหลดเซฟล่าสุดแล้ว";
         } else {
@@ -2148,7 +2209,7 @@
     // ---------- Update ----------
     function update(){
       frameCount++;
-      if (storyActive || starterActive || dialogueOpen || shopOpen || craftOpen){ pressedOnce = {}; updateUI(); return; }
+      if (storyActive || starterActive || dialogueOpen || shopOpen || craftOpen || storageOpen){ pressedOnce = {}; updateUI(); return; }
       if (battleActive){ updateBattle(); pressedOnce = {}; updateUI(); return; }
       const c = active();
 
