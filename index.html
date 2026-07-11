@@ -139,6 +139,24 @@
   #storyScreen .storyDots span{ width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.25); }
   #storyScreen .storyDots span.on{ background:#6fbf47; }
 
+  /* ---------- Starter pet selection screen ---------- */
+  #starterScreen{
+    position:absolute; top:10px; left:10px; right:10px; bottom:10px; border-radius:9px;
+    display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+    background:linear-gradient(180deg, rgba(6,12,8,0.94), rgba(3,6,4,0.98));
+    z-index:6; color:#eafff0; padding:20px;
+  }
+  #starterScreen.open{ display:flex; }
+  #starterScreen .starterTag{ font-family:'Press Start 2P',monospace; font-size:9px; color:#ffcf4d; letter-spacing:2px; margin-bottom:10px; }
+  #starterScreen .starterTitle{ font-family:'Press Start 2P',monospace; font-size:14px; color:#c9ffb0; margin-bottom:8px; }
+  #starterScreen .starterDesc{ font-size:12.5px; color:#bcd6c0; max-width:480px; margin-bottom:18px; line-height:1.6; }
+  #starterGrid{ display:flex; gap:14px; flex-wrap:wrap; justify-content:center; max-width:560px; }
+  .starterCard{ width:100px; background:linear-gradient(160deg,#152a1c,#0a1409); border:2px solid rgba(111,191,71,0.35); border-radius:12px; padding:12px 8px; cursor:pointer; transition:transform 0.15s, border-color 0.15s; }
+  .starterCard:hover{ transform:translateY(-4px); border-color:#ffcf4d; }
+  .starterCard .icon{ font-size:34px; margin-bottom:6px; }
+  .starterCard .sname{ font-size:12px; color:#ffe082; font-weight:bold; margin-bottom:3px; }
+  .starterCard .sdesc{ font-size:9.5px; color:#a8c9ac; line-height:1.4; }
+
   /* ---------- Dialogue overlay (NPC) ---------- */
   #dialogueOverlay{ position:fixed; inset:0; background:rgba(0,0,0,0.65); display:none; align-items:flex-end; justify-content:center; z-index:55; padding:20px; }
   #dialogueOverlay.open{ display:flex; }
@@ -230,6 +248,13 @@
         <button class="btn" id="storyNext" style="background:linear-gradient(180deg,#3a5a2a,#1c3a0f);">ถัดไป ▶</button>
       </div>
     </div>
+    <div id="starterScreen">
+      <div class="starterTag">เลือกสัตว์เลี้ยงตัวแรก</div>
+      <div class="starterTitle">CHOOSE YOUR COMPANION</div>
+      <div class="starterDesc">ก่อนเริ่มการเดินทาง เลือกสัตว์เลี้ยงตัวแรกที่จะร่วมผจญภัยไปกับเจ้า แต่ละตัวมีนิสัยและความถนัดต่างกัน แต่ทุกตัวสามารถวิวัฒนาการไปเป็นธาตุใดก็ได้เหมือนกันหมด</div>
+      <div id="starterGrid"></div>
+    </div>
+
   </div>
 
   <div id="tutorialBar">
@@ -372,7 +397,8 @@
       <p>ไข่ที่ดรอปจากมอนสเตอร์ในดันเจี้ยน/ถ้ำก็มี IV และ Trait สุ่มของตัวเองเช่นกัน (แต่ไม่มีโอกาสกลายพันธุ์ — กลายพันธุ์เกิดจากการผสมพันธุ์ที่รังเท่านั้น)</p>
       <p>🐾 <b>นิสัย (Personality):</b> สัตว์เลี้ยงแต่ละตัวเกิดมาพร้อมนิสัย 1 ใน 4 แบบแบบสุ่ม (ไม่ถ่ายทอดตอนผสมพันธุ์) ซึ่งเปลี่ยนทั้งวิธีวิ่งตามผู้เล่นและค่าสถานะ: 🤪<b>ขี้เล่น</b> วิ่งตามแบบส่ายไปมาไวกว่าปกติ (SPD สูง, HP ต่ำ), 🥰<b>ขี้อ้อน</b> เดินใกล้ตัวตลอดเวลา (Bond จากป้อนอาหารสูงมาก, ATK ต่ำ), 😾<b>ขี้โมโห</b> ชอบเดินตามห่างๆ (ATK สูง, Bond ช้า), 😴<b>ขี้เซา</b> เดินตามช้าและแอบงีบหลับเป็นระยะ (HP สูง, SPD ต่ำ) ดูนิสัยของตัวที่ใช้งานอยู่ได้ที่การ์ดสัตว์เลี้ยงด้านล่างเกม</p>
       <p>🌿 <b>ธาตุ (Element):</b> ทุกตัว (ทั้งของผู้เล่นและศัตรู) มีธาตุประจำตัว 1 ใน 5: 🌍ดิน, 💧น้ำ, 🔥ไฟ, 🌿ใบไม้, ⚡ไฟฟ้า ธาตุจะแพ้ชนะกันเป็นวงจร: 🔥ไฟ ชนะ 🌿ใบไม้ ชนะ 🌍ดิน ชนะ ⚡ไฟฟ้า ชนะ 💧น้ำ ชนะ 🔥ไฟ (วนกลับมาที่ไฟ) — ธาตุที่ได้เปรียบทำดาเมจ +40% ธาตุที่เสียเปรียบทำดาเมจได้แค่ 75% ใน Tactical Battle แต่ละโซนมีธาตุประจำโซน: Forest Dungeon=🌿ใบไม้, Crystal Cave/ภูเขาไฟ=🔥ไฟ, ซากอารยธรรม=🌍ดิน, ภูเขาหิมะ=💧น้ำ ส่วนศัตรูใน Monster Tournament เป็น ⚡ไฟฟ้า พิเศษ ไข่ที่ดรอปก็สืบธาตุตามโซนที่พบด้วย</p>
-      <p>🍓 <b>ผลไม้ธาตุ (Affinity Berries):</b> ซื้อได้จากร้านค้า 5 ชนิด (Fire/Water/Earth/Leaf/Electric Berry) ที่การ์ดสัตว์เลี้ยงกดปุ่ม 🍓 ป้อนผลไม้ธาตุ เพื่อเลือกป้อน แต่ละลูกให้ +10 Affinity ธาตุนั้นๆ กับสัตว์เลี้ยงตัวที่ใช้งานอยู่ เมื่อสัตว์เลี้ยงโตเต็มวัย (ป้อนอาหารรวมอย่างน้อย 3 ครั้งไม่ว่าจะผัก/เนื้อ/ผลไม้ธาตุ) เกมจะเช็กว่า Affinity ธาตุไหนสูงสุดแล้ววิวัฒนาการไปทางนั้น: 🔥Fire→War Beast, 🌿Leaf→Nature Guardian, 🌍Earth→Boulder Golem (Tank), 💧Water→Tide Serpent (CC), ⚡Electric→Volt Fox (DPS) ถ้าไม่เคยป้อนผลไม้ธาตุเลยจะใช้กฎเดิม (ผัก 3/เนื้อ 3/ผสมกัน→Chimera Beast) แทน</p>
+      <p>🍓 <b>ผลไม้ธาตุ (Affinity Berries):</b> ซื้อได้จากร้านค้า 5 ชนิด (Fire/Water/Earth/Leaf/Electric Berry) ที่การ์ดสัตว์เลี้ยงกดปุ่ม 🍓 ป้อนผลไม้ธาตุ เพื่อเลือกป้อน แต่ละลูกให้ +10 Affinity ธาตุนั้นๆ กับสัตว์เลี้ยงตัวที่ใช้งานอยู่ เมื่อสัตว์เลี้ยงโตเต็มวัย (ป้อนอาหารรวมอย่างน้อย 3 ครั้งไม่ว่าจะผัก/เนื้อ/ผลไม้ธาตุ) เกมจะเช็กว่า Affinity ธาตุไหนสูงสุดแล้ววิวัฒนาการไปทางนั้น: 🔥Fire→War Beast, 🌿Leaf→Nature Guardian, 🌍Earth→Boulder Golem (Tank), 💧Water→Tide Serpent (CC), ⚡Electric→Volt Fox (DPS) ถ้าไม่เคยป้อนผลไม้ธาตุเลยจะใช้กฎเดิม (ผัก 3/เนื้อ 3/ผสมกัน→Chimera Beast) แทน เมื่อวิวัฒนาการอีกครั้ง (Bond ≥60 และป้อนอาหารรวม ≥8 ครั้ง) จะโตเต็มขั้นสูงสุดและปลดล็อกสกิลประจำธาตุ (Fireball/Heal Pulse/Rock Slide/Healing Tide/Thunder Strike)</p>
+      <p>🐾 <b>สัตว์เลี้ยง 6 สายพันธุ์:</b> นอกจาก 🌱Seedling ตัวเริ่มต้นแล้ว ยังมี 🐺Wolf, 🐢Turtle, 🐻Bear, 🦆Duck, 🦁Lion ให้ได้ตัวจากไข่ที่ดรอปในดันเจี้ยนแต่ละโซน (Forest→Duck, Crystal Cave→Lion, ภูเขาไฟ→Wolf, ซากอารยธรรม→Turtle, ภูเขาหิมะ→Bear) หรือจากการผสมพันธุ์ที่รัง (ลูกจะสืบพันธุ์จากพ่อแม่ตัวใดตัวหนึ่งแบบสุ่ม มีโอกาสเล็กน้อยได้พันธุ์ใหม่ที่ไม่ได้มาจากพ่อแม่หากเกิดการกลายพันธุ์) แต่ละสายพันธุ์มีค่าสถานะพื้นฐานต่างกัน (Wolf ไวและแรงกว่า, Turtle HP สูงมากแต่ช้า, Bear แข็งแกร่งสมดุล, Duck ไวมากแต่ HP ต่ำ, Lion โจมตีแรงที่สุด) และสามารถวิวัฒนาการไปเป็นธาตุใดก็ได้ทั้ง 5 ธาตุเหมือนกับ Seedling ทุกประการ เพียงแค่ชื่อและรูปลักษณ์ตอนวิวัฒนาการจะเปลี่ยนไปตามสายพันธุ์ (เช่น Wolf+Fire = Ember Wolf, Turtle+Water = Tide Turtle)</p>
       <p>กด <kbd>P</kbd> เพื่อบันทึกความคืบหน้าได้ตลอดเวลา (บันทึกอัตโนมัติทุก 20 วิด้วย)</p>
       <h4>📜 Quest &amp; NPC</h4>
       <p>ผู้เฒ่าโรวันและมายา นักสมุนไพร ใช้ชีวิตอยู่ในฟาร์มตามตารางเวลาจริง (Daily Schedule) — เดินไปมาตามจุดต่างๆ ขึ้นอยู่กับช่วงเวลาของวัน (รุ่งอรุณ/กลางวัน/พลบค่ำ/กลางคืน) เข้าใกล้แล้วกด <kbd>T</kbd> เพื่อคุย โรวันจะนำทาง Main Quest และมอบ Side Quest ให้เมื่อพร้อม ส่วนมายาเป็นบทสนทนาแนวเป็นกันเองไม่ผูกกับเควส</p>
@@ -582,7 +608,13 @@
     function closeStory(){
       storyActive = false;
       storyScreenEl.classList.remove('open');
-      updateEVA("ยินดีต้อนรับสู่ Eden! ลองเดินสำรวจฟาร์มด้วย WASD ดูก่อนนะ");
+      if (!hasSaveData){
+        starterActive = true;
+        renderStarterGrid();
+        document.getElementById('starterScreen').classList.add('open');
+      } else {
+        updateEVA("ยินดีต้อนรับกลับสู่ Eden! ลองเดินสำรวจฟาร์มด้วย WASD ดูก่อนนะ");
+      }
     }
     document.getElementById('storyNext').addEventListener('click', ()=>{
       sfx.pickup();
@@ -1104,17 +1136,63 @@
     function personalitySpeedMult(p){ return personalityInfo(p).speedMult; }
     function personalityBondMult(p){ return personalityInfo(p).bondMult; }
 
+    // ---------- Species: 5 tameable animals (+ original Seedling), all can evolve into any element ----------
+    const SPECIES_INFO = {
+      Seedling: { icon:'🌱', name:'Seedling', babyName:'Seedling',    babyColor:'#ffeb3b', hpMult:1.00, atkMult:1.00, spdMult:1.00 },
+      Wolf:     { icon:'🐺', name:'Wolf',     babyName:'Wolf Pup',    babyColor:'#b0bec5', hpMult:0.95, atkMult:1.15, spdMult:1.15 },
+      Turtle:   { icon:'🐢', name:'Turtle',   babyName:'Baby Turtle', babyColor:'#66bb6a', hpMult:1.30, atkMult:0.75, spdMult:0.75 },
+      Bear:     { icon:'🐻', name:'Bear',     babyName:'Bear Cub',    babyColor:'#8d6e63', hpMult:1.15, atkMult:1.10, spdMult:0.90 },
+      Duck:     { icon:'🦆', name:'Duck',     babyName:'Duckling',    babyColor:'#fff59d', hpMult:0.80, atkMult:0.90, spdMult:1.30 },
+      Lion:     { icon:'🦁', name:'Lion',     babyName:'Lion Cub',    babyColor:'#ffb300', hpMult:0.95, atkMult:1.30, spdMult:1.05 }
+    };
+    const SPECIES_KEYS = Object.keys(SPECIES_INFO);
+    const TAMEABLE_SPECIES_KEYS = SPECIES_KEYS.filter(k=>k!=="Seedling"); // egg drops favor the 5 new animals
+    function speciesInfo(s){ return SPECIES_INFO[s] || SPECIES_INFO.Seedling; }
+    function randomSpecies(){ return TAMEABLE_SPECIES_KEYS[Math.floor(Math.random()*TAMEABLE_SPECIES_KEYS.length)]; }
+
+    // ---------- Starter pet selection (new games only) ----------
+    const STARTER_DESC = {
+      Wolf:   "ไวและดุดัน เก่งเรื่องบุกตะลุย",
+      Turtle: "HP สูงมาก ป้องกันหนึบ แต่ช้า",
+      Bear:   "สมดุลรอบด้าน ทนทานทุกด้าน",
+      Duck:   "ว่องไวที่สุดในบรรดาทั้งหมด แต่ HP ต่ำ",
+      Lion:   "โจมตีแรงที่สุดในบรรดาสัตว์เริ่มต้น"
+    };
+    let starterActive = false;
+    function renderStarterGrid(){
+      const grid = document.getElementById('starterGrid');
+      if (!grid) return;
+      grid.innerHTML = TAMEABLE_SPECIES_KEYS.map(k=>{
+        const s = speciesInfo(k);
+        return `<div class="starterCard" onclick="chooseStarter('${k}')">
+          <div class="icon">${s.icon}</div>
+          <div class="sname">${s.name}</div>
+          <div class="sdesc">${STARTER_DESC[k]||''}</div>
+        </div>`;
+      }).join('');
+    }
+    function chooseStarter(species){
+      const spec = speciesInfo(species);
+      party = [ makeCreature(spec.babyName, "Normal", spec.babyColor, 80, 240, { species }) ];
+      activeIndex = 0;
+      starterActive = false;
+      document.getElementById('starterScreen').classList.remove('open');
+      updateEVA(`ยินดีต้อนรับสู่ Eden! ${spec.icon} ${spec.babyName} จะร่วมผจญภัยไปกับเจ้า ลองเดินสำรวจฟาร์มด้วย WASD ดูก่อนนะ`);
+    }
+
     // ---------- Creatures ----------
     function makeCreature(name, element, color, x, y, overrides={}) {
       const iv = overrides.iv || { hp: rand32(), atk: rand32(), spd: rand32() };
       const trait = overrides.trait || randomTrait();
       const personality = overrides.personality || randomPersonality();
       const mutant = !!overrides.mutant;
-      const hpM = ivMult(iv.hp) * traitMultHp(trait,mutant) * personalityMultHp(personality);
-      const atkM = ivMult(iv.atk) * traitMultAtk(trait,mutant) * personalityMultAtk(personality);
+      const species = overrides.species || "Seedling";
+      const spec = speciesInfo(species);
+      const hpM = ivMult(iv.hp) * traitMultHp(trait,mutant) * personalityMultHp(personality) * spec.hpMult;
+      const atkM = ivMult(iv.atk) * traitMultAtk(trait,mutant) * personalityMultAtk(personality) * spec.atkMult;
       const maxHp = Math.round(100*hpM);
       const base = {
-        x, y, size:20, speed:3.5*personalitySpeedMult(personality), color, name, element, stage:0,
+        x, y, size:20, speed:3.5*personalitySpeedMult(personality)*spec.spdMult, color, name, element, stage:0, species,
         hp:maxHp, maxHp, atk:Math.round(15*atkM),
         veggieEaten:0, meatEaten:0, bond:20,
         level:1, exp:0,
@@ -1172,50 +1250,75 @@
       return "rgb("+r+","+g+","+b+")";
     }
 
-    // ---------- Evolution (5 forms) ----------
+    // ---------- Evolution (5 elemental forms x 6 species, + Chimera hybrid) ----------
+    // Base stats per element at each stage, before species/IV/trait/personality multipliers
+    const EVO_BASE_STATS = {
+      Fire:     { s1:{hp:130,atk:35}, s2:{hp:260,atk:55}, color1:"#FF5722", color2:"#D84315", size1:28, size2:34, skill:"Fireball" },
+      Nature:   { s1:{hp:200,atk:20}, s2:{hp:340,atk:32}, color1:"#4CAF50", color2:"#2E7D32", size1:28, size2:34, skill:"Heal Pulse" },
+      Earth:    { s1:{hp:240,atk:22}, s2:{hp:420,atk:38}, color1:"#8D6E63", color2:"#5D4037", size1:30, size2:36, skill:"Rock Slide" },
+      Water:    { s1:{hp:180,atk:24}, s2:{hp:320,atk:40}, color1:"#29B6F6", color2:"#0277BD", size1:27, size2:33, skill:"Healing Tide" },
+      Electric: { s1:{hp:150,atk:30}, s2:{hp:280,atk:50}, color1:"#FFEB3B", color2:"#FBC02D", size1:26, size2:32, skill:"Thunder Strike" },
+      Chimera:  { s1:{hp:160,atk:25}, s2:{hp:300,atk:40}, color1:"#AB47BC", color2:"#7B1FA2", size1:26, size2:32, skill:null }
+    };
+    const ELEMENT_EVO_MSG1 = {
+      Fire:"✨ EVOLUTION! วิวัฒนาการเป็น {name} สายโจมตีดุดัน!",
+      Nature:"✨ EVOLUTION! วิวัฒนาการเป็น {name} ธาตุพืช แข็งแกร่งขึ้นมาก!",
+      Earth:"🌍 EVOLUTION! วิวัฒนาการเป็น {name} แข็งแกร่งดุจหิน!",
+      Water:"💧 EVOLUTION! วิวัฒนาการเป็น {name} ปราดเปรียวดุจกระแสน้ำ!",
+      Electric:"⚡ EVOLUTION! วิวัฒนาการเป็น {name} ว่องไวดุจสายฟ้า!",
+      Chimera:"✨ EVOLUTION! เกิดการผสมธาตุ กลายเป็น {name} ตัวลูกผสมหายาก!"
+    };
+    const ELEMENT_EVO_MSG2 = {
+      Fire:"🔥 EVOLUTION ขั้นสูงสุด! กลายเป็น {name}! ปลดล็อกสกิล Fireball!",
+      Nature:"🌳 EVOLUTION ขั้นสูงสุด! กลายเป็น {name}! ปลดล็อกสกิล Heal Pulse!",
+      Earth:"🌍 EVOLUTION ขั้นสูงสุด! กลายเป็น {name}! ปลดล็อกสกิล Rock Slide!",
+      Water:"💧 EVOLUTION ขั้นสูงสุด! กลายเป็น {name}! ปลดล็อกสกิล Healing Tide!",
+      Electric:"⚡ EVOLUTION ขั้นสูงสุด! กลายเป็น {name}! ปลดล็อกสกิล Thunder Strike!",
+      Chimera:"✨ EVOLUTION ขั้นสูงสุด! กลายเป็น {name}!"
+    };
+    // Species-specific stage-1/stage-2 name tables (Seedling keeps its original classic names)
+    const SEEDLING_EVO_NAMES = {
+      Fire:     { s1:"War Beast",      s2:"Inferno Fiend" },
+      Nature:   { s1:"Nature Guardian",s2:"Elder Treant" },
+      Earth:    { s1:"Boulder Golem",  s2:"Titan Golem" },
+      Water:    { s1:"Tide Serpent",   s2:"Abyssal Serpent" },
+      Electric: { s1:"Volt Fox",       s2:"Storm Fox" },
+      Chimera:  { s1:"Chimera Beast",  s2:"Chimera Overlord" }
+    };
+    const ELEMENT_EVO_ADJ1 = { Fire:"Ember", Nature:"Verdant", Earth:"Granite", Water:"Tide", Electric:"Volt", Chimera:"Chimera" };
+    const ELEMENT_EVO_ADJ2 = { Fire:"Inferno", Nature:"Elder", Earth:"Titan", Water:"Abyssal", Electric:"Storm", Chimera:"Chimera" };
+    function evoName(species, element, stage){
+      if (species === "Seedling" || !species) return SEEDLING_EVO_NAMES[element][stage===2?"s2":"s1"];
+      const adj = stage===2 ? ELEMENT_EVO_ADJ2[element] : ELEMENT_EVO_ADJ1[element];
+      return `${adj} ${species}`;
+    }
     function checkEvolution(c){
-      const hpM = ivMult(c.iv.hp) * traitMultHp(c.trait,c.mutant);
-      const atkM = ivMult(c.iv.atk) * traitMultAtk(c.trait,c.mutant);
+      const hpM = ivMult(c.iv.hp) * traitMultHp(c.trait,c.mutant) * speciesInfo(c.species).hpMult;
+      const atkM = ivMult(c.iv.atk) * traitMultAtk(c.trait,c.mutant) * speciesInfo(c.species).atkMult;
       const mutTint = c.mutant ? "#ffd700" : null;
       if (c.stage === 0){
         const totalFeeds = c.veggieEaten + c.meatEaten + Math.round(((c.affinity&&Object.values(c.affinity).reduce((a,b)=>a+b,0))||0)/10);
         if (totalFeeds < 3) return; // not grown up enough yet
         const topEl = topAffinity(c.affinity); // Fire/Water/Earth/Leaf/Electric from berries, or null if none fed
-        if (topEl === "Fire" || (!topEl && c.meatEaten>=3 && c.veggieEaten<2)){
-          const maxHp = Math.round(130*hpM);
-          Object.assign(c,{name:"War Beast", element:"Fire", color: mutTint||"#FF5722", size:28, stage:1, maxHp, hp:maxHp, atk:Math.round(35*atkM)});
-          fanfare(c,"#FF5722","✨ EVOLUTION! วิวัฒนาการเป็น War Beast สายโจมตีดุดัน!");
-        } else if (topEl === "Leaf" || (!topEl && c.veggieEaten>=3 && c.meatEaten<2)){
-          const maxHp = Math.round(200*hpM);
-          Object.assign(c,{name:"Nature Guardian", element:"Nature", color: mutTint||"#4CAF50", size:28, stage:1, maxHp, hp:maxHp});
-          fanfare(c,"#4CAF50","✨ EVOLUTION! วิวัฒนาการเป็น Nature Guardian ธาตุพืช แข็งแกร่งขึ้นมาก!");
-        } else if (topEl === "Earth"){
-          const maxHp = Math.round(240*hpM);
-          Object.assign(c,{name:"Boulder Golem", element:"Earth", color: mutTint||"#8D6E63", size:30, stage:1, maxHp, hp:maxHp, atk:Math.round(22*atkM)});
-          fanfare(c,"#8D6E63","🌍 EVOLUTION! วิวัฒนาการเป็น Boulder Golem แข็งแกร่งดุจหิน!");
-        } else if (topEl === "Water"){
-          const maxHp = Math.round(180*hpM);
-          Object.assign(c,{name:"Tide Serpent", element:"Water", color: mutTint||"#29B6F6", size:27, stage:1, maxHp, hp:maxHp, atk:Math.round(24*atkM)});
-          fanfare(c,"#29B6F6","💧 EVOLUTION! วิวัฒนาการเป็น Tide Serpent ปราดเปรียวดุจกระแสน้ำ!");
-        } else if (topEl === "Electric"){
-          const maxHp = Math.round(150*hpM);
-          Object.assign(c,{name:"Volt Fox", element:"Electric", color: mutTint||"#FFEB3B", size:26, stage:1, maxHp, hp:maxHp, atk:Math.round(30*atkM)});
-          fanfare(c,"#FFEB3B","⚡ EVOLUTION! วิวัฒนาการเป็น Volt Fox ว่องไวดุจสายฟ้า!");
-        } else {
-          const maxHp = Math.round(160*hpM);
-          Object.assign(c,{name:"Chimera Beast", element:"Chimera", color: mutTint||"#AB47BC", size:26, stage:1, maxHp, hp:maxHp, atk:Math.round(25*atkM)});
-          fanfare(c,"#AB47BC","✨ EVOLUTION! เกิดการผสมธาตุ กลายเป็น Chimera Beast ตัวลูกผสมหายาก!");
-        }
+        let element;
+        if (topEl === "Fire" || (!topEl && c.meatEaten>=3 && c.veggieEaten<2)) element = "Fire";
+        else if (topEl === "Leaf" || (!topEl && c.veggieEaten>=3 && c.meatEaten<2)) element = "Nature";
+        else if (topEl === "Earth") element = "Earth";
+        else if (topEl === "Water") element = "Water";
+        else if (topEl === "Electric") element = "Electric";
+        else element = "Chimera";
+        const stats = EVO_BASE_STATS[element];
+        const maxHp = Math.round(stats.s1.hp*hpM);
+        const name = evoName(c.species, element, 1);
+        Object.assign(c,{name, element, color: mutTint||stats.color1, size:stats.size1, stage:1, maxHp, hp:maxHp, atk:Math.round(stats.s1.atk*atkM)});
+        fanfare(c, mutTint||stats.color1, ELEMENT_EVO_MSG1[element].replace("{name}",name));
       } else if (c.stage === 1 && c.bond>=60 && (c.veggieEaten+c.meatEaten)>=8){
-        if (c.element==="Nature"){
-          const maxHp = Math.round(320*hpM);
-          Object.assign(c,{name:"Elder Treant", color: mutTint||"#2E7D32", size:34, stage:2, maxHp, hp:maxHp, atk:Math.round(30*atkM), skillUnlocked:true});
-          fanfare(c,"#2E7D32","🌳 EVOLUTION ขั้นสูงสุด! กลายเป็น Elder Treant! ปลดล็อกสกิล Heal Pulse!");
-        } else if (c.element==="Fire"){
-          const maxHp = Math.round(260*hpM);
-          Object.assign(c,{name:"Inferno Fiend", color: mutTint||"#D84315", size:34, stage:2, maxHp, hp: Math.min(maxHp,c.hp), atk:Math.round(55*atkM), skillUnlocked:true});
-          fanfare(c,"#D84315","🔥 EVOLUTION ขั้นสูงสุด! กลายเป็น Inferno Fiend! ปลดล็อกสกิล Fireball!");
-        }
+        const stats = EVO_BASE_STATS[c.element];
+        if (!stats) return;
+        const maxHp = Math.round(stats.s2.hp*hpM);
+        const name = evoName(c.species, c.element, 2);
+        Object.assign(c,{name, color: mutTint||stats.color2, size:stats.size2, stage:2, maxHp, hp:Math.min(maxHp,c.hp), atk:Math.round(stats.s2.atk*atkM), skillUnlocked:true});
+        fanfare(c, mutTint||stats.color2, ELEMENT_EVO_MSG2[c.element].replace("{name}",name));
       }
     }
     function fanfare(c,color,msg){ spawnBurst(c.x,c.y,color,34,4,55,6); spawnStars(c.x,c.y,16); shake(5,14); flashAlpha=1; sfx.evolve(); updateEVA(msg); }
@@ -1224,19 +1327,19 @@
     function dropLoot(e){
       if (currentMap === "Dungeon"){
         items.push({x:e.x,y:e.y,type:"Meat",size:15,bob:0});
-        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Leaf"});
+        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Leaf",speciesHint:"Duck"});
       } else if (currentMap === "Cave"){
         items.push({x:e.x,y:e.y,type: e.boss ? "Crystal" : "Chili", size:15, bob:0});
-        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Fire"});
+        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Fire",speciesHint:"Lion"});
       } else if (currentMap === "Volcano"){
         items.push({x:e.x,y:e.y,type:"Obsidian",size:15,bob:0});
-        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Fire"});
+        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Fire",speciesHint:"Wolf"});
       } else if (currentMap === "Ruins"){
         items.push({x:e.x,y:e.y,type:"Relic",size:15,bob:0});
-        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Earth"});
+        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Earth",speciesHint:"Turtle"});
       } else if (currentMap === "Snow"){
         items.push({x:e.x,y:e.y,type:"Fur",size:15,bob:0});
-        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Water"});
+        if (e.boss) items.push({x:e.x+12,y:e.y,type:"Egg",size:16,bob:0,elementHint:"Water",speciesHint:"Bear"});
       }
     }
     function damageEnemy(e, dmg){
@@ -1425,19 +1528,19 @@
       for (const t of battle.rewardLoot){
         if (currentMap === "Dungeon"){
           items.push({x:player.x+(Math.random()*30-15), y:player.y+22, type:"Meat", size:15, bob:0});
-          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Leaf"});
+          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Leaf", speciesHint:"Duck"});
         } else if (currentMap === "Cave"){
           items.push({x:player.x+(Math.random()*30-15), y:player.y+22, type: t.isBoss?"Crystal":"Chili", size:15, bob:0});
-          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Fire"});
+          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Fire", speciesHint:"Lion"});
         } else if (currentMap === "Volcano"){
           items.push({x:player.x+(Math.random()*30-15), y:player.y+22, type:"Obsidian", size:15, bob:0});
-          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Fire"});
+          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Fire", speciesHint:"Wolf"});
         } else if (currentMap === "Ruins"){
           items.push({x:player.x+(Math.random()*30-15), y:player.y+22, type:"Relic", size:15, bob:0});
-          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Earth"});
+          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Earth", speciesHint:"Turtle"});
         } else if (currentMap === "Snow"){
           items.push({x:player.x+(Math.random()*30-15), y:player.y+22, type:"Fur", size:15, bob:0});
-          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Water"});
+          if (t.isBoss) items.push({x:player.x+10, y:player.y+22, type:"Egg", size:16, bob:0, elementHint:"Water", speciesHint:"Bear"});
         }
       }
       sfx.enemyDown(); flashAlpha = 0.7;
@@ -1784,6 +1887,24 @@
         spawnBurst(c.x,c.y,'#ff7043',24,4,40,5); shake(6,16);
         spawnText(c.x,c.y-30,"Fireball!","#ff7043");
       }
+      if (c.element === "Earth"){
+        const dmg = Math.floor(c.atk * 1.3);
+        for (const e of [...enemies]) if (Math.hypot(e.x-c.x,e.y-c.y) < 140) damageEnemy(e,dmg);
+        spawnBurst(c.x,c.y,'#8D6E63',24,3,40,6); shake(6,14);
+        spawnText(c.x,c.y-30,"Rock Slide!","#8D6E63");
+      }
+      if (c.element === "Water"){
+        const heal = Math.floor(c.maxHp * 0.25);
+        c.hp = Math.min(c.maxHp, c.hp + heal);
+        spawnBurst(c.x,c.y,'#29B6F6',24,3,40,5);
+        spawnText(c.x,c.y-30,"Healing Tide +"+heal,"#29B6F6");
+      }
+      if (c.element === "Electric"){
+        const dmg = Math.floor(c.atk * 1.4);
+        for (const e of [...enemies]) if (Math.hypot(e.x-c.x,e.y-c.y) < 180) damageEnemy(e,dmg);
+        spawnBurst(c.x,c.y,'#fdd835',24,4,40,5); shake(7,18);
+        spawnText(c.x,c.y-30,"Thunder Strike!","#fdd835");
+      }
       updateEVA(`${c.name} ใช้สกิลพิเศษ!`);
     }
 
@@ -1796,6 +1917,7 @@
       const [p1,p2] = eligible.sort(()=>Math.random()-0.5).slice(0,2);
       p1.bond -= 30; p2.bond -= 30; breedCooldown = 180;
       const hint = Math.random() < 0.5 ? p1.element : p2.element;
+      let speciesHint = Math.random() < 0.5 ? p1.species : p2.species;
       const childIV = {
         hp: inheritIV(p1.iv.hp, p2.iv.hp),
         atk: inheritIV(p1.iv.atk, p2.iv.atk),
@@ -1806,10 +1928,11 @@
       if (isMutant){
         childIV.hp = 31; childIV.atk = 31; childIV.spd = 31; // guaranteed perfect IVs
         childTrait = randomTrait();
+        speciesHint = randomSpecies(); // mutation can also surprise with a different animal
       } else if (Math.random() < 0.15){
         childTrait = randomTrait(); // small chance of a fresh, non-inherited trait
       }
-      inv.eggs.push({ timer: 1800, maxTimer:1800, elementHint: hint === "Normal" ? "Neutral" : hint, iv: childIV, trait: childTrait, mutant: isMutant });
+      inv.eggs.push({ timer: 1800, maxTimer:1800, elementHint: hint === "Normal" ? "Neutral" : hint, speciesHint, iv: childIV, trait: childTrait, mutant: isMutant });
       spawnBurst(nest.x,nest.y, isMutant?'#ffd700':'#ff8fc7', isMutant?40:26,3,40,5);
       sfx.breed(); tut.bred = true;
       updateEVA(isMutant ? `✨ เหตุการณ์หายาก! ไข่ของ ${p1.name} และ ${p2.name} เกิดการกลายพันธุ์ผิดปกติ...` : `${p1.name} และ ${p2.name} ผสมพันธุ์กันสำเร็จ! ไข่ฟองใหม่กำลังฟักอยู่ (Trait: ${TRAITS[childTrait].icon} ${TRAITS[childTrait].name})`);
@@ -1903,7 +2026,7 @@
 
     // ---------- Save / Load ----------
     function serializeCreature(c){
-      return { name:c.name, element:c.element, color:c.color, size:c.size, stage:c.stage,
+      return { name:c.name, element:c.element, color:c.color, size:c.size, stage:c.stage, species:c.species,
         hp:c.hp, maxHp:c.maxHp, atk:c.atk, veggieEaten:c.veggieEaten, meatEaten:c.meatEaten,
         bond:c.bond, skillUnlocked:c.skillUnlocked, level:c.level, exp:c.exp,
         iv:c.iv, trait:c.trait, mutant:c.mutant, personality:c.personality, affinity:c.affinity };
@@ -1924,12 +2047,14 @@
         }
       }catch(err){ console.error(err); updateEVA("บันทึกเกมไม่สำเร็จ ลองใหม่อีกครั้ง"); }
     }
+    let hasSaveData = false;
     async function loadGame(){
       if (!window.storage) return;
       try{
         const res = await window.storage.get('eden-save');
         if (res && res.value){
           const data = JSON.parse(res.value);
+          hasSaveData = true;
           inv = Object.assign({coin:20,seeds:5,veggie:0,meat:0,chili:0,crystal:0,wood:0,ore:0,fish:0,eggs:[]}, data.inv);
           energy = typeof data.energy === 'number' ? data.energy : maxEnergy;
           fishingUpgraded = !!data.fishingUpgraded;
@@ -1966,7 +2091,7 @@
     // ---------- Update ----------
     function update(){
       frameCount++;
-      if (storyActive || dialogueOpen || shopOpen || craftOpen){ pressedOnce = {}; updateUI(); return; }
+      if (storyActive || starterActive || dialogueOpen || shopOpen || craftOpen){ pressedOnce = {}; updateUI(); return; }
       if (battleActive){ updateBattle(); pressedOnce = {}; updateUI(); return; }
       const c = active();
 
@@ -2210,7 +2335,7 @@
           else if (item.type==="Obsidian"){ inv.obsidian++; spawnText(item.x,item.y-10,"+1 Obsidian","#4a148c"); }
           else if (item.type==="Relic"){ inv.relic++; spawnText(item.x,item.y-10,"+1 Relic","#9575cd"); }
           else if (item.type==="Fur"){ inv.fur++; spawnText(item.x,item.y-10,"+1 Fur","#e1f5fe"); }
-          else if (item.type==="Egg"){ inv.eggs.push({timer:1800,maxTimer:1800,elementHint:item.elementHint, iv:{hp:rand32(),atk:rand32(),spd:rand32()}, trait:randomTrait(), mutant:false}); spawnText(item.x,item.y-10,"+1 Egg","#ffd54f"); }
+          else if (item.type==="Egg"){ inv.eggs.push({timer:1800,maxTimer:1800,elementHint:item.elementHint, speciesHint:item.speciesHint, iv:{hp:rand32(),atk:rand32(),spd:rand32()}, trait:randomTrait(), mutant:false}); spawnText(item.x,item.y-10,"+1 Egg","#ffd54f"); }
           sfx.pickup();
           items.splice(i,1);
         }
@@ -2221,14 +2346,15 @@
         const egg = inv.eggs[i];
         if (egg.timer>0) egg.timer--;
         if (egg.timer<=0 && party.length<MAX_PARTY){
-          const hint = egg.elementHint;
-          let baseColor = hint==="Fire" ? "#ffb74d" : hint==="Leaf" ? "#c5e1a5" : hint==="Nature" ? "#c5e1a5" :
-            hint==="Water" ? "#b3e5fc" : hint==="Ice" ? "#b3e5fc" : hint==="Earth" ? "#bcaaa4" : hint==="Electric" ? "#fff176" : "#ffeb3b";
+          const species = egg.speciesHint || randomSpecies();
+          const spec = speciesInfo(species);
+          let baseColor = spec.babyColor;
           if (egg.mutant) baseColor = "#ffd700";
-          const hatched = makeCreature("Seedling","Normal", baseColor, player.x-20, player.y+10, {
+          const hatched = makeCreature(spec.babyName, "Normal", baseColor, player.x-20, player.y+10, {
             iv: egg.iv || { hp:rand32(), atk:rand32(), spd:rand32() },
             trait: egg.trait || randomTrait(),
-            mutant: !!egg.mutant
+            mutant: !!egg.mutant,
+            species
           });
           party.push(hatched);
           spawnBurst(player.x,player.y, egg.mutant?'#ffd700':'#ffd54f', egg.mutant?36:20,3,35,4);
@@ -2376,14 +2502,60 @@
     // ---------- Drawing ----------
     function drawShadow(x,y,w,h){ ctx.fillStyle="rgba(0,0,0,0.28)"; ctx.beginPath(); ctx.ellipse(x,y,w,h,0,0,Math.PI*2); ctx.fill(); }
 
+    function drawSpeciesBehind(cr){
+      // features drawn UNDER the main body circle (e.g. a lion's mane)
+      const s = cr.size;
+      if (cr.species === "Lion"){
+        ctx.fillStyle = shade(cr.color,-20);
+        for (let i=0;i<9;i++){
+          const a = (i/9)*Math.PI*2;
+          ctx.beginPath(); ctx.ellipse(Math.cos(a)*s*0.72, Math.sin(a)*s*0.72, s*0.32, s*0.18, a, 0, Math.PI*2); ctx.fill();
+        }
+      }
+    }
+    function drawSpeciesFront(cr){
+      // features drawn OVER the main body circle (ears, shell lines, muzzle, bill)
+      const s = cr.size;
+      if (cr.species === "Wolf"){
+        ctx.fillStyle = shade(cr.color,-25);
+        ctx.beginPath(); ctx.moveTo(-s*0.5,-s*0.65); ctx.lineTo(-s*0.72,-s*1.15); ctx.lineTo(-s*0.22,-s*0.85); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(s*0.5,-s*0.65); ctx.lineTo(s*0.72,-s*1.15); ctx.lineTo(s*0.22,-s*0.85); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = shade(cr.color,20);
+        ctx.beginPath(); ctx.ellipse(0, s*0.32, s*0.3, s*0.18, 0,0,Math.PI*2); ctx.fill();
+      } else if (cr.species === "Turtle"){
+        ctx.fillStyle = shade(cr.color,-20);
+        ctx.beginPath(); ctx.ellipse(0,-s*0.1,s*0.88,s*0.58,0,Math.PI,Math.PI*2); ctx.fill();
+        ctx.strokeStyle = shade(cr.color,-45); ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(-s*0.42,-s*0.45); ctx.lineTo(-s*0.42,-s*0.1);
+        ctx.moveTo(0,-s*0.6); ctx.lineTo(0,-s*0.05);
+        ctx.moveTo(s*0.42,-s*0.45); ctx.lineTo(s*0.42,-s*0.1); ctx.stroke();
+      } else if (cr.species === "Bear"){
+        ctx.fillStyle = shade(cr.color,-15);
+        ctx.beginPath(); ctx.arc(-s*0.58,-s*0.62,s*0.24,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(s*0.58,-s*0.62,s*0.24,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = shade(cr.color,20);
+        ctx.beginPath(); ctx.ellipse(0, s*0.3, s*0.32, s*0.22, 0,0,Math.PI*2); ctx.fill();
+      } else if (cr.species === "Duck"){
+        ctx.fillStyle = "#ff9800";
+        ctx.beginPath(); ctx.moveTo(0,s*0.05); ctx.lineTo(s*0.58,s*0.0); ctx.lineTo(s*0.58,s*0.24); ctx.lineTo(0,s*0.22); ctx.closePath(); ctx.fill();
+      } else if (cr.species === "Lion"){
+        ctx.fillStyle = shade(cr.color,-30);
+        ctx.beginPath(); ctx.moveTo(-s*0.55,-s*0.7); ctx.lineTo(-s*0.7,-s*1.0); ctx.lineTo(-s*0.3,-s*0.85); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(s*0.55,-s*0.7); ctx.lineTo(s*0.7,-s*1.0); ctx.lineTo(s*0.3,-s*0.85); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = shade(cr.color,15);
+        ctx.beginPath(); ctx.ellipse(0, s*0.28, s*0.26, s*0.18, 0,0,Math.PI*2); ctx.fill();
+      }
+    }
     function drawCreature(cr, bobAmp){
       const bob = Math.sin(frameCount*0.15 + cr.x*0.01) * bobAmp;
       drawShadow(cr.x, cr.y+cr.size*0.8, cr.size*0.9, cr.size*0.32);
       ctx.save(); ctx.translate(cr.x, cr.y+bob);
+      drawSpeciesBehind(cr);
       const grad = ctx.createRadialGradient(-cr.size*0.3,-cr.size*0.3,2,0,0,cr.size);
       grad.addColorStop(0, shade(cr.color,40)); grad.addColorStop(1, shade(cr.color,-10));
       ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(0,0,cr.size,0,Math.PI*2); ctx.fill();
       ctx.lineWidth=2; ctx.strokeStyle=shade(cr.color,-30); ctx.stroke();
+      drawSpeciesFront(cr);
 
       if (cr.element==="Nature"){
         ctx.fillStyle="#2e7d32";
