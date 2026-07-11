@@ -265,6 +265,7 @@
       <div class="row" style="margin-top:5px;"><span>🥦 กินผัก</span><span id="ui-bveggie">0</span></div>
       <div class="row"><span>🍖 กินเนื้อ</span><span id="ui-bmeat">0</span></div>
       <div class="row" style="margin-top:5px;"><span id="ui-btrait" title="Trait ติดตัว">✨ Trait</span><span id="ui-bmutant"></span></div>
+      <div class="row" style="margin-top:3px;"><span id="ui-bpersonality" title="นิสัยประจำตัว">🐾 นิสัย</span></div>
       <div style="font-size:10.5px; opacity:0.7; margin-top:2px;" id="ui-biv">IV HP · ATK · SPD</div>
     </div>
 
@@ -361,6 +362,7 @@
       <p>เมื่อมีสัตว์เลี้ยง 2 ตัวขึ้นไปที่วิวัฒนาการแล้วและ Bond ≥80 ยืนใกล้รังกลางฟาร์มแล้วกด <kbd>N</kbd> เพื่อผสมพันธุ์ ไข่จะฟักออกมาเป็นสัตว์เลี้ยงใหม่หลังผ่านไปสักครู่</p>
       <p>🧬 <b>IV / Trait / Mutation:</b> สัตว์เลี้ยงทุกตัวมีค่า IV ซ่อนอยู่ 3 ค่า (HP/ATK/SPD ตั้งแต่ 0-31) ที่ส่งผลต่อสถานะจริงเล็กน้อย และมี Trait ติดตัว 1 อย่างจาก 5 แบบ (💪Hardy HP+10%, 🔥Brave ATK+10%, 💨Swift ความเร็วในศึก+3, 💗Gentle ได้ Bond จากการป้อนอาหารเพิ่ม 50%, ✨Clever ได้ EXP เพิ่ม 20%) เวลาผสมพันธุ์ ไข่จะสืบทอด IV และ Trait จากพ่อแม่แบบสุ่ม (มีโอกาสเล็กน้อยได้ค่าใหม่ที่ไม่ได้มาจากพ่อแม่) และมีโอกาสประมาณ 5% เกิด <b>การกลายพันธุ์ (Mutation)</b> ซึ่งจะได้ IV สมบูรณ์แบบทั้ง 3 ค่าและสีตัวสีทองอมเหลืองพิเศษ ดูค่า IV/Trait ของตัวที่ใช้งานอยู่ได้ที่การ์ดสัตว์เลี้ยงด้านล่างเกม</p>
       <p>ไข่ที่ดรอปจากมอนสเตอร์ในดันเจี้ยน/ถ้ำก็มี IV และ Trait สุ่มของตัวเองเช่นกัน (แต่ไม่มีโอกาสกลายพันธุ์ — กลายพันธุ์เกิดจากการผสมพันธุ์ที่รังเท่านั้น)</p>
+      <p>🐾 <b>นิสัย (Personality):</b> สัตว์เลี้ยงแต่ละตัวเกิดมาพร้อมนิสัย 1 ใน 4 แบบแบบสุ่ม (ไม่ถ่ายทอดตอนผสมพันธุ์) ซึ่งเปลี่ยนทั้งวิธีวิ่งตามผู้เล่นและค่าสถานะ: 🤪<b>ขี้เล่น</b> วิ่งตามแบบส่ายไปมาไวกว่าปกติ (SPD สูง, HP ต่ำ), 🥰<b>ขี้อ้อน</b> เดินใกล้ตัวตลอดเวลา (Bond จากป้อนอาหารสูงมาก, ATK ต่ำ), 😾<b>ขี้โมโห</b> ชอบเดินตามห่างๆ (ATK สูง, Bond ช้า), 😴<b>ขี้เซา</b> เดินตามช้าและแอบงีบหลับเป็นระยะ (HP สูง, SPD ต่ำ) ดูนิสัยของตัวที่ใช้งานอยู่ได้ที่การ์ดสัตว์เลี้ยงด้านล่างเกม</p>
       <p>กด <kbd>P</kbd> เพื่อบันทึกความคืบหน้าได้ตลอดเวลา (บันทึกอัตโนมัติทุก 20 วิด้วย)</p>
       <h4>📜 Quest &amp; NPC</h4>
       <p>ผู้เฒ่าโรวันและมายา นักสมุนไพร ใช้ชีวิตอยู่ในฟาร์มตามตารางเวลาจริง (Daily Schedule) — เดินไปมาตามจุดต่างๆ ขึ้นอยู่กับช่วงเวลาของวัน (รุ่งอรุณ/กลางวัน/พลบค่ำ/กลางคืน) เข้าใกล้แล้วกด <kbd>T</kbd> เพื่อคุย โรวันจะนำทาง Main Quest และมอบ Side Quest ให้เมื่อพร้อม ส่วนมายาเป็นบทสนทนาแนวเป็นกันเองไม่ผูกกับเควส</p>
@@ -995,22 +997,42 @@
     function traitBondMult(trait){ return trait==='gentle' ? 1.5 : 1; }
     function traitExpMult(trait){ return trait==='clever' ? 1.2 : 1; }
 
+    // ---------- Pet Personality: affects movement/follow style & stats ----------
+    const PERSONALITIES = {
+      playful: { icon:'🤪', name:'ขี้เล่น', desc:'ร่าเริง ชอบวิ่งวนเล่นตอนเดินตาม ความเร็ววิ่งตามสูงกว่าปกติ แต่ HP ต่ำกว่าเล็กน้อย',
+        speedMult:1.18, hpMult:0.93, atkMult:1.0, bondMult:1.05, followDist:60, style:'bouncy' },
+      clingy:  { icon:'🥰', name:'ขี้อ้อน', desc:'ติดเจ้าของมาก ชอบเดินใกล้ๆ ตลอดเวลา ได้ Bond จากการป้อนอาหาร/เล่นด้วยเร็วกว่ามาก แต่โจมตีเบากว่า',
+        speedMult:1.0, hpMult:1.0, atkMult:0.9, bondMult:1.35, followDist:26, style:'close' },
+      grumpy:  { icon:'😾', name:'ขี้โมโห', desc:'อารมณ์ร้อน ไม่ค่อยอยากเดินตามใกล้ๆ ได้ Bond ช้ากว่า แต่โจมตีแรงกว่าตัวอื่น',
+        speedMult:0.95, hpMult:1.0, atkMult:1.15, bondMult:0.8, followDist:85, style:'far' },
+      sleepy:  { icon:'😴', name:'ขี้เซา', desc:'เชื่องช้า เดินตามช้าและแอบงีบหลับเป็นระยะ แต่พลังชีวิตสูงกว่าตัวอื่น',
+        speedMult:0.82, hpMult:1.15, atkMult:0.95, bondMult:1.0, followDist:55, style:'slow' }
+    };
+    const PERSONALITY_KEYS = Object.keys(PERSONALITIES);
+    function randomPersonality(){ return PERSONALITY_KEYS[Math.floor(Math.random()*PERSONALITY_KEYS.length)]; }
+    function personalityInfo(p){ return PERSONALITIES[p] || PERSONALITIES.playful; }
+    function personalityMultHp(p){ return personalityInfo(p).hpMult; }
+    function personalityMultAtk(p){ return personalityInfo(p).atkMult; }
+    function personalitySpeedMult(p){ return personalityInfo(p).speedMult; }
+    function personalityBondMult(p){ return personalityInfo(p).bondMult; }
+
     // ---------- Creatures ----------
     function makeCreature(name, element, color, x, y, overrides={}) {
       const iv = overrides.iv || { hp: rand32(), atk: rand32(), spd: rand32() };
       const trait = overrides.trait || randomTrait();
+      const personality = overrides.personality || randomPersonality();
       const mutant = !!overrides.mutant;
-      const hpM = ivMult(iv.hp) * traitMultHp(trait,mutant);
-      const atkM = ivMult(iv.atk) * traitMultAtk(trait,mutant);
+      const hpM = ivMult(iv.hp) * traitMultHp(trait,mutant) * personalityMultHp(personality);
+      const atkM = ivMult(iv.atk) * traitMultAtk(trait,mutant) * personalityMultAtk(personality);
       const maxHp = Math.round(100*hpM);
       const base = {
-        x, y, size:20, speed:3.5, color, name, element, stage:0,
+        x, y, size:20, speed:3.5*personalitySpeedMult(personality), color, name, element, stage:0,
         hp:maxHp, maxHp, atk:Math.round(15*atkM),
         veggieEaten:0, meatEaten:0, bond:20,
         level:1, exp:0,
         skillUnlocked:false, skillCooldown:0,
         target:null, attackCooldown:0, facing:{x:1,y:0},
-        iv, trait, mutant
+        iv, trait, mutant, personality, bouncePhase:Math.random()*Math.PI*2, napTimer:0, napping:false
       };
       return Object.assign(base, overrides);
     }
@@ -1022,8 +1044,8 @@
       while (c.exp >= expNeeded(c.level)){
         c.exp -= expNeeded(c.level);
         c.level++;
-        const hpGain = Math.round(12 * ivMult(c.iv.hp) * traitMultHp(c.trait,c.mutant));
-        const atkGain = Math.round(2 * ivMult(c.iv.atk) * traitMultAtk(c.trait,c.mutant));
+        const hpGain = Math.round(12 * ivMult(c.iv.hp) * traitMultHp(c.trait,c.mutant) * personalityMultHp(c.personality));
+        const atkGain = Math.round(2 * ivMult(c.iv.atk) * traitMultAtk(c.trait,c.mutant) * personalityMultAtk(c.personality));
         c.maxHp += hpGain; c.hp = Math.min(c.maxHp, c.hp + hpGain); c.atk += atkGain;
         leveled = true;
       }
@@ -1776,7 +1798,7 @@
       return { name:c.name, element:c.element, color:c.color, size:c.size, stage:c.stage,
         hp:c.hp, maxHp:c.maxHp, atk:c.atk, veggieEaten:c.veggieEaten, meatEaten:c.meatEaten,
         bond:c.bond, skillUnlocked:c.skillUnlocked, level:c.level, exp:c.exp,
-        iv:c.iv, trait:c.trait, mutant:c.mutant };
+        iv:c.iv, trait:c.trait, mutant:c.mutant, personality:c.personality };
     }
     async function saveGame(){
       if (!window.storage){ updateEVA("ระบบบันทึกไม่พร้อมใช้งานในหน้าต่างนี้"); return; }
@@ -1982,20 +2004,20 @@
         if (autoFeederTimer >= 900){ // periodic auto-feed while a supply of veggies is stocked
           autoFeederTimer = 0;
           if (inv.veggie>0 && c.hp < c.maxHp){
-            inv.veggie--; c.veggieEaten++; c.hp=Math.min(c.maxHp,c.hp+20); c.bond=Math.min(100,c.bond+1*traitBondMult(c.trait));
+            inv.veggie--; c.veggieEaten++; c.hp=Math.min(c.maxHp,c.hp+20); c.bond=Math.min(100,c.bond+1*traitBondMult(c.trait)*personalityBondMult(c.personality));
             spawnText(c.x,c.y-24,"+20 HP (Auto)","#8BC34A"); spawnBurst(c.x,c.y,'#8BC34A',6,1.5,20,3);
             checkEvolution(c);
           }
         }
       }
       if (keys['1'] && feedCooldown<=0 && inv.veggie>0 && energy>=1){
-        inv.veggie--; c.veggieEaten++; c.hp=Math.min(c.maxHp,c.hp+20); c.bond=Math.min(100,c.bond+2*traitBondMult(c.trait)); energy=Math.max(0,energy-1);
+        inv.veggie--; c.veggieEaten++; c.hp=Math.min(c.maxHp,c.hp+20); c.bond=Math.min(100,c.bond+2*traitBondMult(c.trait)*personalityBondMult(c.personality)); energy=Math.max(0,energy-1);
         feedCooldown=30; spawnText(c.x,c.y-24,"+20 HP","#8BC34A"); spawnBurst(c.x,c.y,'#8BC34A',8,2,24,3);
         sfx.feed(); tut.fedVeggie = true;
         checkEvolution(c);
       }
       if (keys['2'] && feedCooldown<=0 && inv.meat>0 && energy>=1){
-        inv.meat--; c.meatEaten++; c.atk+=2; c.bond=Math.min(100,c.bond+2*traitBondMult(c.trait)); energy=Math.max(0,energy-1);
+        inv.meat--; c.meatEaten++; c.atk+=2; c.bond=Math.min(100,c.bond+2*traitBondMult(c.trait)*personalityBondMult(c.personality)); energy=Math.max(0,energy-1);
         feedCooldown=30; spawnText(c.x,c.y-24,"+2 ATK","#ff8a65"); spawnBurst(c.x,c.y,'#ff8a65',8,2,24,3);
         sfx.feed(); tut.fedMeat = true;
         checkEvolution(c);
@@ -2039,10 +2061,25 @@
       if (c.target){
         const angle = Math.atan2(c.target.y-c.y, c.target.x-c.x);
         c.x+=Math.cos(angle)*c.speed; c.y+=Math.sin(angle)*c.speed; c.facing={x:Math.cos(angle),y:Math.sin(angle)};
+        c.napping = false;
       } else {
+        const pers = personalityInfo(c.personality);
         const angle = Math.atan2(player.y-c.y, player.x-c.x);
         const dist = Math.hypot(player.x-c.x, player.y-c.y);
-        if (dist>50){ c.x+=Math.cos(angle)*c.speed; c.y+=Math.sin(angle)*c.speed; c.facing={x:Math.cos(angle),y:Math.sin(angle)}; }
+        if (pers.style === 'slow'){
+          if (c.napTimer > 0){ c.napTimer--; }
+          else if (dist < pers.followDist+15 && Math.random()<0.004){ c.napTimer = 90; }
+        }
+        c.napping = pers.style==='slow' && c.napTimer>0;
+        if (dist > pers.followDist && !c.napping){
+          if (pers.style === 'bouncy'){
+            const wob = Math.sin(frameCount*0.15 + c.bouncePhase) * 0.55;
+            const bx = Math.cos(angle+wob), by = Math.sin(angle+wob);
+            c.x += bx*c.speed; c.y += by*c.speed; c.facing = {x:bx, y:by};
+          } else {
+            c.x+=Math.cos(angle)*c.speed; c.y+=Math.sin(angle)*c.speed; c.facing={x:Math.cos(angle),y:Math.sin(angle)};
+          }
+        }
       }
       if (c.attackCooldown>0) c.attackCooldown--;
 
@@ -2165,6 +2202,10 @@
       document.getElementById('ui-btrait').title = tInfo.desc;
       document.getElementById('ui-bmutant').innerText = c.mutant ? "🌟 กลายพันธุ์" : "";
       document.getElementById('ui-bmutant').style.color = "#ffd700";
+      const pInfo = personalityInfo(c.personality);
+      const pEl = document.getElementById('ui-bpersonality');
+      pEl.innerText = `${pInfo.icon} ${pInfo.name}`;
+      pEl.title = pInfo.desc;
       document.getElementById('ui-biv').innerText = c.iv ? `IV  HP ${c.iv.hp}/31 · ATK ${c.iv.atk}/31 · SPD ${c.iv.spd}/31` : "";
 
       document.getElementById('ui-skillstate').innerText = c.skillUnlocked ? (c.skillCooldown>0 ? "⏳ 1/1 ชาร์จ" : "✅ 1/1 พร้อมใช้") : "🔒 0/1";
@@ -2206,8 +2247,9 @@
         const hpPct = Math.max(0, Math.round(cr.hp/cr.maxHp*100));
         const role = roleForCreature(cr);
         const tInfo = TRAITS[cr.trait] || TRAITS.hardy;
+        const pInfo = personalityInfo(cr.personality);
         div.innerHTML = `<span class="dot" style="background:${cr.color}"></span>
-          <span style="flex:1;">${ROLE_ICONS[role]} ${cr.mutant?'🌟':''}${cr.name} <span style="opacity:.65;" title="${tInfo.desc}">${tInfo.icon} Lv.${cr.stage}</span>
+          <span style="flex:1;">${ROLE_ICONS[role]} ${cr.mutant?'🌟':''}${cr.name} <span style="opacity:.65;" title="${tInfo.desc}">${tInfo.icon} Lv.${cr.stage}</span> <span style="opacity:.65;" title="${pInfo.desc}">${pInfo.icon}</span>
           <div class="barTrack" style="height:4px;margin-top:2px;"><div class="barFill" style="width:${hpPct}%; background:linear-gradient(90deg,#66bb6a,#a5d6a7);"></div></div>
           </span>`;
         partyEl.appendChild(div);
@@ -2249,6 +2291,11 @@
       ctx.strokeStyle="#222"; ctx.lineWidth=2;
       ctx.beginPath(); ctx.arc(0,cr.size*0.15,cr.size*0.28,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
       ctx.restore();
+      if (cr.napping){
+        ctx.font="14px sans-serif"; ctx.textAlign="center";
+        ctx.fillText("💤", cr.x+cr.size*0.6, cr.y-cr.size-2+Math.sin(frameCount*0.05)*2);
+        ctx.textAlign="left";
+      }
     }
 
     function drawPlayer(){
