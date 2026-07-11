@@ -2502,8 +2502,44 @@
     // ---------- Drawing ----------
     function drawShadow(x,y,w,h){ ctx.fillStyle="rgba(0,0,0,0.28)"; ctx.beginPath(); ctx.ellipse(x,y,w,h,0,0,Math.PI*2); ctx.fill(); }
 
+    // Body outline per species: this is the actual silhouette, not just a circle with add-ons.
+    function creatureBodyPath(cr){
+      const s = cr.size;
+      ctx.beginPath();
+      if (cr.species === "Wolf"){
+        // rounded head narrowing to a pointed snout/chin — fox/wolf face shape
+        ctx.moveTo(-s*0.98, -s*0.28);
+        ctx.quadraticCurveTo(-s*0.9, -s*0.98, 0, -s*1.0);
+        ctx.quadraticCurveTo(s*0.9, -s*0.98, s*0.98, -s*0.28);
+        ctx.quadraticCurveTo(s*0.9, s*0.5, s*0.22, s*0.95);
+        ctx.quadraticCurveTo(0, s*1.15, -s*0.22, s*0.95);
+        ctx.quadraticCurveTo(-s*0.9, s*0.5, -s*0.98, -s*0.28);
+      } else if (cr.species === "Turtle"){
+        // wide flattened dome — shell silhouette
+        ctx.ellipse(0, -s*0.05, s*1.2, s*0.8, 0, 0, Math.PI*2);
+      } else if (cr.species === "Bear"){
+        // big chubby rounded body
+        ctx.ellipse(0, 0, s*1.05, s*1.0, 0, 0, Math.PI*2);
+      } else if (cr.species === "Duck"){
+        // egg-shaped, taller than wide
+        ctx.ellipse(0, 0, s*0.82, s*1.08, 0, 0, Math.PI*2);
+      } else if (cr.species === "Lion"){
+        ctx.arc(0, 0, s, 0, Math.PI*2);
+      } else {
+        ctx.arc(0, 0, s, 0, Math.PI*2); // Seedling / default blob
+      }
+      ctx.closePath();
+    }
+    function shadowSize(cr){
+      const s = cr.size;
+      if (cr.species==="Turtle") return { w:s*1.15, h:s*0.4 };
+      if (cr.species==="Duck") return { w:s*0.75, h:s*0.3 };
+      if (cr.species==="Bear") return { w:s*1.0, h:s*0.34 };
+      return { w:s*0.9, h:s*0.32 };
+    }
+
     function drawSpeciesBehind(cr){
-      // features drawn UNDER the main body circle (e.g. a lion's mane)
+      // features drawn UNDER the main body (e.g. a lion's mane)
       const s = cr.size;
       if (cr.species === "Lion"){
         ctx.fillStyle = shade(cr.color,-20);
@@ -2514,46 +2550,64 @@
       }
     }
     function drawSpeciesFront(cr){
-      // features drawn OVER the main body circle (ears, shell lines, muzzle, bill)
+      // features drawn OVER the main body (ears, shell lines, muzzle, bill, legs)
       const s = cr.size;
       if (cr.species === "Wolf"){
         ctx.fillStyle = shade(cr.color,-25);
-        ctx.beginPath(); ctx.moveTo(-s*0.5,-s*0.65); ctx.lineTo(-s*0.72,-s*1.15); ctx.lineTo(-s*0.22,-s*0.85); ctx.closePath(); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(s*0.5,-s*0.65); ctx.lineTo(s*0.72,-s*1.15); ctx.lineTo(s*0.22,-s*0.85); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = shade(cr.color,20);
-        ctx.beginPath(); ctx.ellipse(0, s*0.32, s*0.3, s*0.18, 0,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-s*0.5,-s*0.68); ctx.lineTo(-s*0.75,-s*1.2); ctx.lineTo(-s*0.2,-s*0.88); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(s*0.5,-s*0.68); ctx.lineTo(s*0.75,-s*1.2); ctx.lineTo(s*0.2,-s*0.88); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = shade(cr.color,22);
+        ctx.beginPath(); ctx.ellipse(0, s*0.7, s*0.28, s*0.22, 0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = "#3a2a1a";
+        ctx.beginPath(); ctx.ellipse(0, s*0.92, s*0.08, s*0.06, 0,0,Math.PI*2); ctx.fill();
       } else if (cr.species === "Turtle"){
-        ctx.fillStyle = shade(cr.color,-20);
-        ctx.beginPath(); ctx.ellipse(0,-s*0.1,s*0.88,s*0.58,0,Math.PI,Math.PI*2); ctx.fill();
-        ctx.strokeStyle = shade(cr.color,-45); ctx.lineWidth=1.5;
-        ctx.beginPath(); ctx.moveTo(-s*0.42,-s*0.45); ctx.lineTo(-s*0.42,-s*0.1);
-        ctx.moveTo(0,-s*0.6); ctx.lineTo(0,-s*0.05);
-        ctx.moveTo(s*0.42,-s*0.45); ctx.lineTo(s*0.42,-s*0.1); ctx.stroke();
+        ctx.fillStyle = shade(cr.color,15);
+        ctx.beginPath(); ctx.ellipse(0, s*0.68, s*0.3, s*0.24, 0, 0, Math.PI*2); ctx.fill(); // head peeking out front
+        ctx.fillStyle = shade(cr.color,-10);
+        ctx.beginPath(); ctx.ellipse(-s*0.85, s*0.42, s*0.16, s*0.13, 0.5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(s*0.85, s*0.42, s*0.16, s*0.13, -0.5, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = shade(cr.color,-40); ctx.lineWidth=1.5;
+        ctx.beginPath();
+        ctx.moveTo(-s*0.5,-s*0.55); ctx.lineTo(-s*0.55,s*0.35);
+        ctx.moveTo(0,-s*0.72); ctx.lineTo(0,s*0.42);
+        ctx.moveTo(s*0.5,-s*0.55); ctx.lineTo(s*0.55,s*0.35);
+        ctx.moveTo(-s*0.85,-s*0.15); ctx.lineTo(s*0.85,-s*0.15);
+        ctx.stroke();
       } else if (cr.species === "Bear"){
         ctx.fillStyle = shade(cr.color,-15);
-        ctx.beginPath(); ctx.arc(-s*0.58,-s*0.62,s*0.24,0,Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(s*0.58,-s*0.62,s*0.24,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = shade(cr.color,20);
-        ctx.beginPath(); ctx.ellipse(0, s*0.3, s*0.32, s*0.22, 0,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(-s*0.62,-s*0.68,s*0.26,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(s*0.62,-s*0.68,s*0.26,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = shade(cr.color,10);
+        ctx.beginPath(); ctx.arc(-s*0.62,-s*0.68,s*0.13,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(s*0.62,-s*0.68,s*0.13,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = shade(cr.color,22);
+        ctx.beginPath(); ctx.ellipse(0, s*0.36, s*0.36, s*0.26, 0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = "#3a2a1a";
+        ctx.beginPath(); ctx.ellipse(0, s*0.28, s*0.08, s*0.06, 0,0,Math.PI*2); ctx.fill();
       } else if (cr.species === "Duck"){
         ctx.fillStyle = "#ff9800";
-        ctx.beginPath(); ctx.moveTo(0,s*0.05); ctx.lineTo(s*0.58,s*0.0); ctx.lineTo(s*0.58,s*0.24); ctx.lineTo(0,s*0.22); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-s*0.18,s*0.34); ctx.lineTo(s*0.55,s*0.28); ctx.lineTo(s*0.55,s*0.5); ctx.lineTo(-s*0.18,s*0.5); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = shade(cr.color,-15);
+        ctx.beginPath(); ctx.ellipse(-s*0.62,-s*0.1,s*0.22,s*0.34,0.3,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(s*0.62,-s*0.1,s*0.22,s*0.34,-0.3,0,Math.PI*2); ctx.fill();
       } else if (cr.species === "Lion"){
         ctx.fillStyle = shade(cr.color,-30);
         ctx.beginPath(); ctx.moveTo(-s*0.55,-s*0.7); ctx.lineTo(-s*0.7,-s*1.0); ctx.lineTo(-s*0.3,-s*0.85); ctx.closePath(); ctx.fill();
         ctx.beginPath(); ctx.moveTo(s*0.55,-s*0.7); ctx.lineTo(s*0.7,-s*1.0); ctx.lineTo(s*0.3,-s*0.85); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = shade(cr.color,15);
-        ctx.beginPath(); ctx.ellipse(0, s*0.28, s*0.26, s*0.18, 0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = shade(cr.color,18);
+        ctx.beginPath(); ctx.ellipse(0, s*0.3, s*0.3, s*0.22, 0,0,Math.PI*2); ctx.fill();
       }
     }
     function drawCreature(cr, bobAmp){
       const bob = Math.sin(frameCount*0.15 + cr.x*0.01) * bobAmp;
-      drawShadow(cr.x, cr.y+cr.size*0.8, cr.size*0.9, cr.size*0.32);
+      const sh = shadowSize(cr);
+      drawShadow(cr.x, cr.y+cr.size*0.8, sh.w, sh.h);
       ctx.save(); ctx.translate(cr.x, cr.y+bob);
       drawSpeciesBehind(cr);
-      const grad = ctx.createRadialGradient(-cr.size*0.3,-cr.size*0.3,2,0,0,cr.size);
+      const grad = ctx.createRadialGradient(-cr.size*0.3,-cr.size*0.3,2,0,0,cr.size*1.3);
       grad.addColorStop(0, shade(cr.color,40)); grad.addColorStop(1, shade(cr.color,-10));
-      ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(0,0,cr.size,0,Math.PI*2); ctx.fill();
+      creatureBodyPath(cr);
+      ctx.fillStyle = grad; ctx.fill();
       ctx.lineWidth=2; ctx.strokeStyle=shade(cr.color,-30); ctx.stroke();
       drawSpeciesFront(cr);
 
@@ -2585,13 +2639,18 @@
         }
       }
 
+      let faceY = -cr.size*0.08, faceScale = 1, eyeGap = 0.32;
+      if (cr.species === "Turtle"){ faceY = cr.size*0.62; faceScale = 0.62; eyeGap = 0.22; }
+      else if (cr.species === "Duck"){ faceY = -cr.size*0.28; faceScale = 0.85; eyeGap = 0.28; }
+      else if (cr.species === "Bear" || cr.species === "Lion"){ faceY = 0; faceScale = 0.95; }
+
       const ex=cr.facing.x*3, ey=cr.facing.y*3;
       for (let i=-1;i<=1;i+=2){
-        ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(i*cr.size*0.32,-cr.size*0.08,cr.size*0.22,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle="#222"; ctx.beginPath(); ctx.arc(i*cr.size*0.32+ex*0.5,-cr.size*0.08+ey*0.5,cr.size*0.1,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(i*cr.size*eyeGap,faceY,cr.size*0.22*faceScale,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle="#222"; ctx.beginPath(); ctx.arc(i*cr.size*eyeGap+ex*0.5,faceY+ey*0.5,cr.size*0.1*faceScale,0,Math.PI*2); ctx.fill();
       }
       ctx.strokeStyle="#222"; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.arc(0,cr.size*0.15,cr.size*0.28,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,faceY+cr.size*0.23*faceScale,cr.size*0.28*faceScale,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
       ctx.restore();
       if (cr.napping){
         ctx.font="14px sans-serif"; ctx.textAlign="center";
