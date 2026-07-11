@@ -201,6 +201,7 @@
       <span class="seg"><span id="hud-daynight">☀️</span> <span id="hud-day">Day 1 · กลางวัน</span></span>
       <span class="seg"><span id="hud-weather">🌤️</span> <span id="hud-weathertext">แจ่มใส</span></span>
       <span class="seg"><span id="hud-season">🌸</span> <span id="hud-seasontext">ใบไม้ผลิ</span></span>
+      <span class="seg" id="hud-festival-wrap" style="display:none;"><span id="hud-festival-icon">🎉</span> <span id="hud-festival-text">Festival</span></span>
     </div>
     <div id="titleScreen">
       <div class="egg">🥚</div>
@@ -368,6 +369,8 @@
       <p>🌸🌾 <b>ฤดูกาล:</b> เวลาในเกมหมุนเวียนผ่าน 4 ฤดู (ใบไม้ผลิ → ร้อน → ใบไม้ร่วง → หนาว) ทุกๆ 5 วัน พืชที่ปลูกจะกลายเป็นผักหรือพริกไฟตามฤดูนั้นๆ โดยฤดูร้อนปลูกพริกไฟ ฤดูใบไม้ร่วงให้ผลผลิตโบนัส และฤดูหนาวปลูกไม่ได้เลยถ้ายังไม่มีโรงเรือน</p>
       <p>🪴 <b>ดินและปุ๋ยหมัก:</b> ยืนบนแปลงที่ว่างแล้วกด <kbd>X</kbd> โดยมีไม้อย่างน้อย 3 ท่อน เพื่อปรับปรุงดินให้ดีขึ้น (สูงสุด 2 ระดับ) ดินที่ดีขึ้นทำให้พืชโตเร็วขึ้นและได้ผลผลิตต่อรอบมากขึ้น</p>
       <p>⚙️ <b>ระบบอัตโนมัติ:</b> ในเมนูช่างฝีมือ ประดิษฐ์ 💧 สปริงเกอร์ (รดน้ำอัตโนมัติ โตเร็วเทียบเท่าฝนตลอด), 🏡 โรงเรือน (ปลูกได้แม้ฤดูหนาว ไม่โดนโทษกลางคืน) และ 🍽️ เครื่องให้อาหารอัตโนมัติ (ป้อนผักให้สัตว์เลี้ยงหลักเป็นระยะโดยไม่ต้องกดเอง)</p>
+      <h4>🎉 เทศกาล</h4>
+      <p>ทุกๆ 20 วันจะมีเทศกาลพิเศษหมุนเวียนมา 2 แบบ: 🎣 <b>Fishing Contest</b> (วันที่ 3 ของทุกปี) — ตกปลาให้ได้มากที่สุดในวันนั้นเพื่อรับรางวัลเหรียญตามระดับ (ทองแดง/เงิน/ทอง), และ ⚔️ <b>Monster Tournament</b> (วันที่ 8) — เดินไปที่เวทีประลองสีแดงทางฝั่งขวาของฟาร์มแล้วกด <kbd>V</kbd> เพื่อท้าดวลศัตรูชุดพิเศษ 3 ตัวในระบบ Tactical Battle รางวัลคือเหรียญและ EXP ก้อนใหญ่ ดูเทศกาลที่กำลังจัดอยู่ได้จาก HUD มุมบนของหน้าจอ</p>
     </div>
   </div>
 
@@ -717,8 +720,8 @@
 
     // ---------- Input ----------
     const keys = { w:false, a:false, s:false, d:false, ' ':false, '1':false, '2':false };
-    const actionKeys = ['q','c','e','n','p','t','b','f','g','m','r','w','a','s','d','x',' '];
-    const gameKeys = ['w','a','s','d',' ','1','2','q','c','e','n','p','t','b','f','g','m','r','x'];
+    const actionKeys = ['q','c','e','n','p','t','b','f','g','m','r','w','a','s','d','x','v',' '];
+    const gameKeys = ['w','a','s','d',' ','1','2','q','c','e','n','p','t','b','f','g','m','r','x','v'];
     let pressedOnce = {};
     window.addEventListener('keydown', e => {
       const k = e.key.toLowerCase();
@@ -773,6 +776,53 @@
     }
     let lastSeasonIdx = seasonIdx();
 
+    // ---------- Festivals: Fishing Contest & Monster Tournament ----------
+    const FESTIVAL_CYCLE_DAYS = DAYS_PER_SEASON*4; // 20-day repeating calendar
+    const FESTIVALS = [
+      { key:'fishing',    day:3, icon:'🎣', name:'Fishing Contest',    desc:'ตกปลาให้ได้มากที่สุดภายในวันนี้เพื่อรับรางวัล' },
+      { key:'tournament', day:8, icon:'⚔️', name:'Monster Tournament', desc:'ไปที่เวทีประลองใกล้ฟาร์มแล้วกด V เพื่อท้าดวลศัตรูชุดพิเศษ' }
+    ];
+    function dayOfYear(){ return ((dayCount-1) % FESTIVAL_CYCLE_DAYS) + 1; }
+    function activeFestival(){ return FESTIVALS.find(f=>f.day===dayOfYear()) || null; }
+    let currentFestival = null;
+    let festivalStartCount = 0;
+    let tournamentWon = false;
+    function startFestival(f){
+      tournamentWon = false;
+      mapBanner = { text:`${f.icon} ${f.name}`, sub:f.desc, timer:180 };
+      sfx.zone();
+      if (f.key==='fishing'){
+        festivalStartCount = fishCount;
+        updateEVA(`🎣 Fishing Contest เริ่มแล้ว! วันนี้ตกปลาให้ได้มากที่สุดที่บ่อน้ำ (กด F) เพื่อรับรางวัลตามจำนวนที่ตกได้`);
+      } else if (f.key==='tournament'){
+        updateEVA(`⚔️ Monster Tournament เริ่มแล้ว! เดินไปที่เวทีประลองทางขวาของฟาร์มแล้วกด V เพื่อท้าดวลศัตรูชุดพิเศษ`);
+      }
+    }
+    function endFestival(f){
+      if (f.key==='fishing'){
+        const caught = fishCount - festivalStartCount;
+        let reward=0, tier='';
+        if (caught>=15){ reward=60; tier='🥇 ทอง'; }
+        else if (caught>=8){ reward=35; tier='🥈 เงิน'; }
+        else if (caught>=3){ reward=15; tier='🥉 ทองแดง'; }
+        if (reward>0){ inv.coin += reward; updateEVA(`🎣 Fishing Contest จบแล้ว! คุณตกปลาได้ ${caught} ตัว ได้รางวัล ${tier} รับ ${reward} เหรียญ`); }
+        else updateEVA(`🎣 Fishing Contest จบแล้ว คุณตกปลาได้ ${caught} ตัว ลองใหม่เทศกาลหน้านะ!`);
+      } else if (f.key==='tournament'){
+        updateEVA(tournamentWon ? `⚔️ Monster Tournament ปิดฉากลงแล้ว ยินดีด้วยกับชัยชนะ!` : `⚔️ Monster Tournament จบแล้วสำหรับปีนี้ พบกันใหม่เทศกาลหน้า`);
+      }
+    }
+    function spawnTournamentWave(){
+      const ax = arena.x, ay = arena.y;
+      enemies.push({ x:ax-40, y:ay-20, size:26, hp:70, maxHp:70, color:"#c62828", speed:1, squish:0, boss:false, atk:14, tournamentName:'นักสู้ประลอง' });
+      enemies.push({ x:ax+40, y:ay-20, size:26, hp:70, maxHp:70, color:"#c62828", speed:1, squish:0, boss:false, atk:14, tournamentName:'นักสู้ประลอง' });
+      enemies.push({ x:ax, y:ay+30, size:34, hp:150, maxHp:150, color:"#4a148c", speed:0.8, squish:0, boss:true, atk:25, tournamentName:'แชมป์ประลอง' });
+    }
+    function startTournament(){
+      if (battleActive) return;
+      const trigger = enemies.find(e=>e.tournamentName) || (spawnTournamentWave(), enemies[enemies.length-3]);
+      startBattle(trigger);
+    }
+
     // ---------- Weather system ----------
     let weather = 'clear'; // clear | rain | storm
     let weatherTimer = 0;
@@ -801,6 +851,7 @@
     const SOIL_NAMES = ["ดินธรรมดา","ดินอุดม","ดินเข้มข้น"];
     const SOIL_SPEED = [1, 1.25, 1.55];
     const nest = { x: 420, y: 330, size: 26 };
+    const arena = { x: 480, y: 210, size: 30 };
 
     let enemies = [];
     let items = [];
@@ -1091,7 +1142,7 @@
         if (role==='DPS') atk = Math.round(atk*1.2);
         let maxHp = role==='Tank' ? Math.round(e.maxHp*1.15) : e.maxHp;
         return {
-          isPlayer:false, ref:e, name: e.boss ? "หัวหน้าฝูง" : zoneEnemyName(), color:e.color, element: zoneElement(), size:e.size, role,
+          isPlayer:false, ref:e, name: e.tournamentName || (e.boss ? "หัวหน้าฝูง" : zoneEnemyName()), color:e.color, element: zoneElement(), size:e.size, role,
           hp:Math.min(maxHp,e.hp), maxHp, atk, spd: e.boss?9:13,
           moveRange:2, atkRange:1,
           gx:5, gy:eRows[i], x:0, y:0, squish:0, alive:true, isBoss:!!e.boss, boss:!!e.boss, stunned:false
@@ -1154,6 +1205,16 @@
     function winBattle(){
       battle.ended = true; battle.endTimer = 70;
       for (const u of battle.units){ if (u.isPlayer && u.ref) u.ref.hp = Math.max(1, Math.round(u.hp)); }
+      const isTournament = battle.units.some(u=>!u.isPlayer && u.ref && u.ref.tournamentName);
+      if (isTournament){
+        tournamentWon = true;
+        inv.coin += 80;
+        gainExp(active(), 50);
+        sfx.enemyDown(); flashAlpha = 0.7;
+        updateEVA("🏆 ชนะ Monster Tournament! ได้รับ 80 เหรียญ และ EXP พิเศษ 50");
+        mapBanner = { text:"TOURNAMENT VICTORY!", sub:"ท่านคือแชมป์แห่งเทศกาลปีนี้!", timer:130 };
+        return;
+      }
       if (battle.rewardExp>0) gainExp(active(), battle.rewardExp);
       for (const t of battle.rewardLoot){
         if (currentMap === "Dungeon"){
@@ -1671,6 +1732,8 @@
           fertilizerCharges = data.fertilizerCharges || 0;
           dayCount = data.dayCount || 1;
           lastSeasonIdx = seasonIdx();
+          currentFestival = activeFestival();
+          festivalStartCount = fishCount;
           sprinklerBuilt = !!data.sprinklerBuilt;
           greenhouseBuilt = !!data.greenhouseBuilt;
           autoFeederBuilt = !!data.autoFeederBuilt;
@@ -1700,6 +1763,9 @@
       dayTimer++;
       if (dayTimer >= DAY_LENGTH){
         dayTimer = 0; dayCount++;
+        if (currentFestival) endFestival(currentFestival);
+        currentFestival = activeFestival();
+        if (currentFestival) startFestival(currentFestival);
         const si = seasonIdx();
         if (si !== lastSeasonIdx){
           lastSeasonIdx = si;
@@ -1867,6 +1933,14 @@
       if (pressedOnce.g) chopTree();
       if (pressedOnce.m) mineOre();
       if (pressedOnce.r) openCraft();
+      if (pressedOnce.v){
+        if (currentMap === "Farm" && currentFestival && currentFestival.key === 'tournament'){
+          if (Math.hypot(player.x-arena.x, player.y-arena.y) < 55) startTournament();
+          else updateEVA("ต้องยืนใกล้เวทีประลองทางขวาของฟาร์มก่อนถึงจะเริ่ม Monster Tournament ได้");
+        } else {
+          updateEVA("เวทีประลองจะเปิดใช้งานเฉพาะวัน Monster Tournament เท่านั้น");
+        }
+      }
 
       // active creature follows player; enemies roam and trigger Tactical Grid Battle on contact
       c.target = null;
@@ -2021,6 +2095,14 @@
       document.getElementById('hud-weathertext').innerText = weatherLabel;
       document.getElementById('hud-season').innerText = seasonIcon();
       document.getElementById('hud-seasontext').innerText = seasonName();
+      const festWrap = document.getElementById('hud-festival-wrap');
+      if (currentFestival){
+        festWrap.style.display = '';
+        document.getElementById('hud-festival-icon').innerText = currentFestival.icon;
+        document.getElementById('hud-festival-text').innerText = currentFestival.name;
+      } else {
+        festWrap.style.display = 'none';
+      }
 
       document.getElementById('ui-eggcount').innerText = inv.eggs.length;
       const eggEl = document.getElementById('ui-eggtimer');
@@ -2142,6 +2224,23 @@
       ctx.fillStyle="#fff8"; ctx.font="10px Kanit, sans-serif"; ctx.textAlign="center";
       ctx.fillText("รังผสมพันธุ์ (N)", nest.x, nest.y+nest.size+14);
       ctx.textAlign="left";
+    }
+
+    function drawArena(){
+      if (!currentFestival || currentFestival.key !== 'tournament') return;
+      const pulse = 2+Math.sin(frameCount*0.1);
+      drawShadow(arena.x, arena.y+arena.size*0.6, arena.size*1.1, arena.size*0.35);
+      ctx.save();
+      ctx.strokeStyle = "#c62828"; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.ellipse(arena.x, arena.y, arena.size+pulse, arena.size*0.62+pulse*0.4, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.fillStyle = "rgba(198,40,40,0.25)";
+      ctx.beginPath(); ctx.ellipse(arena.x, arena.y, arena.size, arena.size*0.6, 0, 0, Math.PI*2); ctx.fill();
+      ctx.font="18px sans-serif"; ctx.textAlign="center";
+      ctx.fillText("⚔️", arena.x, arena.y+6);
+      ctx.font="bold 11px Kanit, sans-serif"; ctx.fillStyle="#fff2cf";
+      ctx.fillText("เวทีประลอง (V)", arena.x, arena.y+arena.size+16);
+      ctx.textAlign="left";
+      ctx.restore();
     }
 
     function drawNPC(){
@@ -2414,6 +2513,7 @@
           }
         }
         drawNest();
+        drawArena();
         drawNPC();
         drawTrees();
         drawHint(pond.x,pond.y,70,"กด F ตกปลา");
