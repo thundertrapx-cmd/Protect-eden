@@ -148,6 +148,11 @@
   #dialogueCard .npcName{ font-family:'Press Start 2P',monospace; font-size:11px; color:#ffcf4d; margin-bottom:6px; letter-spacing:0.5px;}
   #dialogueCard .npcText{ font-size:13.5px; line-height:1.6; color:#fff2cf; min-height:44px;}
   #dialogueCard .npcNav{ display:flex; justify-content:flex-end; gap:8px; margin-top:10px;}
+  #dialogueCard .npcFriend{ font-size:11px; color:#ffb74d; margin:-2px 0 6px; }
+  #giftPanel{ display:none; flex-wrap:wrap; gap:6px; margin-top:4px; }
+  #giftPanel.open{ display:flex; }
+  #giftPanel button{ font-family:'Kanit',sans-serif; font-size:11px; padding:5px 8px; border-radius:6px; background:linear-gradient(180deg,#3a2f1a,#1c160c); border:1px solid rgba(255,207,77,0.4); color:#ffe0b2; cursor:pointer; }
+  #giftPanel button:disabled{ opacity:0.35; cursor:not-allowed; }
   #npcPrompt{ position:absolute; display:none; z-index:4; pointer-events:none; }
 
   /* ---------- Quest panels ---------- */
@@ -358,7 +363,8 @@
       <p>ไข่ที่ดรอปจากมอนสเตอร์ในดันเจี้ยน/ถ้ำก็มี IV และ Trait สุ่มของตัวเองเช่นกัน (แต่ไม่มีโอกาสกลายพันธุ์ — กลายพันธุ์เกิดจากการผสมพันธุ์ที่รังเท่านั้น)</p>
       <p>กด <kbd>P</kbd> เพื่อบันทึกความคืบหน้าได้ตลอดเวลา (บันทึกอัตโนมัติทุก 20 วิด้วย)</p>
       <h4>📜 Quest &amp; NPC</h4>
-      <p>ผู้เฒ่าโรวันยืนอยู่มุมฟาร์ม เดินเข้าใกล้แล้วกด <kbd>T</kbd> เพื่อคุย เขาจะนำทาง Main Quest และมอบ Side Quest ให้เมื่อพร้อม ติดตามความคืบหน้าได้ที่แผง Quest Log ด้านล่างเกม</p>
+      <p>ผู้เฒ่าโรวันและมายา นักสมุนไพร ใช้ชีวิตอยู่ในฟาร์มตามตารางเวลาจริง (Daily Schedule) — เดินไปมาตามจุดต่างๆ ขึ้นอยู่กับช่วงเวลาของวัน (รุ่งอรุณ/กลางวัน/พลบค่ำ/กลางคืน) เข้าใกล้แล้วกด <kbd>T</kbd> เพื่อคุย โรวันจะนำทาง Main Quest และมอบ Side Quest ให้เมื่อพร้อม ส่วนมายาเป็นบทสนทนาแนวเป็นกันเองไม่ผูกกับเควส</p>
+      <p>💗 <b>ความสนิทสนม (Friendship):</b> คุยด้วยได้ +2 ความสนิทสนมต่อวัน (จำกัด 1 ครั้ง/วัน/คน) ในหน้าต่างสนทนากดปุ่ม 🎁 ให้ของขวัญ เพื่อเลือกไอเทมจากคลังมอบให้ แต่ละคนมีของที่ชอบ/รักเป็นพิเศษ/ไม่ชอบต่างกัน (โรวันรักคริสตัล ชอบผัก/ไม้, มายารักปลา ชอบพริกไฟ/ผัก) ให้ของที่ใช่จะได้ความสนิทสนมมากกว่า ระดับความสนิทสนมแสดงเป็นหัวใจ (0-5)</p>
       <h4>🛒 ร้านค้า &amp; พลังงาน</h4>
       <p>กดปุ่ม <kbd>B</kbd> หรือ 🛒 ร้านค้า มุมขวาบนเพื่อซื้อเมล็ด/ของฟื้นพลังงาน หรือขายผัก เนื้อ พริกไฟ คริสตัล แลกเป็นเหรียญ</p>
       <p>การปลูก เก็บเกี่ยว ป้อนอาหาร ทำอาหาร และผสมพันธุ์ ใช้ ⚡ พลังงาน พลังงานจะค่อยๆ ฟื้นเองตามเวลา หรือกินอาหารที่ปรุงเสร็จเพื่อฟื้นเร็วขึ้น</p>
@@ -399,8 +405,11 @@
       <div class="npcPortrait"></div>
       <div class="npcBody">
         <div class="npcName" id="npcName">ผู้เฒ่าโรวัน</div>
+        <div class="npcFriend" id="npcFriend">ความสนิทสนม: 🤍🤍🤍🤍🤍</div>
         <div class="npcText" id="npcText"></div>
+        <div id="giftPanel"></div>
         <div class="npcNav">
+          <button class="btn" id="npcGiftBtn" style="background:linear-gradient(180deg,#5a3a1a,#2a1a08); margin-right:auto;">🎁 ให้ของขวัญ</button>
           <button class="btn" id="npcCloseBtn">ปิด ✕</button>
           <button class="btn" id="npcNextBtn" style="background:linear-gradient(180deg,#3a5a2a,#1c3a0f);">ถัดไป ▶</button>
         </div>
@@ -570,12 +579,47 @@
     const npcTextEl = document.getElementById('npcText');
     const npcNameEl = document.getElementById('npcName');
     let dialogueLines = [], dialogueIndex = 0;
-    function openDialogue(name, lines){
+    let activeDialogueNpc = null;
+    function friendshipHearts(npcObj){ return Math.floor((npcObj.friendship||0)/20); }
+    function renderNpcFriend(npcObj){
+      const hearts = friendshipHearts(npcObj);
+      document.getElementById('npcFriend').textContent = 'ความสนิทสนม: ' + '❤️'.repeat(hearts) + '🤍'.repeat(5-hearts);
+    }
+    const GIFT_ITEMS = [
+      {key:'veggie', label:'🥕 ผัก'}, {key:'meat', label:'🍖 เนื้อ'}, {key:'chili', label:'🌶️ พริกไฟ'},
+      {key:'fish', label:'🐟 ปลา'}, {key:'crystal', label:'💎 คริสตัล'}, {key:'wood', label:'🪵 ไม้'},
+      {key:'ore', label:'⛏️ แร่'}, {key:'obsidian', label:'🖤 ออบซิเดียน'}, {key:'relic', label:'🏺 โบราณวัตถุ'}, {key:'fur', label:'🧶 ขนสัตว์'}
+    ];
+    function renderGiftPanel(){
+      const el = document.getElementById('giftPanel');
+      el.innerHTML = GIFT_ITEMS.map(g=>`<button ${((inv[g.key]||0)<=0)?'disabled':''} onclick="giveGift('${g.key}')">${g.label} (${inv[g.key]||0})</button>`).join('');
+    }
+    function giveGift(itemKey){
+      const npcObj = activeDialogueNpc;
+      if (!npcObj || (inv[itemKey]||0) <= 0) return;
+      inv[itemKey]--;
+      let delta = 3, reaction = 'เฉยๆ นะ แต่ก็ขอบใจ';
+      if ((npcObj.loves||[]).includes(itemKey)){ delta = 15; reaction = 'ชอบมากๆ เลย! ขอบใจนะ'; sfx.chime(); }
+      else if ((npcObj.likes||[]).includes(itemKey)){ delta = 8; reaction = 'โอ้ ชอบนะเนี่ย ขอบใจ'; sfx.pickup(); }
+      else if ((npcObj.dislikes||[]).includes(itemKey)){ delta = -5; reaction = 'อืม...ไม่ค่อยถูกใจเท่าไหร่ แต่ก็ขอบใจที่คิดถึงนะ'; }
+      npcObj.friendship = Math.max(0, Math.min(100, (npcObj.friendship||0)+delta));
+      const msg = `${npcObj.name}: "${reaction}" (${delta>=0?'+':''}${delta} ความสนิทสนม)`;
+      dialogueLines = [msg]; dialogueIndex = 0;
+      npcTextEl.textContent = msg;
+      document.getElementById('npcNextBtn').textContent = "ปิด";
+      renderNpcFriend(npcObj);
+      renderGiftPanel();
+      updateUI();
+    }
+    function openDialogue(npcObj, lines){
       dialogueOpen = true;
-      npcNameEl.textContent = name;
+      activeDialogueNpc = npcObj;
+      npcNameEl.textContent = npcObj.name;
       dialogueLines = lines; dialogueIndex = 0;
       npcTextEl.textContent = dialogueLines[0];
       document.getElementById('npcNextBtn').textContent = dialogueLines.length>1 ? "ถัดไป ▶" : "ปิด";
+      renderNpcFriend(npcObj);
+      document.getElementById('giftPanel').classList.remove('open');
       dialogueOverlayEl.classList.add('open');
     }
     function advanceDialogue(){
@@ -587,19 +631,36 @@
     function closeDialogue(){
       dialogueOpen = false;
       dialogueOverlayEl.classList.remove('open');
+      document.getElementById('giftPanel').classList.remove('open');
     }
     document.getElementById('npcNextBtn').addEventListener('click', advanceDialogue);
     document.getElementById('npcCloseBtn').addEventListener('click', closeDialogue);
+    document.getElementById('npcGiftBtn').addEventListener('click', ()=>{
+      const el = document.getElementById('giftPanel');
+      el.classList.toggle('open');
+      if (el.classList.contains('open')) renderGiftPanel();
+    });
     dialogueOverlayEl.addEventListener('click', e=>{ if (e.target===dialogueOverlayEl) closeDialogue(); });
 
-    const npc = { x:110, y:120, size:22, name:"ผู้เฒ่าโรวัน", range:58 };
+    // ---------- NPCs: daily schedule + friendship ----------
+    const npc = { x:110, y:120, size:22, name:"ผู้เฒ่าโรวัน", range:58, friendship:0, lastTalkDay:0,
+      loves:['crystal'], likes:['veggie','wood'], dislikes:['fish'],
+      schedule:[ {phase:'dawn',x:110,y:120}, {phase:'day',x:110,y:120}, {phase:'dusk',x:150,y:160}, {phase:'night',x:100,y:100} ] };
+    const npc2 = { x:70, y:340, size:20, name:"มายา นักสมุนไพร", range:55, friendship:0, lastTalkDay:0,
+      loves:['fish'], likes:['chili','veggie'], dislikes:['ore'],
+      schedule:[ {phase:'dawn',x:70,y:340}, {phase:'day',x:160,y:420}, {phase:'dusk',x:260,y:100}, {phase:'night',x:70,y:360} ] };
+    function scheduledPos(npcObj){
+      const phase = dayPhase();
+      return npcObj.schedule.find(s=>s.phase===phase) || npcObj.schedule[0];
+    }
 
     function talkToNPC(){
       sfx.chime();
+      if (npc.lastTalkDay !== dayCount){ npc.lastTalkDay = dayCount; npc.friendship = Math.min(100, npc.friendship+2); }
       if (!tut.talkedToRowan){
         tut.talkedToRowan = true;
         sideQuestsUnlocked = true;
-        openDialogue(npc.name, [
+        openDialogue(npc, [
           "อ้อ...เจ้าตื่นแล้วสินะ ข้าคือผู้เฒ่าโรวัน ผู้เฝ้าดูแลฟาร์มเอเดนแห่งนี้มาหลายปี",
           "ที่นี่เคยอุดมสมบูรณ์ ก่อนสัตว์ประหลาดจะยึดครองป่าและถ้ำรอบข้าง จนผู้คนหนีหายไปเกือบหมด",
           "ถ้าเจ้าช่วยฟื้นฟูฟาร์ม ดูแลสัตว์เลี้ยง และกล้าเผชิญหน้ากับสิ่งเหล่านั้น บางทีเราอาจพลิกฟื้นเอเดนได้อีกครั้ง",
@@ -614,20 +675,34 @@
           "สัตว์เลี้ยงของเจ้าดูมีความสุขดี ดูแลมันต่อไปนะ",
           "ยังมีภารกิจเสริมเหลืออยู่ ลองสำรวจดูได้เรื่อยๆ"
         ];
-        openDialogue(npc.name, [ flavor[Math.floor(Math.random()*flavor.length)] ]);
+        openDialogue(npc, [ flavor[Math.floor(Math.random()*flavor.length)] ]);
         return;
       }
       const step = tutorialSteps[tutorialIndex];
       if (step.id === 'finalReport'){
         tut.talkedToRowanFinal = true;
-        openDialogue(npc.name, [
+        openDialogue(npc, [
           "เจ้าทำได้เกินคาด ปลูก เก็บเกี่ยว เลี้ยงดู ต่อสู้ ปรุงอาหาร ผสมพันธุ์ และบันทึกเรื่องราวไว้ครบถ้วน",
           "Main Quest จบลงแล้ว แต่เรื่องราวของเอเดนยังไม่จบ...ยังมีภารกิจเสริมให้ทำอีกมากมาย",
           "ขอบใจที่ช่วยฟื้นฟูบ้านของข้านะ นักเดินทาง"
         ]);
         return;
       }
-      openDialogue(npc.name, [ `ภารกิจตอนนี้คือ "${step.title}"`, step.desc ]);
+      openDialogue(npc, [ `ภารกิจตอนนี้คือ "${step.title}"`, step.desc ]);
+    }
+
+    function talkToMaya(){
+      sfx.chime();
+      if (npc2.lastTalkDay !== dayCount){ npc2.lastTalkDay = dayCount; npc2.friendship = Math.min(100, npc2.friendship+2); }
+      const lines = [
+        "โอ้! เจอกันอีกแล้วนะ วันนี้ปลาที่บ่อกัดเบ็ดดีจัง 🎣",
+        "ข้าชื่อมายา เดินทางตามหาสมุนไพรหายากมาหลายเมือง แต่หมู่นี้ปักหลักอยู่แถวฟาร์มนี้แหละ",
+        "ถ้าเจอปลาแปลกๆ หรือพริกไฟระหว่างผจญภัย เอามาแลกเปลี่ยนความรู้กับข้าได้นะ",
+        "ลองปรุงอาหารรสจัดๆ ดูสิ ใส่พริกไฟเยอะๆ อร่อยกว่าเดิมเยอะเลย!",
+        "ฟาร์มนี้อบอุ่นดีนะ อยู่ๆ ไปข้าก็เริ่มไม่อยากย้ายไปไหนแล้ว"
+      ];
+      const idx = Math.floor(Math.random()*lines.length);
+      openDialogue(npc2, [ lines[idx] ]);
     }
 
     // ---------- Main Quest chain (also drives the tutorial banner) ----------
@@ -1709,6 +1784,7 @@
         const data = { inv, energy, party: party.map(serializeCreature), activeIndex,
           fishingUpgraded, miningUpgraded, woodcuttingUpgraded, fertilizerCharges, dayCount,
           sprinklerBuilt, greenhouseBuilt, autoFeederBuilt,
+          npcFriendship: { rowan: npc.friendship, maya: npc2.friendship },
           plots: plots.map(p=>({state:p.state, timer:p.timer, maxTimer:p.maxTimer, soil:p.soil, crop:p.crop})) };
         const res = await window.storage.set('eden-save', JSON.stringify(data));
         if (res){
@@ -1737,6 +1813,10 @@
           sprinklerBuilt = !!data.sprinklerBuilt;
           greenhouseBuilt = !!data.greenhouseBuilt;
           autoFeederBuilt = !!data.autoFeederBuilt;
+          if (data.npcFriendship){
+            npc.friendship = data.npcFriendship.rowan || 0;
+            npc2.friendship = data.npcFriendship.maya || 0;
+          }
           if (data.plots && Array.isArray(data.plots)){
             data.plots.forEach((sp,i)=>{ if (plots[i]) Object.assign(plots[i], { state:sp.state||0, timer:sp.timer||0, maxTimer:sp.maxTimer||180, soil:sp.soil||0, crop:sp.crop||null }); });
           }
@@ -1804,6 +1884,11 @@
         if (player.x > canvas.width-30) switchMap("Dungeon");
         else if (player.x < 10) switchMap("Cave");
         else if (player.y < 10) switchMap("Snow");
+        for (const nObj of [npc, npc2]){
+          const target = scheduledPos(nObj);
+          nObj.x += (target.x - nObj.x) * 0.01;
+          nObj.y += (target.y - nObj.y) * 0.01;
+        }
       } else if (currentMap === "Dungeon"){
         if (player.x < 10) switchMap("Farm");
         else if (player.x > canvas.width-30) switchMap("Ruins");
@@ -1926,7 +2011,8 @@
       if (pressedOnce.p) saveGame();
       if (pressedOnce.t){
         if (currentMap === "Farm" && Math.hypot(player.x-npc.x, player.y-npc.y) < npc.range) talkToNPC();
-        else updateEVA("ต้องเข้าไปใกล้ผู้เฒ่าโรวันที่ฟาร์มก่อนถึงจะคุยได้");
+        else if (currentMap === "Farm" && Math.hypot(player.x-npc2.x, player.y-npc2.y) < npc2.range) talkToMaya();
+        else updateEVA("ต้องเข้าไปใกล้ผู้เฒ่าโรวันหรือมายาที่ฟาร์มก่อนถึงจะคุยได้");
       }
       if (pressedOnce.b) openShop();
       if (pressedOnce.f) fish();
@@ -2243,32 +2329,38 @@
       ctx.restore();
     }
 
-    function drawNPC(){
+    function drawNPCVisual(nObj, robeColor, hoodColor, needsAttention){
       const bob = Math.sin(frameCount*0.06)*2;
-      drawShadow(npc.x, npc.y+npc.size*0.95, npc.size*0.7, npc.size*0.25);
-      ctx.save(); ctx.translate(npc.x, npc.y+bob);
-      ctx.fillStyle="#5a7a4a"; ctx.beginPath(); ctx.roundRect(-npc.size*0.4,-npc.size*0.1,npc.size*0.8,npc.size*0.7,6); ctx.fill();
-      ctx.fillStyle="#d9b98a"; ctx.beginPath(); ctx.arc(0,-npc.size*0.35,npc.size*0.36,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle="#e8e8e8";
-      ctx.beginPath(); ctx.moveTo(-npc.size*0.3,-npc.size*0.55); ctx.quadraticCurveTo(0,-npc.size*0.95,npc.size*0.3,-npc.size*0.55); ctx.quadraticCurveTo(0,-npc.size*0.4,-npc.size*0.3,-npc.size*0.55); ctx.fill();
+      drawShadow(nObj.x, nObj.y+nObj.size*0.95, nObj.size*0.7, nObj.size*0.25);
+      ctx.save(); ctx.translate(nObj.x, nObj.y+bob);
+      ctx.fillStyle=robeColor; ctx.beginPath(); ctx.roundRect(-nObj.size*0.4,-nObj.size*0.1,nObj.size*0.8,nObj.size*0.7,6); ctx.fill();
+      ctx.fillStyle="#d9b98a"; ctx.beginPath(); ctx.arc(0,-nObj.size*0.35,nObj.size*0.36,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=hoodColor;
+      ctx.beginPath(); ctx.moveTo(-nObj.size*0.3,-nObj.size*0.55); ctx.quadraticCurveTo(0,-nObj.size*0.95,nObj.size*0.3,-nObj.size*0.55); ctx.quadraticCurveTo(0,-nObj.size*0.4,-nObj.size*0.3,-nObj.size*0.55); ctx.fill();
       ctx.fillStyle="#3a2410";
-      ctx.beginPath(); ctx.arc(-npc.size*0.1,-npc.size*0.33,2,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(npc.size*0.1,-npc.size*0.33,2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-nObj.size*0.1,-nObj.size*0.33,2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(nObj.size*0.1,-nObj.size*0.33,2,0,Math.PI*2); ctx.fill();
       ctx.strokeStyle="#8a5a30"; ctx.lineWidth=3;
-      ctx.beginPath(); ctx.moveTo(npc.size*0.42,-npc.size*0.05); ctx.lineTo(npc.size*0.5,npc.size*0.55); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(nObj.size*0.42,-nObj.size*0.05); ctx.lineTo(nObj.size*0.5,nObj.size*0.55); ctx.stroke();
       ctx.restore();
 
-      const dist = Math.hypot(player.x-npc.x, player.y-npc.y);
-      if (dist < npc.range && gameStarted && !storyActive){
+      const dist = Math.hypot(player.x-nObj.x, player.y-nObj.y);
+      if (dist < nObj.range && gameStarted && !storyActive){
         const iconBob = Math.sin(frameCount*0.15)*3;
-        const needsAttention = !tut.talkedToRowan || (tutorialIndex<tutorialSteps.length && tutorialSteps[tutorialIndex].id==='finalReport');
         ctx.textAlign="center";
         ctx.font="16px sans-serif";
-        ctx.fillText(needsAttention ? "❗" : "💬", npc.x, npc.y-npc.size*1.2+iconBob);
+        ctx.fillText(needsAttention ? "❗" : "💬", nObj.x, nObj.y-nObj.size*1.2+iconBob);
         ctx.font="bold 11px Kanit, sans-serif"; ctx.fillStyle="#fff2cf";
-        ctx.fillText("กด T เพื่อคุย", npc.x, npc.y-npc.size*1.5+iconBob);
+        ctx.fillText("กด T เพื่อคุย", nObj.x, nObj.y-nObj.size*1.5+iconBob);
         ctx.textAlign="left";
       }
+    }
+    function drawNPC(){
+      const needsAttention = !tut.talkedToRowan || (tutorialIndex<tutorialSteps.length && tutorialSteps[tutorialIndex].id==='finalReport');
+      drawNPCVisual(npc, "#5a7a4a", "#e8e8e8", needsAttention);
+    }
+    function drawMaya(){
+      drawNPCVisual(npc2, "#4a6a8a", "#ffca9e", false);
     }
 
     function drawHint(x,y,rangeDist,label){
@@ -2515,6 +2607,7 @@
         drawNest();
         drawArena();
         drawNPC();
+        drawMaya();
         drawTrees();
         drawHint(pond.x,pond.y,70,"กด F ตกปลา");
         if (phase==='night' || phase==='dusk') drawFireflies();
