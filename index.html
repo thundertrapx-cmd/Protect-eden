@@ -1070,6 +1070,13 @@
       if ((di+1)%5 === ai) return 0.75; // atk's element is weak against def's element
       return 1;
     }
+    // Crit chance: DPS units land bigger hits more often; 'brave' creatures are natural risk-takers
+    function critChance(u){
+      let c = 0.10;
+      if (u.role === 'DPS') c += 0.08;
+      if (u.ref && u.ref.trait === 'brave') c += 0.10;
+      return c;
+    }
 
     // ---------- Affinity Berries: food that steers evolution toward an element ----------
     const BERRIES = {
@@ -1211,8 +1218,9 @@
       while (c.exp >= expNeeded(c.level)){
         c.exp -= expNeeded(c.level);
         c.level++;
-        const hpGain = Math.round(12 * ivMult(c.iv.hp) * traitMultHp(c.trait,c.mutant) * personalityMultHp(c.personality));
-        const atkGain = Math.round(2 * ivMult(c.iv.atk) * traitMultAtk(c.trait,c.mutant) * personalityMultAtk(c.personality));
+        const spec = speciesInfo(c.species);
+        const hpGain = Math.round(12 * ivMult(c.iv.hp) * traitMultHp(c.trait,c.mutant) * personalityMultHp(c.personality) * spec.hpMult);
+        const atkGain = Math.round(2 * ivMult(c.iv.atk) * traitMultAtk(c.trait,c.mutant) * personalityMultAtk(c.personality) * spec.atkMult);
         c.maxHp += hpGain; c.hp = Math.min(c.maxHp, c.hp + hpGain); c.atk += atkGain;
         leveled = true;
       }
@@ -1442,7 +1450,7 @@
           isPlayer:true, ref:cr, name:cr.name, color:cr.color, element:cr.element, size:cr.size, role,
           hp:Math.min(maxHp,cr.hp), maxHp, atk, spd:10+cr.level+(cr.stage*3)+traitSpdBonus(cr.trait),
           moveRange:3, atkRange: cr.element==="Nature" ? 2 : 1,
-          gx:1, gy:pRows[i], x:0, y:0, facing:{x:1,y:0}, alive:true, isBoss:false, stunned:false
+          gx:1, gy:pRows[i], x:0, y:0, facing:{x:1,y:0}, alive:true, isBoss:false, stunned:false, defending:false
         };
       });
       const eUnits = cluster.map((e,i)=>{
@@ -1483,6 +1491,7 @@
         return;
       }
       battle.activeUnit = u;
+      u.defending = false;
       battle.cursor = {gx:u.gx, gy:u.gy};
       battle.targets = []; battle.targetIndex = 0;
       if (u.isPlayer){
@@ -1576,7 +1585,15 @@
         battle.phase = 'resolve'; battle.phaseTimer = 10;
       }
     }
-    function skipTurn(){ battle.phase = 'resolve'; battle.phaseTimer = 5; }
+    function skipTurn(){
+      if (battle.activeUnit){
+        battle.activeUnit.defending = true;
+        const pos = cellToPixel(battle.activeUnit.gx, battle.activeUnit.gy);
+        spawnText(pos.x,pos.y-30,"DEFEND!","#64b5f6");
+        updateEVA(`🛡️ ${battle.activeUnit.name} ตั้งการ์ด! ลดดาเมจที่ได้รับ 30% จนกว่าจะถึงตาถัดไป`);
+      }
+      battle.phase = 'resolve'; battle.phaseTimer = 5;
+    }
     function cycleTarget(dir){
       if (battle.targets.length===0) return;
       battle.targetIndex = (battle.targetIndex + dir + battle.targets.length) % battle.targets.length;
@@ -1599,12 +1616,16 @@
       }
       let dmg = Math.max(1, Math.round(u.atk * (0.85 + Math.random()*0.3)));
       dmg = Math.round(dmg * typeMultiplier(u.element, t.element));
+      const isCrit = Math.random() < critChance(u);
+      if (isCrit) dmg = Math.round(dmg*1.6);
       if (t.role==='Tank') dmg = Math.max(1, Math.round(dmg*0.8));
+      if (t.defending) dmg = Math.max(1, Math.round(dmg*0.7));
       t.hp -= dmg;
       const pos = cellToPixel(t.gx,t.gy);
       spawnText(pos.x,pos.y-24,"-"+dmg,"#ff5252");
+      if (isCrit) spawnText(pos.x,pos.y-42,"CRIT!","#ffeb3b");
       spawnBurst(pos.x,pos.y,t.color,14,3,26,4);
-      sfx.hit(); shake(3,6);
+      sfx.hit(); shake(isCrit?5:3,isCrit?9:6);
       if (t.ref) t.ref.hp = Math.max(0, Math.round(t.hp));
       if (t.hp<=0){
         t.hp = 0; t.alive = false;
@@ -1641,12 +1662,16 @@
       if (gridDist(u,target) <= u.atkRange){
         let dmg = Math.max(1, Math.round(u.atk * (0.85 + Math.random()*0.3)));
         dmg = Math.round(dmg * typeMultiplier(u.element, target.element));
+        const isCrit = Math.random() < critChance(u);
+        if (isCrit) dmg = Math.round(dmg*1.6);
         if (target.role==='Tank') dmg = Math.max(1, Math.round(dmg*0.8));
+        if (target.defending) dmg = Math.max(1, Math.round(dmg*0.7));
         target.hp -= dmg;
         const pos = cellToPixel(target.gx,target.gy);
         spawnText(pos.x,pos.y-24,"-"+dmg,"#ff5252");
+        if (isCrit) spawnText(pos.x,pos.y-42,"CRIT!","#ffeb3b");
         spawnBurst(pos.x,pos.y,'#ff5252',12,3,26,4);
-        sfx.hit(); shake(2,5);
+        sfx.hit(); shake(isCrit?4:2,isCrit?8:5);
         if (target.ref) target.ref.hp = Math.max(0, Math.round(target.hp));
         if (target.hp<=0){
           target.hp = 0; target.alive = false;
@@ -1691,7 +1716,7 @@
         if (pressedOnce.a || pressedOnce.w) cycleTarget(-1);
         if (pressedOnce.d || pressedOnce.s) cycleTarget(1);
         if (pressedOnce[' ']) confirmAttack();
-        if (pressedOnce.q){ battle.phase='resolve'; battle.phaseTimer=5; }
+        if (pressedOnce.q){ skipTurn(); }
       } else if (battle.phase === 'ai_think'){
         battle.aiTimer--;
         if (battle.aiTimer<=0) aiAct(u);
@@ -1774,8 +1799,8 @@
 
       ctx.font="12.5px Kanit, sans-serif"; ctx.fillStyle="#fff2cf"; ctx.textAlign="center";
       let hint = "";
-      if (u && u.isPlayer && battle.phase==='move') hint = "WASD: เคลื่อนที่ · SPACE: ยืนยัน · Q: ข้ามเทิร์น";
-      else if (u && u.isPlayer && battle.phase==='target') hint = u.role==='Support' ? "A/D: เลือกเป้า (แดง=โจมตี เขียว=รักษา) · SPACE: ยืนยัน · Q: ยกเลิก" : "A/D: เลือกเป้าหมาย · SPACE: โจมตี · Q: ไม่โจมตี";
+      if (u && u.isPlayer && battle.phase==='move') hint = "WASD: เคลื่อนที่ · SPACE: ยืนยัน · Q: ตั้งการ์ด (ลดดาเมจ 30%)";
+      else if (u && u.isPlayer && battle.phase==='target') hint = u.role==='Support' ? "A/D: เลือกเป้า (แดง=โจมตี เขียว=รักษา) · SPACE: ยืนยัน · Q: ตั้งการ์ดแทน" : "A/D: เลือกเป้าหมาย · SPACE: โจมตี · Q: ตั้งการ์ดแทน";
       else if (u && !u.isPlayer) hint = (u.name||"ศัตรู") + " กำลังคิด...";
       ctx.fillText(hint, canvas.width/2, canvas.height-14);
       ctx.textAlign="left";
@@ -2025,6 +2050,22 @@
     craftOverlayEl.addEventListener('click', e=>{ if (e.target===craftOverlayEl) closeCraft(); });
 
     // ---------- Save / Load ----------
+    // Prefer the Artifact storage API when available (claude.ai), but fall back to
+    // localStorage so the game can still save/load when opened as a plain HTML file
+    // in a normal browser — this is what fixes "ระบบบันทึกไม่พร้อมใช้งาน".
+    const LS_KEY = "eden-save-v1";
+    async function storageSet(key, value){
+      if (window.storage){
+        try{ const r = await window.storage.set(key, value); if (r) return true; }catch(err){ console.error(err); }
+      }
+      try{ localStorage.setItem(LS_KEY, value); return true; }catch(err){ console.error(err); return false; }
+    }
+    async function storageGet(key){
+      if (window.storage){
+        try{ const r = await window.storage.get(key); if (r && r.value) return r.value; }catch(err){ /* fall through to localStorage */ }
+      }
+      try{ return localStorage.getItem(LS_KEY); }catch(err){ return null; }
+    }
     function serializeCreature(c){
       return { name:c.name, element:c.element, color:c.color, size:c.size, stage:c.stage, species:c.species,
         hp:c.hp, maxHp:c.maxHp, atk:c.atk, veggieEaten:c.veggieEaten, meatEaten:c.meatEaten,
@@ -2032,28 +2073,28 @@
         iv:c.iv, trait:c.trait, mutant:c.mutant, personality:c.personality, affinity:c.affinity };
     }
     async function saveGame(){
-      if (!window.storage){ updateEVA("ระบบบันทึกไม่พร้อมใช้งานในหน้าต่างนี้"); return; }
       try{
         const data = { inv, energy, party: party.map(serializeCreature), activeIndex,
           fishingUpgraded, miningUpgraded, woodcuttingUpgraded, fertilizerCharges, dayCount,
           sprinklerBuilt, greenhouseBuilt, autoFeederBuilt,
           npcFriendship: { rowan: npc.friendship, maya: npc2.friendship },
           plots: plots.map(p=>({state:p.state, timer:p.timer, maxTimer:p.maxTimer, soil:p.soil, crop:p.crop})) };
-        const res = await window.storage.set('eden-save', JSON.stringify(data));
-        if (res){
+        const ok = await storageSet('eden-save', JSON.stringify(data));
+        if (ok){
           sfx.save(); tut.saved = true;
           updateEVA("💾 บันทึกเกมเรียบร้อยแล้ว!");
           document.getElementById('save-status').innerText = "บันทึกล่าสุด: " + new Date().toLocaleTimeString();
+        } else {
+          updateEVA("บันทึกเกมไม่สำเร็จ เบราว์เซอร์นี้อาจปิดกั้นการจัดเก็บข้อมูล (ลองเปิดโหมดปกติ ไม่ใช่ Incognito)");
         }
       }catch(err){ console.error(err); updateEVA("บันทึกเกมไม่สำเร็จ ลองใหม่อีกครั้ง"); }
     }
     let hasSaveData = false;
     async function loadGame(){
-      if (!window.storage) return;
       try{
-        const res = await window.storage.get('eden-save');
-        if (res && res.value){
-          const data = JSON.parse(res.value);
+        const raw = await storageGet('eden-save');
+        if (raw){
+          const data = JSON.parse(raw);
           hasSaveData = true;
           inv = Object.assign({coin:20,seeds:5,veggie:0,meat:0,chili:0,crystal:0,wood:0,ore:0,fish:0,eggs:[]}, data.inv);
           energy = typeof data.energy === 'number' ? data.energy : maxEnergy;
