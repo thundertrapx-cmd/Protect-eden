@@ -1759,7 +1759,7 @@
       battle = {
         units:[...pUnits, ...eUnits], turnQueue:[], turnIndex:0, activeUnit:null,
         phase:'move', cursor:{gx:1,gy:pRows[0]}, reachable:[], targets:[], targetIndex:0,
-        aiTimer:0, phaseTimer:0, ended:false, endTimer:0, retreat:false, rewardExp:0, rewardLoot:[]
+        aiTimer:0, phaseTimer:0, ended:false, endTimer:0, retreat:false, rewardExp:0, rewardLoot:[], anim:null
       };
       buildTurnQueue();
       beginUnitTurn();
@@ -1889,20 +1889,28 @@
       if (battle.targets.length===0) return;
       battle.targetIndex = (battle.targetIndex + dir + battle.targets.length) % battle.targets.length;
     }
+    function startAttackAnim(attacker, target, isHeal, applyFn){
+      // Instead of applying the outcome instantly, play a short lunge animation
+      // (attacker slides toward target, impact effects fire mid-lunge, then it slides back).
+      battle.anim = { attacker, target, isHeal, t:0, duration:22, impact:11, applied:false, apply:applyFn };
+      battle.phase = 'attack_anim';
+    }
     function confirmAttack(){
       const u = battle.activeUnit;
       const t = battle.targets[battle.targetIndex];
       if (t.isPlayer === u.isPlayer){
         // Support healing an ally instead of attacking
         const healAmt = Math.max(4, Math.round(u.atk*0.6));
-        t.hp = Math.min(t.maxHp, t.hp + healAmt);
-        if (t.ref) t.ref.hp = Math.max(0, Math.round(t.hp));
-        const pos = cellToPixel(t.gx,t.gy);
-        spawnText(pos.x,pos.y-24,"+"+healAmt,"#8BC34A");
-        spawnBurst(pos.x,pos.y,'#8BC34A',12,2.5,26,4);
-        sfx.feed();
         updateEVA(`✚ ${u.name} รักษา ${t.name} ไป ${healAmt} HP!`);
-        battle.phase = 'resolve'; battle.phaseTimer = 20;
+        startAttackAnim(u, t, true, ()=>{
+          t.hp = Math.min(t.maxHp, t.hp + healAmt);
+          if (t.ref) t.ref.hp = Math.max(0, Math.round(t.hp));
+          const pos = cellToPixel(t.gx,t.gy);
+          spawnText(pos.x,pos.y-24,"+"+healAmt,"#8BC34A");
+          spawnBurst(pos.x,pos.y,'#8BC34A',12,2.5,26,4);
+          sfx.feed();
+          t.hitFlash = 8;
+        });
         return;
       }
       let dmg = Math.max(1, Math.round(u.atk * (0.85 + Math.random()*0.3)));
@@ -1911,28 +1919,30 @@
       if (isCrit) dmg = Math.round(dmg*1.6);
       if (t.role==='Tank') dmg = Math.max(1, Math.round(dmg*0.8));
       if (t.defending) dmg = Math.max(1, Math.round(dmg*0.7));
-      t.hp -= dmg;
-      const pos = cellToPixel(t.gx,t.gy);
-      spawnText(pos.x,pos.y-24,"-"+dmg,"#ff5252");
-      if (isCrit) spawnText(pos.x,pos.y-42,"CRIT!","#ffeb3b");
-      spawnBurst(pos.x,pos.y,t.color,14,3,26,4);
-      sfx.hit(); shake(isCrit?5:3,isCrit?9:6);
-      if (t.ref) t.ref.hp = Math.max(0, Math.round(t.hp));
-      if (t.hp<=0){
-        t.hp = 0; t.alive = false;
-        spawnBurst(pos.x,pos.y,t.color,20,4,32,5);
-        sfx.enemyDown();
-        if (!t.isPlayer){
-          defeatCount++; tut.defeated = true;
-          battle.rewardExp += (t.isBoss?40:15);
-          battle.rewardLoot.push(t);
+      startAttackAnim(u, t, false, ()=>{
+        t.hp -= dmg;
+        const pos = cellToPixel(t.gx,t.gy);
+        spawnText(pos.x,pos.y-24,"-"+dmg,"#ff5252");
+        if (isCrit) spawnText(pos.x,pos.y-42,"CRIT!","#ffeb3b");
+        spawnBurst(pos.x,pos.y,t.color,14,3,26,4);
+        sfx.hit(); shake(isCrit?5:3,isCrit?9:6);
+        t.hitFlash = 8;
+        if (t.ref) t.ref.hp = Math.max(0, Math.round(t.hp));
+        if (t.hp<=0){
+          t.hp = 0; t.alive = false;
+          spawnBurst(pos.x,pos.y,t.color,20,4,32,5);
+          sfx.enemyDown();
+          if (!t.isPlayer){
+            defeatCount++; tut.defeated = true;
+            battle.rewardExp += (t.isBoss?40:15);
+            battle.rewardLoot.push(t);
+          }
+        } else if (u.role==='CC' && Math.random()<0.35){
+          t.stunned = true;
+          spawnText(pos.x,pos.y-42,"STUN!","#ba68c8");
+          spawnBurst(pos.x,pos.y,'#ba68c8',10,2,24,3);
         }
-      } else if (u.role==='CC' && Math.random()<0.35){
-        t.stunned = true;
-        spawnText(pos.x,pos.y-42,"STUN!","#ba68c8");
-        spawnBurst(pos.x,pos.y,'#ba68c8',10,2,24,3);
-      }
-      battle.phase = 'resolve'; battle.phaseTimer = 20;
+      });
     }
     function aiAct(u){
       let targets = battle.units.filter(o=>o.alive && o.isPlayer);
@@ -1957,22 +1967,26 @@
         if (isCrit) dmg = Math.round(dmg*1.6);
         if (target.role==='Tank') dmg = Math.max(1, Math.round(dmg*0.8));
         if (target.defending) dmg = Math.max(1, Math.round(dmg*0.7));
-        target.hp -= dmg;
-        const pos = cellToPixel(target.gx,target.gy);
-        spawnText(pos.x,pos.y-24,"-"+dmg,"#ff5252");
-        if (isCrit) spawnText(pos.x,pos.y-42,"CRIT!","#ffeb3b");
-        spawnBurst(pos.x,pos.y,'#ff5252',12,3,26,4);
-        sfx.hit(); shake(isCrit?4:2,isCrit?8:5);
-        if (target.ref) target.ref.hp = Math.max(0, Math.round(target.hp));
-        if (target.hp<=0){
-          target.hp = 0; target.alive = false;
-          spawnBurst(pos.x,pos.y,target.color,18,4,30,5);
-          sfx.enemyDown();
-        } else if (u.role==='CC' && Math.random()<0.35){
-          target.stunned = true;
-          spawnText(pos.x,pos.y-42,"STUN!","#ba68c8");
-          spawnBurst(pos.x,pos.y,'#ba68c8',10,2,24,3);
-        }
+        startAttackAnim(u, target, false, ()=>{
+          target.hp -= dmg;
+          const pos = cellToPixel(target.gx,target.gy);
+          spawnText(pos.x,pos.y-24,"-"+dmg,"#ff5252");
+          if (isCrit) spawnText(pos.x,pos.y-42,"CRIT!","#ffeb3b");
+          spawnBurst(pos.x,pos.y,'#ff5252',12,3,26,4);
+          sfx.hit(); shake(isCrit?4:2,isCrit?8:5);
+          target.hitFlash = 8;
+          if (target.ref) target.ref.hp = Math.max(0, Math.round(target.hp));
+          if (target.hp<=0){
+            target.hp = 0; target.alive = false;
+            spawnBurst(pos.x,pos.y,target.color,18,4,30,5);
+            sfx.enemyDown();
+          } else if (u.role==='CC' && Math.random()<0.35){
+            target.stunned = true;
+            spawnText(pos.x,pos.y-42,"STUN!","#ba68c8");
+            spawnBurst(pos.x,pos.y,'#ba68c8',10,2,24,3);
+          }
+        });
+        return;
       }
       battle.phase = 'resolve'; battle.phaseTimer = 25;
     }
@@ -1986,6 +2000,7 @@
         p.x+=p.vx; p.y+=p.vy; p.vx*=0.96; p.vy*=0.96; p.life--;
         if (p.life<=0) particles.splice(i,1);
       }
+      for (const unit of battle.units){ if (unit.hitFlash>0) unit.hitFlash--; }
       if (battle.ended){
         battle.endTimer--;
         if (battle.endTimer<=0){
@@ -2011,6 +2026,21 @@
       } else if (battle.phase === 'ai_think'){
         battle.aiTimer--;
         if (battle.aiTimer<=0) aiAct(u);
+      } else if (battle.phase === 'attack_anim'){
+        const anim = battle.anim;
+        if (anim){
+          anim.t++;
+          if (!anim.applied && anim.t>=anim.impact){
+            anim.applied = true;
+            anim.apply();
+          }
+          if (anim.t>=anim.duration){
+            battle.anim = null;
+            battle.phase = 'resolve'; battle.phaseTimer = 8;
+          }
+        } else {
+          battle.phase = 'resolve'; battle.phaseTimer = 5;
+        }
       } else if (battle.phase === 'resolve'){
         battle.phaseTimer--;
         if (battle.phaseTimer<=0) endUnitTurn();
@@ -2061,27 +2091,43 @@
 
       for (const unit of battle.units){
         if (!unit.alive) continue;
-        const pos = cellToPixel(unit.gx, unit.gy);
+        const basePos = cellToPixel(unit.gx, unit.gy);
+        let dx=0, dy=0;
+        if (battle.anim && battle.anim.attacker===unit && battle.anim.target){
+          // lunge toward the target during the first half, snap back during the second half
+          const tp = cellToPixel(battle.anim.target.gx, battle.anim.target.gy);
+          const p = Math.min(1, battle.anim.t/battle.anim.duration);
+          const lungeAmt = Math.sin(p*Math.PI) * (battle.anim.isHeal ? 0.16 : 0.3);
+          dx = (tp.x-basePos.x)*lungeAmt; dy = (tp.y-basePos.y)*lungeAmt;
+        }
+        const pos = { x: basePos.x+dx, y: basePos.y+dy };
         unit.x = pos.x; unit.y = pos.y;
         if (unit===u){
           ctx.strokeStyle="rgba(255,235,102,0.9)"; ctx.lineWidth=2;
-          ctx.beginPath(); ctx.arc(pos.x,pos.y,BATTLE_CELL*0.46,0,Math.PI*2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(basePos.x,basePos.y,BATTLE_CELL*0.46,0,Math.PI*2); ctx.stroke();
         }
         if (unit.isPlayer){
           drawCreature(unit, 2);
         } else {
           drawEnemy(unit);
         }
+        if (unit.hitFlash>0){
+          ctx.save();
+          ctx.globalAlpha = Math.min(1,unit.hitFlash/8)*0.55;
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath(); ctx.arc(pos.x,pos.y,unit.size*1.05,0,Math.PI*2); ctx.fill();
+          ctx.restore();
+        }
         const barW = 40;
-        ctx.fillStyle="rgba(0,0,0,0.5)"; ctx.fillRect(pos.x-barW/2, pos.y-unit.size-16, barW, 6);
+        ctx.fillStyle="rgba(0,0,0,0.5)"; ctx.fillRect(basePos.x-barW/2, basePos.y-unit.size-16, barW, 6);
         ctx.fillStyle = unit.isPlayer ? "#66bb6a" : "#ff8a65";
-        ctx.fillRect(pos.x-barW/2, pos.y-unit.size-16, barW*Math.max(0,unit.hp/unit.maxHp), 6);
+        ctx.fillRect(basePos.x-barW/2, basePos.y-unit.size-16, barW*Math.max(0,unit.hp/unit.maxHp), 6);
         ctx.font="10px Kanit, sans-serif"; ctx.fillStyle="#eafff0"; ctx.textAlign="center";
-        ctx.fillText((ROLE_ICONS[unit.role]||"") + " " + unit.name, pos.x, pos.y-unit.size-20);
+        ctx.fillText((ROLE_ICONS[unit.role]||"") + " " + unit.name, basePos.x, basePos.y-unit.size-20);
         ctx.textAlign="left";
         if (unit.stunned){
           ctx.font="13px Kanit, sans-serif"; ctx.fillStyle="#ba68c8"; ctx.textAlign="center";
-          ctx.fillText("💫", pos.x+barW/2-4, pos.y-unit.size-16);
+          ctx.fillText("💫", basePos.x+barW/2-4, basePos.y-unit.size-16);
           ctx.textAlign="left";
         }
       }
@@ -3098,7 +3144,7 @@
       if (cr.element==="Nature" && cr.species!=="Wolf"){
         ctx.fillStyle="#2e7d32";
         for (let i=-1;i<=1;i+=2){ ctx.beginPath(); ctx.ellipse(i*cr.size*0.55,-cr.size*0.75,7,12,i*0.4,0,Math.PI*2); ctx.fill(); }
-      } else if (cr.element==="Fire"){
+      } else if (cr.element==="Fire" && cr.species!=="Wolf"){
         ctx.fillStyle="#ffab40";
         for (let i=-1;i<=1;i+=2){
           ctx.beginPath(); ctx.moveTo(i*cr.size*0.6,-cr.size*0.5); ctx.lineTo(i*cr.size*0.9,-cr.size*1.1); ctx.lineTo(i*cr.size*0.35,-cr.size*0.75);
@@ -3108,15 +3154,15 @@
         ctx.strokeStyle="#7b1fa2"; ctx.lineWidth=3;
         ctx.beginPath(); ctx.moveTo(-cr.size*0.5,-cr.size*0.7); ctx.lineTo(-cr.size*0.1,-cr.size*1.05); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(cr.size*0.5,-cr.size*0.7); ctx.lineTo(cr.size*0.1,-cr.size*1.05); ctx.stroke();
-      } else if (cr.element==="Earth"){
+      } else if (cr.element==="Earth" && cr.species!=="Wolf"){
         ctx.fillStyle="#6d4c41";
         for (let i=-1;i<=1;i+=2){ ctx.beginPath(); ctx.arc(i*cr.size*0.5,-cr.size*0.65,6,0,Math.PI*2); ctx.fill(); }
-      } else if (cr.element==="Water"){
+      } else if (cr.element==="Water" && cr.species!=="Wolf"){
         ctx.fillStyle="#4fc3f7";
         for (let i=-1;i<=1;i+=2){
           ctx.beginPath(); ctx.moveTo(i*cr.size*0.55,-cr.size*0.55); ctx.quadraticCurveTo(i*cr.size*0.7,-cr.size*0.95,i*cr.size*0.4,-cr.size*1.05); ctx.quadraticCurveTo(i*cr.size*0.5,-cr.size*0.75,i*cr.size*0.3,-cr.size*0.65); ctx.fill();
         }
-      } else if (cr.element==="Electric"){
+      } else if (cr.element==="Electric" && cr.species!=="Wolf"){
         ctx.strokeStyle="#fdd835"; ctx.lineWidth=3;
         for (let i=-1;i<=1;i+=2){
           ctx.beginPath(); ctx.moveTo(i*cr.size*0.5,-cr.size*0.6); ctx.lineTo(i*cr.size*0.25,-cr.size*0.85); ctx.lineTo(i*cr.size*0.45,-cr.size*0.85); ctx.lineTo(i*cr.size*0.15,-cr.size*1.1); ctx.stroke();
