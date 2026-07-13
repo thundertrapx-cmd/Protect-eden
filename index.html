@@ -172,7 +172,7 @@
 
   /* ---------- Controls reference sheet: grouped instead of one long wrapped row ---------- */
   .controls{
-    position:fixed; bottom:88px; left:50%;
+    position:fixed; bottom:112px; left:50%;
     width:min(760px, calc(100vw - 40px)); max-height:42vh; overflow-y:auto;
     font-size:var(--fs-small); color:var(--parchment); background:rgba(30,22,15,0.92);
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -333,12 +333,12 @@
 
   /* ---------- Quest panels ---------- */
   #questPanel{
-    position:fixed; bottom:14px; left:288px; width:300px; max-height:60vh;
+    position:fixed; top:64px; right:14px; width:250px; max-height:calc(100vh - 84px);
     display:grid; grid-template-columns:1fr; gap:10px; z-index:3; overflow-y:auto;
-    opacity:0; pointer-events:none; transform:translateY(14px);
+    opacity:0; pointer-events:none; transform:translateX(16px);
     transition:opacity 0.25s ease, transform 0.25s ease;
   }
-  #questPanel.open{ opacity:1; pointer-events:auto; transform:translateY(0); }
+  #questPanel.open{ opacity:1; pointer-events:auto; transform:translateX(0); }
   #questPanel .card{ max-height:210px; overflow-y:auto; }
   #questPanel .card h3{ display:flex; align-items:center; justify-content:space-between; }
   .questItem{ font-size:var(--fs-body); padding:5px 7px; border-radius:6px; margin-bottom:4px; background:rgba(74,51,32,0.08); }
@@ -378,9 +378,8 @@
 
   /* ---------- Narrower windows: shrink the HUD docks so the canvas keeps breathing room ---------- */
   @media (max-width: 1100px){
-    #ui, #ui2{ width:205px; font-size:11.5px; }
-    #ui .card h3, #ui2 .card h3{ font-size:12px; }
-    #questPanel{ left:14px; width:250px; }
+    #ui, #ui2, #questPanel{ width:205px; font-size:11.5px; }
+    #ui .card h3, #ui2 .card h3, #questPanel .card h3{ font-size:12px; }
     #eva-panel, #tutorialBar{ width:min(90vw, 460px); }
     .toolbar button{ font-size:10.5px; padding:6px 8px; }
   }
@@ -390,7 +389,7 @@
     #ui2{ right:14px; }
     #eva-panel{ display:none; }
     #tutorialBar{ top:14px; width:min(94vw, 420px); font-size:11px; }
-    #questPanel{ bottom:auto; top:64px; left:14px; max-height:40vh; }
+    #questPanel{ top:64px; right:auto; left:14px; width:min(80vw, 280px); max-height:40vh; }
   }
 </style>
 
@@ -783,15 +782,23 @@
     });
 
     // ---------- Quest drawer / controls strip / stats HUD toggles ----------
+    // Stats panel (#ui2) and the quest panel share the same top-right dock, so only one
+    // may be open at a time — this keeps them from ever being drawn on top of each other.
     const statsToggleBtn = document.getElementById('statsToggle');
+    const questToggleBtn = document.getElementById('questToggle');
+    const questPanelEl = document.getElementById('questPanel');
     function setStatsOpen(open){
       document.body.classList.toggle('stats-open', open);
       statsToggleBtn.classList.toggle('active', open);
+      if (open){ questPanelEl.classList.remove('open'); questToggleBtn.classList.remove('active'); }
+    }
+    function setQuestOpen(open){
+      questPanelEl.classList.toggle('open', open);
+      questToggleBtn.classList.toggle('active', open);
+      if (open) setStatsOpen(false);
     }
     statsToggleBtn.addEventListener('click', ()=> setStatsOpen(!document.body.classList.contains('stats-open')));
-    document.getElementById('questToggle').addEventListener('click', ()=>{
-      document.getElementById('questPanel').classList.toggle('open');
-    });
+    questToggleBtn.addEventListener('click', ()=> setQuestOpen(!questPanelEl.classList.contains('open')));
     document.getElementById('controlsToggle').addEventListener('click', ()=>{
       document.querySelector('.controls').classList.toggle('open');
     });
@@ -3076,7 +3083,7 @@
       drawSpeciesFront(cr);
       }
 
-      if (cr.element==="Nature"){
+      if (cr.element==="Nature" && cr.species!=="Wolf"){
         ctx.fillStyle="#2e7d32";
         for (let i=-1;i<=1;i+=2){ ctx.beginPath(); ctx.ellipse(i*cr.size*0.55,-cr.size*0.75,7,12,i*0.4,0,Math.PI*2); ctx.fill(); }
       } else if (cr.element==="Fire"){
