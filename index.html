@@ -3284,9 +3284,12 @@
       if (!trexSprite.complete || trexSprite.naturalWidth === 0) return false;
       const frame = cr.napping ? 0 : Math.floor(frameCount/6) % TREX_FRAME_COUNT;
       const sx = frame * TREX_FRAME_W;
-      const drawSize = cr.size * 2.6;
+      // the actual dino artwork only fills the middle ~55% of the 256px frame's height (padded canvas
+      // around it), so a 2.6x scale left it looking shrunken/half-sized next to other creatures of the
+      // same stat. 3.8x makes the visible body match other species at the same size.
+      const drawSize = cr.size * 3.8;
       const dx = -drawSize/2;
-      const dy = cr.size*0.9 - drawSize*0.738; // dino's feet sit at ~74% down the sprite frame (not flush with the bottom edge like the wolf art), so anchor to that instead of 0.93
+      const dy = cr.size*0.9 - drawSize*0.7422; // dino's feet sit at ~74% down the sprite frame (not flush with the bottom edge like the wolf art), so anchor to that instead of 0.93
       ctx.save();
       if (cr.facing.x < 0) ctx.scale(-1,1);
       ctx.drawImage(trexSprite, sx, 0, TREX_FRAME_W, TREX_FRAME_H, dx, dy, drawSize, drawSize);
@@ -3402,11 +3405,6 @@
         ctx.fillStyle = shade(cr.color,-15);
         ctx.beginPath(); ctx.ellipse(-s*0.98, s*0.3, s*0.15, s*0.09, 0.4, 0, Math.PI*2); ctx.fill();
         ctx.beginPath(); ctx.ellipse(s*0.98, s*0.3, s*0.15, s*0.09, -0.4, 0, Math.PI*2); ctx.fill();
-        // back ridge spikes
-        ctx.fillStyle = shade(cr.color,-30);
-        for (let i=-1;i<=1;i++){
-          ctx.beginPath(); ctx.moveTo(i*s*0.4,-s*0.9); ctx.lineTo(i*s*0.4-s*0.09,-s*1.2); ctx.lineTo(i*s*0.4+s*0.09,-s*1.2); ctx.closePath(); ctx.fill();
-        }
         // teeth along the jaw
         ctx.fillStyle = "#fff";
         for (let i=-2;i<=2;i++){
