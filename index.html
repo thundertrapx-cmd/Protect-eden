@@ -214,6 +214,28 @@
   body.game-started #tutorialBar,
   body.game-started #eva-panel{ opacity:1; pointer-events:auto; }
 
+  /* ---------- Tactical Battle: player action menu ---------- */
+  #battleActionMenu, #battleMoveMenu{
+    position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+    z-index:6; display:grid; gap:8px;
+  }
+  #battleActionMenu.hidden, #battleMoveMenu.hidden{ display:none; }
+  #battleActionMenu{ grid-template-columns:1fr 1fr; width:min(88vw, 380px); }
+  #battleMoveMenu{ grid-auto-flow:column; width:min(88vw, 340px); }
+  .battleBtn{
+    font-family:'Kanit',sans-serif; font-weight:600; font-size:13px; letter-spacing:0.2px;
+    color:var(--parchment); background:linear-gradient(180deg, var(--wood-light), var(--wood));
+    border:1.5px solid var(--wood-dark); border-bottom:3px solid var(--wood-dark);
+    border-radius:8px; padding:12px 10px; cursor:pointer;
+    box-shadow:0 3px 0 rgba(0,0,0,0.25);
+    transition:filter 0.15s ease, transform 0.05s ease;
+  }
+  .battleBtn:hover{ filter:brightness(1.1); }
+  .battleBtn:active{ transform:translateY(2px); border-bottom-width:1px; }
+  .battleBtn.move{ background:linear-gradient(180deg, var(--sky), var(--sky-dark)); }
+  .battleBtn.confirm{ background:linear-gradient(180deg, var(--gold), var(--gold-dark)); color:#3a2510; }
+  .battleBtn.cancel{ background:linear-gradient(180deg, var(--clay), var(--clay-dark)); }
+
   /* ---------- Title Screen ---------- */
   #titleScreen{
     position:absolute; inset:0; border-radius:0;
@@ -450,6 +472,18 @@
 
   </div>
 
+  <!-- ---------- Tactical Battle: player action menu ---------- -->
+  <div id="battleActionMenu" class="hidden">
+    <button class="battleBtn" id="battleSkill1Btn">⚔️ Skill 1</button>
+    <button class="battleBtn" id="battleSkill2Btn">🛡️ Skill 2</button>
+    <button class="battleBtn" id="battleSkill3Btn">✨ Skill 3</button>
+    <button class="battleBtn move" id="battleMoveBtn">🚶 Move</button>
+  </div>
+  <div id="battleMoveMenu" class="hidden">
+    <button class="battleBtn cancel" id="battleCancelBtn">✕ ยกเลิก</button>
+    <button class="battleBtn confirm" id="battleConfirmBtn">✓ ยืนยันเดิน</button>
+  </div>
+
   <div id="tutorialBar">
     <span class="tut-icon">📜</span>
     <div class="tut-body">
@@ -605,7 +639,7 @@
       <h4>⚔️ การผจญภัย &amp; Tactical Grid Battle</h4>
       <p>เดินไปขอบขวาของฟาร์มเพื่อเข้า Forest Dungeon หรือขอบซ้ายเพื่อเข้า Crystal Cave หรือขอบบนเพื่อเข้าภูเขาหิมะ เมื่อสัตว์เลี้ยงหรือคุณเดินเข้าใกล้ศัตรู จะเข้าสู่โหมดต่อสู้แบบ <b>Grid Tactical Turn-Based</b> ทันที</p>
       <p>🗺️ <b>โซนสำรวจทั้งหมด:</b> จากฟาร์มไปได้ 3 ทาง — 🌲 Forest Dungeon (เดินไปสุดขอบขวาต่อเพื่อเข้า 🏛️ ซากอารยธรรม ที่มีผู้พิทักษ์โบราณชอบทำให้มึนงงและดรอปโบราณวัตถุ), 🔥 Crystal Cave (เดินไปสุดขอบขวาต่อเพื่อเข้า 🌋 ภูเขาไฟ ที่ศัตรูดุร้ายโจมตีแรงและดรอปออบซิเดียน), และ ❄️ ภูเขาหิมะ ทางขอบบนของฟาร์ม (ดรอปขนสัตว์อันอบอุ่น) แต่ละโซนมีทรัพยากรและของดรอปเฉพาะตัวที่ขายได้ในร้านค้า</p>
-      <p>ในสนามรบ ลำดับการเข้าตาขึ้นกับค่าความเร็ว เมื่อถึงตาของสัตว์เลี้ยงคุณ: กด <kbd>W A S D</kbd> เลื่อนเคอร์เซอร์ไปยังช่องสีเขียว (ระยะเดินได้) แล้วกด <kbd>SPACE</kbd> เพื่อยืนยันตำแหน่ง หากมีศัตรูอยู่ในระยะโจมตี ใช้ <kbd>A</kbd>/<kbd>D</kbd> เลือกเป้าหมายแล้วกด <kbd>SPACE</kbd> เพื่อโจมตี หรือกด <kbd>Q</kbd> เพื่อข้ามการเคลื่อนที่/โจมตีในตานั้น</p>
+      <p>ในสนามรบ ลำดับการเข้าตาขึ้นกับค่าความเร็ว เมื่อถึงตาของสัตว์เลี้ยงคุณ จะมีเมนู 4 ปุ่มขึ้นด้านล่างจอ: <b>Skill 1</b> (โจมตีปกติ/รักษา), <b>Skill 2</b> (ตั้งการ์ด ลดดาเมจ 30%), <b>Skill 3</b> (โจมตี/รักษาแรงขึ้น) — กดปุ่มสกิลแล้วเลือกเป้าหมายด้วย <kbd>A</kbd>/<kbd>D</kbd> แล้วกด <kbd>SPACE</kbd> เพื่อยืนยัน หรือกด <b>Move</b> เพื่อเข้าโหมดเคลื่อนที่ (ใช้ <kbd>W A S D</kbd> เลือกช่องในระยะแล้วกดปุ่มยืนยัน) — การเคลื่อนที่จะจบเทิร์นทันทีและไม่สามารถโจมตีต่อได้ในตานั้น</p>
       <p>🎭 <b>Role ในการต่อสู้:</b> สัตว์เลี้ยงและศัตรูแต่ละตัวมี Role ประจำตัว — 🛡️ <b>Tank</b> (พลังพืชผสม Chimera) HP สูง รับดาเมจน้อยลง 20% และดึงเป้าศัตรูให้โจมตีตัวเองก่อน · ⚔️ <b>DPS</b> (สาย Fire และ Seedling พื้นฐาน) โจมตีแรงกว่าปกติ 20% · ✚ <b>Support</b> (สาย Nature) แทนที่จะโจมตีศัตรู สามารถเลือกเป้าเป็นพวกเดียวกัน (วงกลมสีเขียว) เพื่อรักษา HP ได้ · 💫 <b>CC</b> (ศัตรูในป่า) โจมตีมีโอกาสทำให้เป้าหมาย "มึนงง" ข้ามเทิร์นถัดไป ดูไอคอน Role ได้ที่หัวชื่อของแต่ละตัวในสนามรบและในแผงปาร์ตี้</p>
       <p>ชนะศึกจะได้รับ EXP และไอเทมดรอปใกล้ตัวคุณ หากปาร์ตี้ทั้งหมดพ่ายแพ้ จะถูกส่งกลับฟาร์มพร้อมเสียเหรียญเล็กน้อยเพื่อพักฟื้น</p>
       <h4>🍳 ครัว &amp; สกิล</h4>
@@ -757,6 +791,13 @@
       titleScreenEl.style.display = 'none';
       openStory();
     }
+    document.getElementById('battleSkill1Btn').addEventListener('click', ()=> battleUseSkill(1));
+    document.getElementById('battleSkill2Btn').addEventListener('click', ()=> battleUseSkill(2));
+    document.getElementById('battleSkill3Btn').addEventListener('click', ()=> battleUseSkill(3));
+    document.getElementById('battleMoveBtn').addEventListener('click', battleEnterMove);
+    document.getElementById('battleCancelBtn').addEventListener('click', battleCancelMove);
+    document.getElementById('battleConfirmBtn').addEventListener('click', battleConfirmMove);
+
     document.getElementById('startBtn').addEventListener('click', startGame);
     titleScreenEl.addEventListener('click', startGame);
     canvas.addEventListener('click', ()=> { if (!gameStarted) startGame(); });
@@ -1787,9 +1828,10 @@
       battle.cursor = {gx:u.gx, gy:u.gy};
       battle.targets = []; battle.targetIndex = 0;
       if (u.isPlayer){
-        battle.phase = 'move';
+        battle.phase = 'menu';
+        battle.skillMult = 1;
         battle.reachable = computeReachable(u);
-        updateEVA(`⚔️ ตาของ ${u.name} [${ROLE_ICONS[u.role]} ${ROLE_NAMES[u.role]}]: WASD เลือกทิศเคลื่อนที่ กด SPACE ยืนยัน (Q เพื่อข้ามเทิร์น)`);
+        updateEVA(`⚔️ ตาของ ${u.name} [${ROLE_ICONS[u.role]} ${ROLE_NAMES[u.role]}]: เลือกการกระทำจากเมนูด้านล่าง`);
       } else {
         battle.phase = 'ai_think';
         battle.aiTimer = 40;
@@ -1862,20 +1904,62 @@
       if (!ok) return;
       battle.cursor = {gx:ngx, gy:ngy};
     }
-    function confirmMove(){
-      const u = battle.activeUnit;
-      u.gx = battle.cursor.gx; u.gy = battle.cursor.gy;
+    // ---------- Battle action menu (2x2: Skill 1 / Skill 2 / Skill 3 / Move) ----------
+    // The menu only ever shows on the player's own turn (see refreshBattleMenuUI).
+    // Skill 1: normal attack (or heal for Support). Skill 2: Defend (guaranteed, no target needed).
+    // Skill 3: a stronger version of the attack/heal. Move: reposition, but never attack the same turn.
+    function battleTargetsInRange(u){
       let targets = battle.units.filter(o=>o.alive && o.isPlayer!==u.isPlayer && gridDist(u,o)<=u.atkRange);
       if (u.role==='Support'){
         const healTargets = battle.units.filter(o=>o.alive && o.isPlayer===u.isPlayer && o!==u && o.hp<o.maxHp && gridDist(u,o)<=u.atkRange);
         targets = targets.concat(healTargets);
       }
-      if (targets.length>0){
-        battle.targets = targets; battle.targetIndex = 0; battle.phase = 'target';
-        updateEVA(u.role==='Support' ? "🎯 A/D เลือกเป้าหมาย (ศัตรู=โจมตี ✚พวกเดียวกัน=รักษา) แล้วกด SPACE" : "🎯 เลือกเป้าหมายด้วย A/D แล้วกด SPACE เพื่อโจมตี (Q เพื่อไม่โจมตี)");
-      } else {
+      return targets;
+    }
+    function battleUseSkill(slot){
+      if (!battle || battle.phase!=='menu') return;
+      const u = battle.activeUnit;
+      if (!u || !u.isPlayer) return;
+      if (slot===2){ skipTurn(); return; } // Skill 2 = Defend, no target required
+      battle.skillMult = slot===3 ? 1.35 : 1.0;
+      const targets = battleTargetsInRange(u);
+      if (targets.length===0){
+        updateEVA(`${u.name} ไม่มีเป้าหมายในระยะ ข้ามเทิร์นนี้`);
         battle.phase = 'resolve'; battle.phaseTimer = 10;
+        return;
       }
+      battle.targets = targets; battle.targetIndex = 0; battle.phase = 'target';
+      updateEVA(u.role==='Support' ? "🎯 A/D เลือกเป้าหมาย (ศัตรู=โจมตี ✚พวกเดียวกัน=รักษา) แล้วกด SPACE" : "🎯 เลือกเป้าหมายด้วย A/D แล้วกด SPACE เพื่อโจมตี");
+    }
+    function battleEnterMove(){
+      if (!battle || battle.phase!=='menu') return;
+      const u = battle.activeUnit;
+      battle.reachable = computeReachable(u);
+      battle.cursor = {gx:u.gx, gy:u.gy};
+      battle.phase = 'move';
+      updateEVA("🚶 WASD เลือกช่องในระยะ แล้วกด SPACE หรือปุ่มยืนยัน (เดินแล้วเทิร์นจะจบทันที โจมตีต่อไม่ได้)");
+    }
+    function battleCancelMove(){
+      if (!battle || battle.phase!=='move') return;
+      battle.phase = 'menu';
+      updateEVA(`⚔️ ตาของ ${battle.activeUnit.name}: เลือกการกระทำจากเมนูด้านล่าง`);
+    }
+    function battleConfirmMove(){
+      if (!battle || battle.phase!=='move') return;
+      const u = battle.activeUnit;
+      u.gx = battle.cursor.gx; u.gy = battle.cursor.gy;
+      updateEVA(`${u.name} เคลื่อนที่แล้ว เทิร์นจบทันที`);
+      battle.phase = 'resolve'; battle.phaseTimer = 10;
+    }
+    function refreshBattleMenuUI(){
+      const menuEl = document.getElementById('battleActionMenu');
+      const moveEl = document.getElementById('battleMoveMenu');
+      if (!menuEl || !moveEl) return;
+      const u = battle && battle.activeUnit;
+      const showMenu = !!(battleActive && battle && !battle.ended && u && u.isPlayer && battle.phase==='menu');
+      const showMove = !!(battleActive && battle && !battle.ended && u && u.isPlayer && battle.phase==='move');
+      menuEl.classList.toggle('hidden', !showMenu);
+      moveEl.classList.toggle('hidden', !showMove);
     }
     function skipTurn(){
       if (battle.activeUnit){
@@ -1899,9 +1983,10 @@
     function confirmAttack(){
       const u = battle.activeUnit;
       const t = battle.targets[battle.targetIndex];
+      const skillMult = battle.skillMult || 1;
       if (t.isPlayer === u.isPlayer){
         // Support healing an ally instead of attacking
-        const healAmt = Math.max(4, Math.round(u.atk*0.6));
+        const healAmt = Math.max(4, Math.round(u.atk*0.6*skillMult));
         updateEVA(`✚ ${u.name} รักษา ${t.name} ไป ${healAmt} HP!`);
         startAttackAnim(u, t, true, ()=>{
           t.hp = Math.min(t.maxHp, t.hp + healAmt);
@@ -1915,7 +2000,7 @@
         return;
       }
       let dmg = Math.max(1, Math.round(u.atk * (0.85 + Math.random()*0.3)));
-      dmg = Math.round(dmg * typeMultiplier(u.element, t.element));
+      dmg = Math.round(dmg * typeMultiplier(u.element, t.element) * skillMult);
       const isCrit = Math.random() < critChance(u);
       if (isCrit) dmg = Math.round(dmg*1.6);
       if (t.role==='Tank') dmg = Math.max(1, Math.round(dmg*0.8));
@@ -1992,7 +2077,7 @@
       battle.phase = 'resolve'; battle.phaseTimer = 25;
     }
     function updateBattle(){
-      if (!battle) return;
+      if (!battle){ refreshBattleMenuUI(); return; }
       if (shakeTime>0) shakeTime--;
       if (flashAlpha>0) flashAlpha -= 0.05;
       if (mapBanner.timer>0) mapBanner.timer--;
@@ -2009,16 +2094,19 @@
           battleActive = false; battle = null;
           if (wasRetreat) switchMap("Farm");
         }
+        refreshBattleMenuUI();
         return;
       }
       const u = battle.activeUnit;
-      if (battle.phase === 'move' && u && u.isPlayer){
+      if (battle.phase === 'menu' && u && u.isPlayer){
+        // Waiting on a click from the 2x2 action menu (Skill 1/2/3 or Move) — see battleUseSkill/battleEnterMove.
+      } else if (battle.phase === 'move' && u && u.isPlayer){
         if (pressedOnce.w) tryMoveCursor(0,-1);
         if (pressedOnce.s) tryMoveCursor(0,1);
         if (pressedOnce.a) tryMoveCursor(-1,0);
         if (pressedOnce.d) tryMoveCursor(1,0);
-        if (pressedOnce[' ']) confirmMove();
-        if (pressedOnce.q) skipTurn();
+        if (pressedOnce[' ']) battleConfirmMove();
+        if (pressedOnce.q) battleCancelMove();
       } else if (battle.phase === 'target' && u && u.isPlayer){
         if (pressedOnce.a || pressedOnce.w) cycleTarget(-1);
         if (pressedOnce.d || pressedOnce.s) cycleTarget(1);
@@ -2046,6 +2134,7 @@
         battle.phaseTimer--;
         if (battle.phaseTimer<=0) endUnitTurn();
       }
+      refreshBattleMenuUI();
     }
     function drawBattleScene(){
       const sky = ctx.createLinearGradient(0,0,0,canvas.height);
@@ -2137,7 +2226,8 @@
 
       ctx.font="12.5px Kanit, sans-serif"; ctx.fillStyle="#fff2cf"; ctx.textAlign="center";
       let hint = "";
-      if (u && u.isPlayer && battle.phase==='move') hint = "WASD: เคลื่อนที่ · SPACE: ยืนยัน · Q: ตั้งการ์ด (ลดดาเมจ 30%)";
+      if (u && u.isPlayer && battle.phase==='menu') hint = "เลือกการกระทำจากเมนูด้านล่าง: Skill 1/2/3 หรือ Move";
+      else if (u && u.isPlayer && battle.phase==='move') hint = "WASD: เลือกช่อง · SPACE/ยืนยัน: เดินแล้วจบเทิร์นทันที · Q/ยกเลิก: กลับเมนู";
       else if (u && u.isPlayer && battle.phase==='target') hint = u.role==='Support' ? "A/D: เลือกเป้า (แดง=โจมตี เขียว=รักษา) · SPACE: ยืนยัน · Q: ตั้งการ์ดแทน" : "A/D: เลือกเป้าหมาย · SPACE: โจมตี · Q: ตั้งการ์ดแทน";
       else if (u && !u.isPlayer) hint = (u.name||"ศัตรู") + " กำลังคิด...";
       ctx.fillText(hint, canvas.width/2, canvas.height-14);
