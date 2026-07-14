@@ -3009,7 +3009,7 @@
       const sx = frame * TREX_FRAME_W;
       const drawSize = cr.size * 2.6;
       const dx = -drawSize/2;
-      const dy = cr.size*0.9 - drawSize*0.93;
+      const dy = cr.size*0.9 - drawSize*0.738; // dino's feet sit at ~74% down the sprite frame (not flush with the bottom edge like the wolf art), so anchor to that instead of 0.93
       ctx.save();
       if (cr.facing.x < 0) ctx.scale(-1,1);
       ctx.drawImage(trexSprite, sx, 0, TREX_FRAME_W, TREX_FRAME_H, dx, dy, drawSize, drawSize);
