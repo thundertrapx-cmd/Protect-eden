@@ -3284,12 +3284,11 @@
       if (!trexSprite.complete || trexSprite.naturalWidth === 0) return false;
       const frame = cr.napping ? 0 : Math.floor(frameCount/6) % TREX_FRAME_COUNT;
       const sx = frame * TREX_FRAME_W;
-      // the actual dino artwork only fills the middle ~55% of the 256px frame's height (padded canvas
-      // around it), so a 2.6x scale left it looking shrunken/half-sized next to other creatures of the
-      // same stat. 3.8x makes the visible body match other species at the same size.
-      const drawSize = cr.size * 3.8;
+      // Render the complete sprite frame at a balanced scale.  Keeping a little
+      // breathing room around the frame prevents the head or tail being clipped.
+      const drawSize = cr.size * 3.35;
       const dx = -drawSize/2;
-      const dy = cr.size*0.9 - drawSize*0.7422; // dino's feet sit at ~74% down the sprite frame (not flush with the bottom edge like the wolf art), so anchor to that instead of 0.93
+      const dy = cr.size*0.82 - drawSize*0.84; // feet are near the lower edge of the source frame
       ctx.save();
       if (cr.facing.x < 0) ctx.scale(-1,1);
       ctx.drawImage(trexSprite, sx, 0, TREX_FRAME_W, TREX_FRAME_H, dx, dy, drawSize, drawSize);
@@ -3435,28 +3434,30 @@
       drawSpeciesFront(cr);
       }
 
-      if (cr.element==="Nature" && cr.species!=="Wolf"){
+      // The T-Rex uses finished pixel art, so do not overlay elemental head effects on it.
+      const usesFinishedSprite = cr.species === "Wolf" || cr.species === "TRex";
+      if (cr.element==="Nature" && !usesFinishedSprite){
         ctx.fillStyle="#2e7d32";
         for (let i=-1;i<=1;i+=2){ ctx.beginPath(); ctx.ellipse(i*cr.size*0.55,-cr.size*0.75,7,12,i*0.4,0,Math.PI*2); ctx.fill(); }
-      } else if (cr.element==="Fire" && cr.species!=="Wolf"){
+      } else if (cr.element==="Fire" && !usesFinishedSprite){
         ctx.fillStyle="#ffab40";
         for (let i=-1;i<=1;i+=2){
           ctx.beginPath(); ctx.moveTo(i*cr.size*0.6,-cr.size*0.5); ctx.lineTo(i*cr.size*0.9,-cr.size*1.1); ctx.lineTo(i*cr.size*0.35,-cr.size*0.75);
           ctx.closePath(); ctx.fill();
         }
-      } else if (cr.element==="Chimera" && cr.species!=="Wolf"){
+      } else if (cr.element==="Chimera" && !usesFinishedSprite){
         ctx.strokeStyle="#7b1fa2"; ctx.lineWidth=3;
         ctx.beginPath(); ctx.moveTo(-cr.size*0.5,-cr.size*0.7); ctx.lineTo(-cr.size*0.1,-cr.size*1.05); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(cr.size*0.5,-cr.size*0.7); ctx.lineTo(cr.size*0.1,-cr.size*1.05); ctx.stroke();
-      } else if (cr.element==="Earth" && cr.species!=="Wolf"){
+      } else if (cr.element==="Earth" && !usesFinishedSprite){
         ctx.fillStyle="#6d4c41";
         for (let i=-1;i<=1;i+=2){ ctx.beginPath(); ctx.arc(i*cr.size*0.5,-cr.size*0.65,6,0,Math.PI*2); ctx.fill(); }
-      } else if (cr.element==="Water" && cr.species!=="Wolf"){
+      } else if (cr.element==="Water" && !usesFinishedSprite){
         ctx.fillStyle="#4fc3f7";
         for (let i=-1;i<=1;i+=2){
           ctx.beginPath(); ctx.moveTo(i*cr.size*0.55,-cr.size*0.55); ctx.quadraticCurveTo(i*cr.size*0.7,-cr.size*0.95,i*cr.size*0.4,-cr.size*1.05); ctx.quadraticCurveTo(i*cr.size*0.5,-cr.size*0.75,i*cr.size*0.3,-cr.size*0.65); ctx.fill();
         }
-      } else if (cr.element==="Electric" && cr.species!=="Wolf"){
+      } else if (cr.element==="Electric" && !usesFinishedSprite){
         ctx.strokeStyle="#fdd835"; ctx.lineWidth=3;
         for (let i=-1;i<=1;i+=2){
           ctx.beginPath(); ctx.moveTo(i*cr.size*0.5,-cr.size*0.6); ctx.lineTo(i*cr.size*0.25,-cr.size*0.85); ctx.lineTo(i*cr.size*0.45,-cr.size*0.85); ctx.lineTo(i*cr.size*0.15,-cr.size*1.1); ctx.stroke();
