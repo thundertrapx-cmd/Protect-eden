@@ -444,6 +444,11 @@
   #dexOverlay.open{ display:flex; }
   #dexCard{ width:min(560px,92vw); max-height:86vh; overflow-y:auto; background:#f6ead2; color:var(--ink); border:2px solid var(--wood-dark); border-radius:12px; padding:20px 22px 20px 26px; box-shadow:0 8px 0 var(--wood-dark), 0 20px 40px rgba(0,0,0,0.4);}
   #dexCard h2{ font-family:'Press Start 2P','Kanit',monospace; font-size:14px; color:var(--gold-dark); margin:0 0 8px;}
+  /* ---------- Save Slot select ---------- */
+  #slotOverlay{ position:fixed; inset:0; background:rgba(20,14,9,0.82); display:none; align-items:center; justify-content:center; z-index:70; padding:20px;}
+  #slotOverlay.open{ display:flex; }
+  #slotCard{ width:min(520px,92vw); max-height:86vh; overflow-y:auto; background:#f6ead2; color:var(--ink); border:2px solid var(--wood-dark); border-radius:12px; padding:20px 22px 20px 26px; box-shadow:0 8px 0 var(--wood-dark), 0 20px 40px rgba(0,0,0,0.4);}
+  #slotCard h2{ font-family:'Press Start 2P','Kanit',monospace; font-size:14px; color:var(--gold-dark); margin:0 0 8px;}
 </style>
 
 </head>
@@ -602,6 +607,7 @@
       <div class="metaLine" id="ui-eggtimer">ไม่มีไข่ในครอบครอง</div>
       <button class="btn" id="dex-btn" style="width:100%; margin-top:6px;">📔 สมุดสะสมสายพันธุ์</button>
       <button class="btn" id="save-btn" style="width:100%; margin-top:6px;">💾 บันทึกเกม (P)</button>
+      <button class="btn" id="mainmenu-btn" style="width:100%; margin-top:6px;">🔄 เมนูหลัก / เปลี่ยน Slot</button>
       <div class="metaLine" id="save-status">ยังไม่เคยบันทึก</div>
     </div>
   </div>
@@ -742,6 +748,14 @@
     </div>
   </div>
 
+  <div id="slotOverlay">
+    <div id="slotCard">
+      <h2>💾 เลือกช่องเซฟ</h2>
+      <div class="skillLearnHint">เกมมี 3 ช่องเซฟ — เล่นต่อจากเซฟเดิม หรือเริ่มเกมใหม่ในช่องไหนก็ได้ (เกมจะบันทึกอัตโนมัติลงช่องที่เลือก)</div>
+      <div id="slotList"></div>
+    </div>
+  </div>
+
   <div id="dexOverlay">
     <div id="dexCard">
       <h2>📔 Eden Dex — สมุดสะสมสายพันธุ์</h2>
@@ -873,9 +887,10 @@
     document.getElementById('battleCancelBtn').addEventListener('click', battleCancelMove);
     document.getElementById('battleConfirmBtn').addEventListener('click', battleConfirmMove);
 
-    document.getElementById('startBtn').addEventListener('click', startGame);
-    titleScreenEl.addEventListener('click', startGame);
-    canvas.addEventListener('click', ()=> { if (!gameStarted) startGame(); });
+    // title → เปิดหน้าเลือก Slot (21-save-load.js) ก่อนเสมอ — startGame ถูกเรียกหลังเลือก slot แล้ว
+    document.getElementById('startBtn').addEventListener('click', ()=> openSlotSelect());
+    titleScreenEl.addEventListener('click', (e)=>{ if (e.target.closest('#slotOverlay')) return; openSlotSelect(); });
+    canvas.addEventListener('click', ()=> { if (!gameStarted) openSlotSelect(); });
 
     // ---------- Title-menu buttons that must NOT trigger startGame ----------
     document.getElementById('fullscreenToggleMenu').addEventListener('click', e=>{ e.stopPropagation(); toggleFullscreen(); });
@@ -1551,7 +1566,7 @@
     window.addEventListener('keydown', e => {
       const k = e.key.toLowerCase();
       if (gameKeys.includes(k)) e.preventDefault();
-      if (!gameStarted && k === ' ' && !e.repeat) startGame();
+      if (!gameStarted && k === ' ' && !e.repeat) openSlotSelect();
       if (keys.hasOwnProperty(k)) keys[k] = true;
       if (actionKeys.includes(k) && !e.repeat) pressedOnce[k] = true;
     });
@@ -1793,6 +1808,7 @@
       Nature:   { icon:'🌿', name:'ใบไม้' }, // player creature's Nature line displays as Leaf
       Chimera:  { icon:'🌀', name:'ลูกผสม' }, // hybrid: no elemental weakness in the wheel
       Neutral:  { icon:'⚪', name:'กลาง' },
+      Normal:   { icon:'⚪', name:'ปกติ' }, // ธาตุปกติ: ไม่เคยกินผลไม้ธาตุ — ไม่มีแพ้ทาง/ชนะทาง
       Ice:      { icon:'💧', name:'น้ำแข็ง' }
     };
     function elementIcon(el){ return (ELEMENT_INFO[el]||ELEMENT_INFO.Neutral).icon; }
@@ -2091,7 +2107,8 @@
       Earth:    { s1:{hp:240,atk:22}, s2:{hp:420,atk:38}, color1:"#8D6E63", color2:"#5D4037", size1:30, size2:36, skill:"Rock Slide" },
       Water:    { s1:{hp:180,atk:24}, s2:{hp:320,atk:40}, color1:"#29B6F6", color2:"#0277BD", size1:27, size2:33, skill:"Healing Tide" },
       Electric: { s1:{hp:150,atk:30}, s2:{hp:280,atk:50}, color1:"#FFEB3B", color2:"#FBC02D", size1:26, size2:32, skill:"Thunder Strike" },
-      Chimera:  { s1:{hp:160,atk:25}, s2:{hp:300,atk:40}, color1:"#AB47BC", color2:"#7B1FA2", size1:26, size2:32, skill:null }
+      Chimera:  { s1:{hp:160,atk:25}, s2:{hp:300,atk:40}, color1:"#AB47BC", color2:"#7B1FA2", size1:26, size2:32, skill:null },
+      Normal:   { s1:{hp:180,atk:26}, s2:{hp:320,atk:44}, color1:"#BDBDBD", color2:"#8D8D8D", size1:27, size2:33, skill:null }
     };
     const ELEMENT_EVO_MSG1 = {
       Fire:"✨ EVOLUTION! วิวัฒนาการเป็น {name} สายโจมตีดุดัน!",
@@ -2099,7 +2116,8 @@
       Earth:"🌍 EVOLUTION! วิวัฒนาการเป็น {name} แข็งแกร่งดุจหิน!",
       Water:"💧 EVOLUTION! วิวัฒนาการเป็น {name} ปราดเปรียวดุจกระแสน้ำ!",
       Electric:"⚡ EVOLUTION! วิวัฒนาการเป็น {name} ว่องไวดุจสายฟ้า!",
-      Chimera:"✨ EVOLUTION! เกิดการผสมธาตุ กลายเป็น {name} ตัวลูกผสมหายาก!"
+      Chimera:"✨ EVOLUTION! เกิดการผสมธาตุ กลายเป็น {name} ตัวลูกผสมหายาก!",
+      Normal:"⚪ EVOLUTION! วิวัฒนาการเป็น {name} ธาตุปกติ สมดุลไร้จุดอ่อน (อยากได้ธาตุอื่น ต้องป้อนผลไม้ธาตุก่อนวิวัฒนาการครั้งแรก)"
     };
     const ELEMENT_EVO_MSG2 = {
       Fire:"🔥 EVOLUTION ขั้นสูงสุด! กลายเป็น {name}! ปลดล็อกสกิล Fireball!",
@@ -2107,7 +2125,8 @@
       Earth:"🌍 EVOLUTION ขั้นสูงสุด! กลายเป็น {name}! ปลดล็อกสกิล Rock Slide!",
       Water:"💧 EVOLUTION ขั้นสูงสุด! กลายเป็น {name}! ปลดล็อกสกิล Healing Tide!",
       Electric:"⚡ EVOLUTION ขั้นสูงสุด! กลายเป็น {name}! ปลดล็อกสกิล Thunder Strike!",
-      Chimera:"✨ EVOLUTION ขั้นสูงสุด! กลายเป็น {name}!"
+      Chimera:"✨ EVOLUTION ขั้นสูงสุด! กลายเป็น {name}!",
+      Normal:"⚪ EVOLUTION ขั้นสูงสุด! กลายเป็น {name}! พลังดิบไร้ธาตุที่ไม่แพ้ทางใคร!"
     };
     // Species-specific stage-1/stage-2 name tables (Seedling keeps its original classic names)
     const SEEDLING_EVO_NAMES = {
@@ -2116,10 +2135,11 @@
       Earth:    { s1:"Boulder Golem",  s2:"Titan Golem" },
       Water:    { s1:"Tide Serpent",   s2:"Abyssal Serpent" },
       Electric: { s1:"Volt Fox",       s2:"Storm Fox" },
-      Chimera:  { s1:"Chimera Beast",  s2:"Chimera Overlord" }
+      Chimera:  { s1:"Chimera Beast",  s2:"Chimera Overlord" },
+      Normal:   { s1:"Feral Beast",    s2:"Alpha Beast" }
     };
-    const ELEMENT_EVO_ADJ1 = { Fire:"Ember", Nature:"Verdant", Earth:"Granite", Water:"Tide", Electric:"Volt", Chimera:"Chimera" };
-    const ELEMENT_EVO_ADJ2 = { Fire:"Inferno", Nature:"Elder", Earth:"Titan", Water:"Abyssal", Electric:"Storm", Chimera:"Chimera" };
+    const ELEMENT_EVO_ADJ1 = { Fire:"Ember", Nature:"Verdant", Earth:"Granite", Water:"Tide", Electric:"Volt", Chimera:"Chimera", Normal:"Wild" };
+    const ELEMENT_EVO_ADJ2 = { Fire:"Inferno", Nature:"Elder", Earth:"Titan", Water:"Abyssal", Electric:"Storm", Chimera:"Chimera", Normal:"Alpha" };
     function evoName(species, element, stage){
       if (species === "Seedling" || !species) return SEEDLING_EVO_NAMES[element][stage===2?"s2":"s1"];
       const adj = stage===2 ? ELEMENT_EVO_ADJ2[element] : ELEMENT_EVO_ADJ1[element];
@@ -2132,14 +2152,15 @@
       if (c.stage === 0){
         const totalFeeds = c.veggieEaten + c.meatEaten + Math.round(((c.affinity&&Object.values(c.affinity).reduce((a,b)=>a+b,0))||0)/10);
         if (totalFeeds < 3) return; // not grown up enough yet
-        const topEl = topAffinity(c.affinity); // Fire/Water/Earth/Leaf/Electric from berries, or null if none fed
+        // กติกาธาตุ: ได้ธาตุจาก "ผลไม้ธาตุ" เท่านั้น — ไม่เคยป้อนเลย = ธาตุปกติ (Normal, ไม่มีแพ้ทาง/ชนะทาง)
+        const topEl = topAffinity(c.affinity); // Fire/Water/Earth/Leaf/Electric จากผลไม้ธาตุ หรือ null ถ้าไม่เคยป้อน
         let element;
-        if (topEl === "Fire" || (!topEl && c.meatEaten>=3 && c.veggieEaten<2)) element = "Fire";
-        else if (topEl === "Leaf" || (!topEl && c.veggieEaten>=3 && c.meatEaten<2)) element = "Nature";
+        if (topEl === "Fire") element = "Fire";
+        else if (topEl === "Leaf") element = "Nature";
         else if (topEl === "Earth") element = "Earth";
         else if (topEl === "Water") element = "Water";
         else if (topEl === "Electric") element = "Electric";
-        else element = "Chimera";
+        else element = "Normal";
         const stats = EVO_BASE_STATS[element];
         const maxHp = Math.round(stats.s1.hp*hpM);
         const name = evoName(c.species, element, 1);
@@ -2428,6 +2449,12 @@
       if (c.element==="Earth") return "Tank";       // Boulder Golem: grounded and sturdy
       if (c.element==="Water") return "CC";         // Tide Serpent: slows/entangles foes
       if (c.element==="Electric") return "DPS";     // Volt Fox: fast, shocking strikes
+      if (c.element==="Normal"){
+        // ธาตุปกติ (ไม่กินผลไม้ธาตุ): role ตามสายพันธุ์แทนธาตุ — ยังเลือก build ได้หลากหลาย
+        if (c.species==="Turtle" || c.species==="Bear") return "Tank";
+        if (c.species==="Duck") return "CC";
+        return "DPS";
+      }
       return "DPS";                                // base Seedling before evolving
     }
     function zoneElement(){
@@ -3665,7 +3692,7 @@
     // ---------- Save versioning ----------
     // ทุกครั้งที่เพิ่ม field ใหม่ลงเซฟ: เพิ่ม SAVE_VERSION แล้วเขียน migration step ใน migrateSave
     // ห้ามอ่าน field ใหม่ตรงๆ จาก data โดยไม่ผ่าน migration — ไม่งั้นเซฟเก่าพัง
-    const SAVE_VERSION = 7;
+    const SAVE_VERSION = 8;
     function migrateSave(data){
       let v = data.version || 1;
       if (v === 1){
@@ -3709,6 +3736,11 @@
         data.dexRewarded = false;
         v = 7;
       }
+      if (v === 7){
+        // v7 → v8: ระบบเซฟ 3 slot + meta (savedAt) — meta เป็น field optional อ่านแบบ defensive จึงไม่ต้องแปลงอะไร
+        // เซฟรุ่นก่อนมี slot (key เก่า 'eden-save'/LS_KEY) จะถูกอ่านเป็น Slot 1 อัตโนมัติใน readSlotRaw
+        v = 8;
+      }
       data.version = v;
       return data;
     }
@@ -3716,13 +3748,40 @@
       if (window.storage){
         try{ const r = await window.storage.set(key, value); if (r) return true; }catch(err){ console.error(err); }
       }
-      try{ localStorage.setItem(LS_KEY, value); return true; }catch(err){ console.error(err); return false; }
+      try{ localStorage.setItem(key, value); return true; }catch(err){ console.error(err); return false; }
     }
     async function storageGet(key){
       if (window.storage){
         try{ const r = await window.storage.get(key); if (r && r.value) return r.value; }catch(err){ /* fall through to localStorage */ }
       }
-      try{ return localStorage.getItem(LS_KEY); }catch(err){ return null; }
+      try{ return localStorage.getItem(key); }catch(err){ return null; }
+    }
+
+    // ---------- ระบบ 3 Slot ----------
+    let currentSlot = 1;
+    function slotKey(n){ return "eden-save-slot" + n; }
+    async function readSlotRaw(n){
+      let raw = await storageGet(slotKey(n));
+      if (!raw && n === 1){
+        // เซฟรุ่นก่อนมีระบบ slot: key เก่า 'eden-save' (Artifact storage) หรือ LS_KEY (localStorage) = Slot 1
+        raw = await storageGet("eden-save");
+        if (!raw){ try{ raw = localStorage.getItem(LS_KEY); }catch(err){ raw = null; } }
+      }
+      return raw;
+    }
+    async function getSlotMeta(n){
+      try{
+        const raw = await readSlotRaw(n);
+        if (!raw) return null;
+        const d = JSON.parse(raw);
+        return {
+          day: d.dayCount || 1,
+          chapter: (d.chapterIndex || 0) + 1,
+          names: Array.isArray(d.party) ? d.party.map(c=>c.name) : [],
+          coin: d.inv ? d.inv.coin : null,
+          savedAt: d.meta ? d.meta.savedAt : null
+        };
+      }catch(err){ return null; }
     }
     function serializeCreature(c){
       return { name:c.name, element:c.element, color:c.color, size:c.size, stage:c.stage, species:c.species,
@@ -3734,6 +3793,7 @@
     async function saveGame(){
       try{
         const data = { version: SAVE_VERSION,
+          meta: { savedAt: Date.now() },
           inv, energy, party: party.map(serializeCreature), activeIndex,
           storageBox: storageBox.map(serializeCreature),
           fishingUpgraded, miningUpgraded, woodcuttingUpgraded, fertilizerCharges, dayCount,
@@ -3746,20 +3806,21 @@
             sideQuestsUnlocked, sideQuestsDone: sideQuests.filter(q=>q.done).map(q=>q.id),
             counters: { harvestCount, defeatCount, cookCount, fishCount, mineCount, woodCount, obsidianCount, relicCount } },
           plots: plots.map(p=>({state:p.state, timer:p.timer, maxTimer:p.maxTimer, soil:p.soil, crop:p.crop})) };
-        const ok = await storageSet('eden-save', JSON.stringify(data));
+        const ok = await storageSet(slotKey(currentSlot), JSON.stringify(data));
         if (ok){
           sfx.save(); tut.saved = true;
-          updateEVA("💾 บันทึกเกมเรียบร้อยแล้ว!");
-          document.getElementById('save-status').innerText = "บันทึกล่าสุด: " + new Date().toLocaleTimeString();
+          updateEVA(`💾 บันทึกเกมลง Slot ${currentSlot} เรียบร้อยแล้ว!`);
+          document.getElementById('save-status').innerText = `Slot ${currentSlot} · บันทึกล่าสุด: ` + new Date().toLocaleTimeString();
         } else {
           updateEVA("บันทึกเกมไม่สำเร็จ เบราว์เซอร์นี้อาจปิดกั้นการจัดเก็บข้อมูล (ลองเปิดโหมดปกติ ไม่ใช่ Incognito)");
         }
       }catch(err){ console.error(err); updateEVA("บันทึกเกมไม่สำเร็จ ลองใหม่อีกครั้ง"); }
     }
     let hasSaveData = false;
-    async function loadGame(){
+    async function loadSlot(n){
+      currentSlot = n;
       try{
-        const raw = await storageGet('eden-save');
+        const raw = await readSlotRaw(n);
         if (raw){
           const data = migrateSave(JSON.parse(raw));
           hasSaveData = true;
@@ -3809,16 +3870,64 @@
             obsidianCount = cnt.obsidianCount||0; relicCount = cnt.relicCount||0;
           }
           updateTutorialUI(); renderSideQuestList(); renderChapterPanel();
-          updateEVA("โหลดข้อมูลที่บันทึกไว้เรียบร้อย! ยินดีต้อนรับกลับสู่ Eden");
-          document.getElementById('save-status').innerText = "โหลดเซฟล่าสุดแล้ว";
+          updateEVA(`โหลดข้อมูล Slot ${n} เรียบร้อย! ยินดีต้อนรับกลับสู่ Eden`);
+          document.getElementById('save-status').innerText = `Slot ${n} · โหลดเซฟแล้ว`;
         } else {
-          updateEVA("ยังไม่มีเซฟเก่า เริ่มเกมใหม่ได้เลย! ลองเดินไปปลูกพืชหรือกด P เพื่อบันทึก");
+          hasSaveData = false;
+          updateEVA("เริ่มการผจญภัยใหม่! ลองเดินไปปลูกพืชหรือกด P เพื่อบันทึก");
+          document.getElementById('save-status').innerText = `Slot ${n} · เกมใหม่`;
         }
       }catch(err){
-        updateEVA("ยังไม่มีเซฟเก่า เริ่มเกมใหม่ได้เลย! ลองเดินไปปลูกพืชหรือกด P เพื่อบันทึก");
+        hasSaveData = false;
+        updateEVA("เริ่มการผจญภัยใหม่! ลองเดินไปปลูกพืชหรือกด P เพื่อบันทึก");
       }
     }
     document.getElementById('save-btn').addEventListener('click', saveGame);
+
+    // ---------- หน้าเลือก Slot (แสดงจาก title ก่อนเริ่มเกม) ----------
+    async function openSlotSelect(){
+      if (gameStarted) return;
+      const overlay = document.getElementById('slotOverlay');
+      overlay.classList.add('open');
+      const el = document.getElementById('slotList');
+      el.innerHTML = '<div class="metaLine">กำลังอ่านข้อมูลเซฟ...</div>';
+      const metas = await Promise.all([1,2,3].map(getSlotMeta));
+      el.innerHTML = metas.map((m,i)=>{
+        const n = i+1;
+        if (m){
+          const date = m.savedAt ? new Date(m.savedAt).toLocaleString() : "—";
+          const names = m.names.length ? m.names.join(", ") : "—";
+          return `<div class="skillLearnRow"><div class="skillLearnInfo">
+            <div class="skillLearnName">💾 Slot ${n} — Day ${m.day} · Chapter ${m.chapter}</div>
+            <div class="skillLearnDesc">ปาร์ตี้: ${names}${m.coin!=null?` · 🪙${m.coin}`:''}<br>เซฟล่าสุด: ${date}</div></div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <button onclick="chooseSlot(${n}, false)">▶ เล่นต่อ</button>
+              <button onclick="chooseSlot(${n}, true)" style="opacity:.75;">🗑 เริ่มใหม่</button>
+            </div></div>`;
+        }
+        return `<div class="skillLearnRow" style="opacity:.85;"><div class="skillLearnInfo">
+          <div class="skillLearnName">⬜ Slot ${n} — ว่าง</div>
+          <div class="skillLearnDesc">เริ่มการผจญภัยครั้งใหม่ในช่องนี้</div></div>
+          <button onclick="chooseSlot(${n}, true)">✨ New Game</button></div>`;
+      }).join('');
+    }
+    async function chooseSlot(n, isNew){
+      if (isNew){
+        const meta = await getSlotMeta(n);
+        if (meta && !confirm(`Slot ${n} มีเซฟอยู่ (Day ${meta.day}, Chapter ${meta.chapter})\nเริ่มเกมใหม่จะเขียนทับเซฟนี้เมื่อบันทึกครั้งถัดไป — แน่ใจนะ?`)) return;
+        currentSlot = n;
+        hasSaveData = false;
+        document.getElementById('save-status').innerText = `Slot ${n} · เกมใหม่`;
+      } else {
+        await loadSlot(n);
+      }
+      document.getElementById('slotOverlay').classList.remove('open');
+      startGame();
+    }
+    // กลับเมนูหลัก/เปลี่ยน slot กลางเกม = reload หน้า (ตัวเกมทั้งหมดอยู่ใน global state — reload คือวิธี reset ที่ปลอดภัยสุด)
+    document.getElementById('mainmenu-btn').addEventListener('click', ()=>{
+      if (confirm("กลับเมนูหลักเพื่อเปลี่ยน Slot / เริ่มเกมใหม่?\nความคืบหน้าที่ยังไม่ได้เซฟจะหายนะ (กด P เซฟก่อนได้)")) location.reload();
+    });
 
     // ---------- Update ----------
     function update(){
@@ -5073,11 +5182,10 @@
 
     function gameLoop(){ update(); draw(); requestAnimationFrame(gameLoop); }
 
-    (async () => {
-      await loadGame();
-      gameLoop();
-      setInterval(saveGame, 20000);
-    })();
+    // ไม่ auto-load แล้ว — ผู้เล่นเลือก Slot จากหน้า title (openSlotSelect ใน 21-save-load.js)
+    // autosave ทำงานเฉพาะหลังเริ่มเกม กันไม่ให้เขียนสถานะเปล่าทับ slot
+    gameLoop();
+    setInterval(()=>{ if (gameStarted) saveGame(); }, 20000);
   </script>
 </body>
 </html>
