@@ -142,15 +142,30 @@
   .coinRow > span:first-child{ font-weight:600; opacity:0.85; }
   .coinRow > span:last-child{ font-size:15px; font-weight:700; color:var(--gold-dark); }
 
+  /* ---------- Status panel (Moonstone-style) มุมขวาบน ---------- */
   #dayWeatherHUD{
-    position:absolute; top:14px; left:14px; z-index:2; pointer-events:none;
-    background:var(--parchment-flat); border:1.5px solid rgba(62,38,23,0.55); border-radius:20px;
-    padding:6px 14px; font-size:var(--fs-small); color:var(--ink); display:flex; gap:12px; align-items:center;
-    box-shadow:0 2px 0 rgba(62,38,23,0.4), 0 4px 10px rgba(0,0,0,0.2);
+    position:absolute; top:14px; right:14px; z-index:3; pointer-events:none;
+    background:linear-gradient(180deg,#f6ead2,#e8d3ab); border:2px solid var(--wood-dark); border-radius:14px;
+    padding:8px 14px 9px; font-size:var(--fs-small); color:var(--ink); display:flex; flex-direction:column; gap:5px; align-items:stretch; min-width:150px;
+    box-shadow:0 4px 0 var(--wood-dark), 0 6px 14px rgba(0,0,0,0.28);
   }
-  #dayWeatherHUD .seg{ display:flex; align-items:center; gap:5px; white-space:nowrap; position:relative; padding-left:12px;}
-  #dayWeatherHUD .seg:first-child{ padding-left:0; }
-  #dayWeatherHUD .seg:not(:first-child)::before{ content:""; position:absolute; left:0; top:50%; transform:translateY(-50%); width:1px; height:12px; background:rgba(74,51,32,0.25); }
+  #dayWeatherHUD .hudTop{ display:flex; align-items:center; gap:7px; border-bottom:1.5px solid rgba(93,64,37,0.3); padding-bottom:5px; }
+  #dayWeatherHUD .hudTop #hud-daynight{ font-size:20px; }
+  #dayWeatherHUD .hudDay{ font-weight:700; font-size:13px; color:var(--wood-dark); }
+  #dayWeatherHUD .hudRow{ display:flex; gap:10px; justify-content:space-between; }
+  #dayWeatherHUD .seg{ display:flex; align-items:center; gap:4px; white-space:nowrap; }
+  #dayWeatherHUD .hudGold{ display:flex; align-items:center; gap:6px; font-weight:700; font-size:14px; color:#8a6410;
+    background:rgba(217,164,65,0.22); border-radius:7px; padding:3px 9px; align-self:flex-start; }
+  #dayWeatherHUD .hudFest{ display:flex; align-items:center; gap:5px; font-size:var(--fs-micro); font-weight:700; color:#a04010;
+    background:rgba(224,90,40,0.15); border-radius:6px; padding:2px 8px; }
+  /* ---------- Minimap มุมซ้ายบน ---------- */
+  #minimapWrap{
+    position:absolute; top:14px; left:14px; z-index:3; pointer-events:none;
+    background:linear-gradient(180deg,#f6ead2,#e8d3ab); border:2px solid var(--wood-dark); border-radius:14px;
+    padding:6px 6px 7px; box-shadow:0 4px 0 var(--wood-dark), 0 6px 14px rgba(0,0,0,0.28);
+  }
+  #minimapLabel{ font-size:var(--fs-micro); font-weight:700; color:var(--wood-dark); text-align:center; margin-bottom:4px; }
+  #minimap{ display:block; border-radius:8px; border:1.5px solid rgba(93,64,37,0.5); background:#2c2013; image-rendering:pixelated; }
   .partyItem{ display:flex; align-items:center; gap:6px; font-size:var(--fs-body); padding:4px 6px; border-radius:6px; margin-bottom:3px;}
   .partyItem.active{ background:rgba(217,164,65,0.18); box-shadow:inset 0 0 0 1px var(--gold-dark);}
   .dot{ width:10px; height:10px; border-radius:50%; flex:0 0 auto;}
@@ -482,12 +497,18 @@
 
   <div class="frame">
     <canvas id="game" width="640" height="480"></canvas>
+    <div id="minimapWrap">
+      <div id="minimapLabel">🧭 <span id="minimap-zone">ฟาร์ม</span></div>
+      <canvas id="minimap" width="128" height="96"></canvas>
+    </div>
     <div id="dayWeatherHUD">
-      <span class="seg"><span>🪙</span> <span id="hud-gold">20</span></span>
-      <span class="seg"><span id="hud-daynight">☀️</span> <span id="hud-day">Day 1 · กลางวัน</span></span>
-      <span class="seg"><span id="hud-weather">🌤️</span> <span id="hud-weathertext">แจ่มใส</span></span>
-      <span class="seg"><span id="hud-season">🌸</span> <span id="hud-seasontext">ใบไม้ผลิ</span></span>
-      <span class="seg" id="hud-festival-wrap" style="display:none;"><span id="hud-festival-icon">🎉</span> <span id="hud-festival-text">Festival</span></span>
+      <div class="hudTop">
+        <span id="hud-daynight">☀️</span>
+        <span class="hudDay" id="hud-day">Day 1 · กลางวัน</span>
+      </div>
+      <div class="hudRow"><span class="seg"><span id="hud-season">🌸</span> <span id="hud-seasontext">ใบไม้ผลิ</span></span><span class="seg"><span id="hud-weather">🌤️</span> <span id="hud-weathertext">แจ่มใส</span></span></div>
+      <div class="hudGold"><span>🪙</span> <span id="hud-gold">20</span></div>
+      <div class="hudFest" id="hud-festival-wrap" style="display:none;"><span id="hud-festival-icon">🎉</span> <span id="hud-festival-text">Festival</span></div>
     </div>
     <div id="titleScreen">
       <div class="egg">🥚</div>
@@ -5493,6 +5514,43 @@
       if (flashAlpha>0){ ctx.fillStyle=`rgba(255,255,255,${flashAlpha*0.55})`; ctx.fillRect(0,0,canvas.width,canvas.height); }
       drawMapBanner();
       ctx.restore();
+      drawMinimap();
+    }
+
+    // ---------- Minimap (มุมซ้ายบน — สไตล์ Moonstone) ----------
+    const ZONE_LABELS = { Farm:"ฟาร์ม", Dungeon:"ป่าตะวันออก", Cave:"ถ้ำคริสตัล", Volcano:"ปล่องภูเขาไฟ", Ruins:"ซากโบราณ", Snow:"ทุ่งหิมะ" };
+    const ZONE_MINI_BG = { Farm:"#3f6a34", Dungeon:"#1b3320", Cave:"#3a2114", Volcano:"#3a0f0f", Ruins:"#241a3d", Snow:"#8fb8d8" };
+    let _miniCanvas = null, _mctx = null;
+    function drawMinimap(){
+      if (!gameStarted) return;
+      if (!_mctx){ _miniCanvas = document.getElementById('minimap'); if (!_miniCanvas) return; _mctx = _miniCanvas.getContext('2d'); }
+      const zEl = document.getElementById('minimap-zone'); if (zEl) zEl.innerText = ZONE_LABELS[currentMap] || currentMap;
+      const W = _miniCanvas.width, H = _miniCanvas.height;
+      const sx = W/canvas.width, sy = H/canvas.height;
+      const m = _mctx;
+      m.clearRect(0,0,W,H);
+      m.fillStyle = ZONE_MINI_BG[currentMap] || "#2c2013"; m.fillRect(0,0,W,H);
+      const dot = (x,y,color,r=2)=>{ m.fillStyle=color; m.beginPath(); m.arc(x*sx, y*sy, r, 0, Math.PI*2); m.fill(); };
+      // เขตไร่ (ฟาร์ม)
+      if (currentMap === "Farm"){
+        const span = (FIELD_COLS-1)*FIELD_STEP + 36;
+        m.fillStyle = "rgba(150,110,60,0.55)"; m.fillRect((FIELD_ORIGIN-4)*sx, (FIELD_ORIGIN-4)*sy, (span+8)*sx, (span+8)*sy);
+        dot(pond.x, pond.y, "#4fc3f7", 2.5);
+        dot(nest.x, nest.y, "#f48fb1", 2.5);
+        dot(arena.x, arena.y, "#ffb74d", 2);
+      }
+      // ประตู/ทางออก
+      for (const g of (GATES[currentMap] || [])){
+        m.fillStyle = "#ffe066";
+        m.fillRect(g.x*sx, g.y*sy, Math.max(3, g.w*sx), Math.max(3, g.h*sy));
+      }
+      // NPC / ศัตรู
+      for (const n of NPCS){ if (n.map === currentMap) dot(n.x, n.y, "#e0e0e0", 2); }
+      for (const e of enemies) dot(e.x, e.y, "#ff5252", 2);
+      // ผู้เล่น (จุดเหลืองใหญ่ + ขอบขาว)
+      const px = (player.x+player.size/2)*sx, py = (player.y+player.size/2)*sy;
+      m.fillStyle = "#fff"; m.beginPath(); m.arc(px, py, 4, 0, Math.PI*2); m.fill();
+      m.fillStyle = "#ffeb3b"; m.beginPath(); m.arc(px, py, 2.8, 0, Math.PI*2); m.fill();
     }
 
     function gameLoop(){ update(); draw(); requestAnimationFrame(gameLoop); }
