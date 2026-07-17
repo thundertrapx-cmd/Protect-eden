@@ -2020,11 +2020,11 @@
     // เดินเข้าบริเวณป้าย/ทางออกเท่านั้นถึงจะเปลี่ยนโซน — มีป้ายบอกทางวาดใน 25-render
     const GATES = {
       Farm: [
-        { x:612, y:196, w:28, h:100, to:'Dungeon', label:'ป่าตะวันออก' },
-        { x:0,   y:196, w:28, h:100, to:'Cave',    label:'ถ้ำคริสตัล' },
-        { x:276, y:0,   w:96, h:26,  to:'Snow',    label:'ทุ่งหิมะเหนือ' },
+        { x:996, y:320, w:28, h:130, to:'Dungeon', label:'ป่าตะวันออก' },       // ขอบขวาของโลก 1024
+        { x:0,   y:320, w:28, h:130, to:'Cave',    label:'ถ้ำคริสตัล' },          // ขอบซ้าย
+        { x:464, y:0,   w:96, h:26,  to:'Snow',    label:'ทุ่งหิมะเหนือ' },       // ขอบบน
         { x:56,  y:46,  w:58, h:26,  to:'Home',    label:'บ้านของเรา', door:true }, // ประตูบ้าน (อาคารมุมซ้ายบน)
-        { x:270, y:454, w:100,h:26,  to:'Village', label:'หมู่บ้านเอเดน' },          // ทางลงหมู่บ้าน (ขอบล่าง)
+        { x:462, y:742, w:100,h:26,  to:'Village', label:'หมู่บ้านเอเดน' },        // ขอบล่างของโลก 768
       ],
       Home:    [ { x:270, y:454, w:100, h:26, to:'Farm', label:'ออกไปฟาร์ม' } ],
       Village: [ { x:270, y:0,   w:100, h:26, to:'Farm', label:'กลับฟาร์ม' } ],
@@ -2040,6 +2040,20 @@
       Volcano: [ { x:612, y:180, w:28, h:120, to:'Cave',    label:'กลับถ้ำ' } ],
       Snow:    [ { x:276, y:454, w:96, h:26,  to:'Farm',    label:'กลับฟาร์ม' } ],
     };
+    // ---------- ขนาดโลกต่อโซน + กล้องเลื่อนตาม (Stardew-style) ----------
+    // โซนที่ใหญ่กว่าจอ (640x480) จะมีกล้องเลื่อนตามผู้เล่น · โซนที่ไม่ระบุ = จอเดียว (กล้องนิ่ง เหมือนเดิม)
+    // ขยายโซนไหน = เพิ่ม entry ที่นี่ + ย้าย GATES ไปขอบโลกใหม่ + (ถ้าอยากให้ของกระจาย) ย้ายพิกัด POI
+    const WORLD_SIZES = {
+      Farm: { w: 1024, h: 768 },
+    };
+    function worldW(){ const s = WORLD_SIZES[currentMap]; return s ? s.w : canvas.width; }
+    function worldH(){ const s = WORLD_SIZES[currentMap]; return s ? s.h : canvas.height; }
+    const camera = { x:0, y:0 };
+    function updateCamera(){
+      const w = worldW(), h = worldH();
+      camera.x = Math.min(Math.max((player.x + player.size/2) - canvas.width/2, 0), Math.max(0, w - canvas.width));
+      camera.y = Math.min(Math.max((player.y + player.size/2) - canvas.height/2, 0), Math.max(0, h - canvas.height));
+    }
     function checkGates(){
       for (const g of (GATES[currentMap] || [])){
         if (player.x + player.size > g.x && player.x < g.x + g.w &&
@@ -3824,18 +3838,19 @@
       if (!back){ player.x = 60; player.y = 240; return; }
       const cx = back.x + back.w/2, cy = back.y + back.h/2;
       let px = cx - player.size/2, py = cy - player.size/2;
-      const onLeft = back.x <= 2, onRight = back.x + back.w >= canvas.width-2;
-      const onTop = back.y <= 2, onBottom = back.y + back.h >= canvas.height-2;
+      const W = worldW(), H = worldH();
+      const onLeft = back.x <= 2, onRight = back.x + back.w >= W-2;
+      const onTop = back.y <= 2, onBottom = back.y + back.h >= H-2;
       if (onLeft) px = back.x + back.w + 26;                    // ประตูขอบซ้าย → โผล่เยื้องขวา
       else if (onRight) px = back.x - 26 - player.size;          // ขอบขวา → เยื้องซ้าย
       if (onTop) py = back.y + back.h + 26;                     // ขอบบน → เยื้องลง
       else if (onBottom) py = back.y - 26 - player.size;         // ขอบล่าง → เยื้องขึ้น
-      // ประตูบ้าน/interior (ไม่ติดขอบจอ) → ดันผู้เล่นออกมา "ใต้ประตู" ให้พ้นกล่อง trigger กันเข้าซ้ำทันที
+      // ประตูบ้าน/interior (ไม่ติดขอบโลก) → ดันผู้เล่นออกมา "ใต้ประตู" ให้พ้นกล่อง trigger กันเข้าซ้ำทันที
       if (!onLeft && !onRight && !onTop && !onBottom){
         py = back.y + back.h + 8;
       }
-      player.x = Math.min(Math.max(px, 10), canvas.width-10-player.size);
-      player.y = Math.min(Math.max(py, 10), canvas.height-10-player.size);
+      player.x = Math.min(Math.max(px, 10), W-10-player.size);
+      player.y = Math.min(Math.max(py, 10), H-10-player.size);
     }
     function switchMap(newMap){
       // Chapter gating: โซนที่ยังไม่ถึง chapter จะเข้าไม่ได้ (ดู CHAPTERS ใน 02-economy-quests.js)
@@ -4604,9 +4619,9 @@
       let moved = false;
       let fx = 0, fy = 0;
       if (keys.w && player.y > 0){ player.y -= player.speed*moveMul; fy = -1; moved=true; }
-      if (keys.s && player.y < canvas.height-player.size){ player.y += player.speed*moveMul; fy = 1; moved=true; }
+      if (keys.s && player.y < worldH()-player.size){ player.y += player.speed*moveMul; fy = 1; moved=true; }
       if (keys.a && player.x > 0){ player.x -= player.speed*moveMul; fx = -1; moved=true; }
-      if (keys.d && player.x < canvas.width-player.size){ player.x += player.speed*moveMul; fx = 1; moved=true; }
+      if (keys.d && player.x < worldW()-player.size){ player.x += player.speed*moveMul; fx = 1; moved=true; }
       if (moved) player.facing = {x:fx, y:fy};
       player.moving = moved;
       if (moved) tut.moved = true;
@@ -5414,8 +5429,8 @@
         const near = Math.hypot(pcx-cx, pcy-cy) < 100;
         const st = GATE_STYLE[g.to] || GATE_STYLE.Farm;
         const horiz = g.h > g.w; // ประตูแนวตั้ง (ขอบซ้าย/ขวา) = ทางเดินแนวนอน
-        const fromLeft = g.x <= 2, fromRight = g.x+g.w >= canvas.width-2;
-        const fromTop = g.y <= 2, fromBottom = g.y+g.h >= canvas.height-2;
+        const fromLeft = g.x <= 2, fromRight = g.x+g.w >= worldW()-2;
+        const fromTop = g.y <= 2, fromBottom = g.y+g.h >= worldH()-2;
         ctx.save();
         // ทางเดินยื่นเข้าจอ ~46px บอกทิศ
         const L = 46;
@@ -5448,7 +5463,7 @@
         // ป้ายชื่อ + ลูกศรทิศ
         const arrow = fromLeft?"◀":fromRight?"▶":fromTop?"▲":"▼";
         ctx.font = "bold 10px Kanit, sans-serif"; ctx.textAlign = "center";
-        const lx = Math.min(Math.max(cx, 42), canvas.width-42);
+        const lx = Math.min(Math.max(cx, 42), worldW()-42);
         const ly = fromTop ? g.y+g.h+16 : fromBottom ? g.y-9 : cy-24;
         ctx.fillStyle = near ? "rgba(120,80,20,0.92)" : "rgba(20,14,9,0.72)";
         ctx.beginPath(); ctx.roundRect(lx-42, ly-11, 84, 16, 5); ctx.fill();
@@ -5759,23 +5774,34 @@
         return;
       }
 
+      // กล้องเลื่อนตามผู้เล่น (โซนใหญ่กว่าจอ) — เนื้อหาโลกวาดใน transform นี้, เอฟเฟกต์จอวาดข้างนอก
+      updateCamera();
+      ctx.save();
+      ctx.translate(-Math.round(camera.x), -Math.round(camera.y));
+
       if (currentMap === "Farm"){
-        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
+        const WW = worldW(), WH = worldH();
+        const sky = ctx.createLinearGradient(0,0,0,WH);
         sky.addColorStop(0,"#4c8a3a"); sky.addColorStop(1,"#3e6a2c");
-        ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle=sky; ctx.fillRect(0,0,WW,WH);
         const phase = dayPhase();
         let tint = null;
         if (phase==='night') tint = 'rgba(10,20,55,0.45)';
         else if (phase==='dusk') tint = 'rgba(255,110,60,0.22)';
         else if (phase==='dawn') tint = 'rgba(255,200,140,0.18)';
-        if (tint){ ctx.fillStyle=tint; ctx.fillRect(0,0,canvas.width,canvas.height); }
+        if (tint){ ctx.fillStyle=tint; ctx.fillRect(0,0,WW,WH); }
         drawClouds();
         ctx.fillStyle="rgba(20,45,15,0.35)";
         ctx.beginPath(); ctx.moveTo(0,60);
-        for (let hx=0; hx<=canvas.width; hx+=40) ctx.lineTo(hx, 60 - Math.sin(hx*0.012)*14 - 8);
-        ctx.lineTo(canvas.width,0); ctx.lineTo(0,0); ctx.closePath(); ctx.fill();
+        for (let hx=0; hx<=WW; hx+=40) ctx.lineTo(hx, 60 - Math.sin(hx*0.012)*14 - 8);
+        ctx.lineTo(WW,0); ctx.lineTo(0,0); ctx.closePath(); ctx.fill();
+        // พุ่มหญ้ากระจายทั่วโลก (procedural จากพิกัด — ไม่ต้องเก็บ array)
         ctx.fillStyle="rgba(30,60,20,0.5)";
-        for (const g of grassTufts){ ctx.beginPath(); ctx.ellipse(g.x,g.y,3*g.s,6*g.s,0,0,Math.PI*2); ctx.fill(); }
+        for (let gx=30; gx<WW; gx+=64) for (let gy=90; gy<WH; gy+=58){
+          const jx = (Math.sin(gx*12.9+gy*4.7)*0.5+0.5), jy=(Math.sin(gx*7.3+gy*9.1)*0.5+0.5);
+          const px2=gx+jx*30, py2=gy+jy*26, s=0.7+jx*0.6;
+          ctx.beginPath(); ctx.ellipse(px2,py2,3*s,6*s,0,0,Math.PI*2); ctx.fill();
+        }
         drawFlowers();
         drawPond();
         drawFarmBuildings(); // บ้านเรา (ประตูเข้า Home) + ป้ายทางลงหมู่บ้าน
@@ -5874,6 +5900,7 @@
       }
 
       drawParticles();
+      ctx.restore(); // จบเลเยอร์กล้อง — ต่อจากนี้เป็นเอฟเฟกต์ระดับจอ (ไม่เลื่อนตามกล้อง)
 
       const vg = ctx.createRadialGradient(320,240,150,320,240,420);
       vg.addColorStop(0,"rgba(0,0,0,0)"); vg.addColorStop(1,"rgba(0,0,0,0.35)");
@@ -5899,11 +5926,12 @@
       ctx.fillStyle = "#ffe082"; ctx.fillRect(hx+hw-30, hy+32, 16, 14);       // หน้าต่าง
       ctx.font = "bold 10px Kanit, sans-serif"; ctx.fillStyle = "#fff2cf"; ctx.textAlign="center";
       ctx.fillText("🏠 บ้านของเรา", hx+hw/2, hy+hh+14); ctx.textAlign="left";
-      // ป้ายทางลงหมู่บ้าน (ขอบล่าง)
-      ctx.fillStyle = "#8a6a3a"; ctx.fillRect(300, 452, 40, 26);
-      ctx.fillStyle = "#5a3a1c"; ctx.fillRect(316, 452, 8, 26);
+      // ป้ายทางลงหมู่บ้าน (ขอบล่างของโลก ตรงกับ GATE Village)
+      const vgy = worldH() - 28;
+      ctx.fillStyle = "#8a6a3a"; ctx.fillRect(492, vgy, 40, 26);
+      ctx.fillStyle = "#5a3a1c"; ctx.fillRect(508, vgy, 8, 26);
       ctx.font = "bold 10px Kanit, sans-serif"; ctx.fillStyle = "#fff2cf"; ctx.textAlign="center";
-      ctx.fillText("↓ หมู่บ้าน", 320, 448); ctx.textAlign="left";
+      ctx.fillText("↓ หมู่บ้าน", 512, vgy-4); ctx.textAlign="left";
     }
 
     // ---------- บ้านเรา (Home interior) ----------
@@ -5969,7 +5997,7 @@
       if (!_mctx){ _miniCanvas = document.getElementById('minimap'); if (!_miniCanvas) return; _mctx = _miniCanvas.getContext('2d'); }
       const zEl = document.getElementById('minimap-zone'); if (zEl) zEl.innerText = ZONE_LABELS[currentMap] || currentMap;
       const W = _miniCanvas.width, H = _miniCanvas.height;
-      const sx = W/canvas.width, sy = H/canvas.height;
+      const sx = W/worldW(), sy = H/worldH(); // minimap สเกลตามขนาดโลก (รองรับโซนใหญ่)
       const m = _mctx;
       m.clearRect(0,0,W,H);
       m.fillStyle = ZONE_MINI_BG[currentMap] || "#2c2013"; m.fillRect(0,0,W,H);
