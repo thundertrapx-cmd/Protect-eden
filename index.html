@@ -173,11 +173,27 @@
   .btn:hover{ filter:brightness(1.08); transform:translateY(-1px); box-shadow:0 3px 0 var(--wood-dark), 0 0 10px rgba(217,164,65,0.3); }
   .btn:active{ transform:translateY(1px); box-shadow:0 1px 0 var(--wood-dark); }
 
-  #eva-panel{
-    position:fixed; bottom:14px; left:50%; transform:translateX(-50%);
-    width:min(600px, calc(100vw - 300px)); display:flex; align-items:flex-start; gap:10px; color:var(--ink);
-    border:1.5px solid rgba(62,38,23,0.55); box-shadow:0 2px 0 rgba(62,38,23,0.4), 0 8px 20px rgba(0,0,0,0.25); border-radius:12px; padding:11px 16px; z-index:3;
+  /* EVA: ไอคอนใต้ minimap (ซ้ายบน) กดเปิด/ปิดกล่องข้อความ */
+  #evaToggle{
+    position:fixed; top:132px; left:14px; z-index:5; width:40px; height:40px; padding:0;
+    display:none; align-items:center; justify-content:center; cursor:pointer;
+    background:linear-gradient(180deg,#f6ead2,#e8d3ab); border:2px solid var(--wood-dark); border-radius:10px;
+    box-shadow:0 3px 0 var(--wood-dark), 0 5px 12px rgba(0,0,0,0.25); transition:transform .1s;
   }
+  body.game-started #evaToggle{ display:flex; }
+  #evaToggle:hover{ transform:translateY(-1px); }
+  #evaToggle .eva-avatar{ width:26px; height:26px; margin:0; }
+  #evaToggle.pulse{ animation:evaPulse 1s ease-in-out infinite; }
+  @keyframes evaPulse{ 0%,100%{ box-shadow:0 3px 0 var(--wood-dark), 0 0 0 rgba(217,164,65,0); } 50%{ box-shadow:0 3px 0 var(--wood-dark), 0 0 12px rgba(217,164,65,0.85); } }
+  #eva-panel{
+    position:fixed; top:132px; left:62px; transform:none;
+    width:min(280px, calc(100vw - 90px)); display:none; align-items:flex-start; gap:8px; color:var(--ink);
+    border:1.5px solid rgba(62,38,23,0.55); box-shadow:0 2px 0 rgba(62,38,23,0.4), 0 8px 20px rgba(0,0,0,0.25); border-radius:12px; padding:10px 30px 10px 14px; z-index:6;
+  }
+  body.eva-open #eva-panel{ display:flex; }
+  #evaClose{ position:absolute; top:5px; right:6px; width:20px; height:20px; padding:0; line-height:1; border:none; border-radius:5px;
+    background:rgba(74,51,32,0.12); color:var(--ink); cursor:pointer; font-size:12px; }
+  #evaClose:hover{ background:rgba(74,51,32,0.25); }
   .eva-avatar{ flex:0 0 auto; width:32px; height:32px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #eaf6f6, var(--sky-dark) 70%, #33555a 100%); box-shadow:0 0 0 2px var(--wood-dark); position:relative; margin-top:2px;}
   .eva-avatar::after{ content:"\2728"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:11px; }
   .eva-text{ color:var(--ink); font-size:var(--fs-label); line-height:1.5;}
@@ -205,16 +221,31 @@
   kbd{ background:linear-gradient(180deg,var(--wood-light),var(--wood)); border:1.5px solid var(--wood-dark); color:var(--ink); padding:2px 6px; border-radius:4px; font-size:10.5px; box-shadow:0 2px 0 var(--wood-dark); font-family:'Press Start 2P','Kanit',monospace; flex:0 0 auto;}
 
   /* ---------- Toolbar: one calm dock instead of eight separate shouting buttons ---------- */
-  .toolbar{
-    position:fixed; top:14px; right:14px; z-index:4;
-    display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px;
-    background:var(--parchment-flat); border:1.5px solid rgba(62,38,23,0.55); border-radius:12px;
-    padding:5px; box-shadow:0 2px 0 rgba(62,38,23,0.4), 0 6px 16px rgba(0,0,0,0.25);
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  /* ปุ่ม ☰ เมนู มุมซ้ายล่าง (ไม่บังแถบเวลา) */
+  #menuBtn{
+    position:fixed; left:14px; bottom:14px; z-index:59; width:42px; height:42px; padding:0; display:none;
+    align-items:center; justify-content:center; font-size:18px; cursor:pointer;
+    background:linear-gradient(180deg,#f6ead2,#e8d3ab); border:2px solid var(--wood-dark); border-radius:10px;
+    box-shadow:0 3px 0 var(--wood-dark), 0 5px 12px rgba(0,0,0,0.25); color:var(--ink);
   }
+  body.game-started #menuBtn{ display:flex; }
+  #menuBtn:hover{ transform:translateY(-1px); }
+  /* Toolbar = เมนูกลางจอ เปิดด้วย ESC (body.menu-open) */
+  .toolbar{
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.96); z-index:61;
+    display:flex; flex-direction:column; align-items:stretch; gap:5px; min-width:240px;
+    background:var(--parchment-flat); border:2px solid var(--wood-dark); border-radius:14px;
+    padding:12px; box-shadow:0 8px 0 var(--wood-dark), 0 20px 40px rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    opacity:0; pointer-events:none; transition:opacity 0.18s ease, transform 0.18s ease;
+  }
+  body.menu-open .toolbar{ opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+  .toolbarTitle{ font-family:'Press Start 2P','Kanit',monospace; font-size:10px; color:var(--gold-dark); text-align:center; margin-bottom:6px; }
+  /* ฉากหลังมืดตอนเปิดเมนู */
+  body.menu-open::after{ content:""; position:fixed; inset:0; background:rgba(14,10,20,0.55); z-index:60; }
   .toolbar button{
-    font-family:'Kanit',sans-serif; font-weight:600; font-size:11.5px; letter-spacing:0.1px;
-    background:transparent; border:none; color:var(--ink); padding:7px 10px; border-radius:8px; cursor:pointer;
+    font-family:'Kanit',sans-serif; font-weight:600; font-size:13px; letter-spacing:0.1px; text-align:left;
+    background:rgba(74,51,32,0.06); border:1px solid rgba(74,51,32,0.15); color:var(--ink); padding:9px 13px; border-radius:8px; cursor:pointer;
     transition:background 0.15s ease, color 0.15s ease;
   }
   .toolbar button:hover{ background:rgba(217,164,65,0.28); }
@@ -222,12 +253,10 @@
   .toolbar button.active{ background:linear-gradient(180deg,var(--gold),var(--gold-dark)); color:#3a2510; box-shadow:inset 0 0 0 1px rgba(62,38,23,0.4); }
 
   /* ---------- HUD visibility: hidden until the player has actually started ---------- */
-  .toolbar, #tutorialBar, #eva-panel{
+  #tutorialBar{
     opacity:0; pointer-events:none; transition:opacity 0.5s ease 0.15s;
   }
-  body.game-started .toolbar,
-  body.game-started #tutorialBar,
-  body.game-started #eva-panel{ opacity:1; pointer-events:auto; }
+  body.game-started #tutorialBar{ opacity:1; pointer-events:auto; }
 
   /* ---------- Tactical Battle: player action menu ---------- */
   #battleActionMenu, #battleMoveMenu{
@@ -510,6 +539,8 @@
   body.in-battle #tutorialBar,
   body.in-battle #questPanel,
   body.in-battle #eva-panel,
+  body.in-battle #evaToggle,
+  body.in-battle #menuBtn,
   body.in-battle #ui,
   body.in-battle #ui2{ display:none !important; }
 </style>
@@ -520,7 +551,9 @@
   <h1>PROJECT EDEN</h1>
   <div class="subtitle pixel">: GENESIS &nbsp;·&nbsp; ALPHA 0.7</div>
 
+  <button id="menuBtn" title="เมนู (ESC)">☰</button>
   <div class="toolbar">
+    <div class="toolbarTitle">เมนู · กด ESC เพื่อปิด</div>
     <button id="statsToggle">📊 สถานะ</button>
     <button id="questToggle">📜 เควส</button>
     <button id="controlsToggle">⌨ ปุ่มควบคุม</button>
@@ -702,8 +735,9 @@
     </div>
   </div>
 
+  <button id="evaToggle" title="EVA — กดเปิด/ปิดข้อความ"><span class="eva-avatar"></span></button>
   <div id="eva-panel">
-    <div class="eva-avatar"></div>
+    <button id="evaClose" title="ปิด">✕</button>
     <div>
       <span class="eva-tag">EVA · AI COMPANION</span>
       <div class="eva-text" id="eva-text">กำลังโหลดข้อมูลเกม...</div>
@@ -1038,7 +1072,41 @@
     document.getElementById('helpBtn').addEventListener('click', ()=> helpOverlay.classList.add('open'));
     document.getElementById('closeHelpBtn').addEventListener('click', ()=> helpOverlay.classList.remove('open'));
     helpOverlay.addEventListener('click', e=>{ if (e.target === helpOverlay) helpOverlay.classList.remove('open'); });
-    window.addEventListener('keydown', e=>{ if (e.key === 'Escape'){ helpOverlay.classList.remove('open'); closeShop(); closeCraft(); closeStorage(); } });
+    // ---------- เมนู ☰ (เปิดด้วย ESC หรือปุ่ม) — ย้าย toolbar มาไว้ตรงนี้ ไม่ให้บังแถบเวลา ----------
+    function anyOverlayOpen(){
+      return document.querySelector('#helpOverlay.open, #shopOverlay.open, #craftOverlay.open, #storageOverlay.open, #dexOverlay.open, #shipOverlay.open, #slotOverlay.open, #dayEndOverlay.open, #pathChooseOverlay.open, #skillLearnOverlay.open');
+    }
+    function closeAllOverlays(){
+      ['helpOverlay','shopOverlay','craftOverlay','storageOverlay','dexOverlay','shipOverlay'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove('open'); });
+      if (typeof closeShop==='function') closeShop();
+      if (typeof closeCraft==='function') closeCraft();
+      if (typeof closeStorage==='function') closeStorage();
+      if (typeof closeShipping==='function') closeShipping();
+      if (typeof closeDex==='function') closeDex();
+      document.querySelector('.controls').classList.remove('open');
+    }
+    function toggleGameMenu(){ document.body.classList.toggle('menu-open'); }
+    document.getElementById('menuBtn').addEventListener('click', toggleGameMenu);
+    // ปิดเมนูเมื่อกดปุ่มใดปุ่มหนึ่งในเมนู (ยกเว้น sound/fullscreen ที่อยากกดซ้ำ)
+    document.querySelectorAll('.toolbar button').forEach(btn=>{
+      if (btn.id!=='soundToggle' && btn.id!=='fullscreenToggle') btn.addEventListener('click', ()=> document.body.classList.remove('menu-open'));
+    });
+    window.addEventListener('keydown', e=>{
+      if (e.key === 'Escape'){
+        if (anyOverlayOpen()){ closeAllOverlays(); }           // มี overlay เปิด → ปิดก่อน
+        else if (document.body.classList.contains('menu-open')){ document.body.classList.remove('menu-open'); }
+        else if (gameStarted){ toggleGameMenu(); }              // ไม่มีอะไรเปิด → เปิดเมนู
+      }
+    });
+
+    // ---------- EVA: ไอคอนย่อ กดเปิด/ปิดกล่องข้อความ (ใต้ minimap) ----------
+    function toggleEva(){
+      const opening = !document.body.classList.contains('eva-open');
+      document.body.classList.toggle('eva-open', opening);
+      if (opening) document.getElementById('evaToggle').classList.remove('pulse');
+    }
+    document.getElementById('evaToggle').addEventListener('click', toggleEva);
+    document.getElementById('evaClose').addEventListener('click', ()=> document.body.classList.remove('eva-open'));
 
     // ---------- Shop (Economy) ----------
     let shopOpen = false;
@@ -2477,7 +2545,12 @@
       }
     }
     function shake(mag=4,time=8){ shakeMag = mag; shakeTime = time; }
-    function updateEVA(msg){ document.getElementById('eva-text').innerText = msg; }
+    function updateEVA(msg){
+      document.getElementById('eva-text').innerText = msg;
+      // ถ้ากล่อง EVA ปิดอยู่ ให้ปุ่มไอคอนกระพริบเตือนว่ามีข้อความใหม่
+      const tog = document.getElementById('evaToggle');
+      if (tog && !document.body.classList.contains('eva-open')) tog.classList.add('pulse');
+    }
     function shade(hex, percent){
       const num = parseInt(hex.replace("#",""),16);
       let r=(num>>16)+percent, g=(num>>8 & 0x00FF)+percent, b=(num & 0x0000FF)+percent;
