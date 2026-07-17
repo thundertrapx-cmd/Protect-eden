@@ -175,7 +175,7 @@
 
   /* EVA: ไอคอนใต้ minimap (ซ้ายบน) กดเปิด/ปิดกล่องข้อความ */
   #evaToggle{
-    position:fixed; top:132px; left:14px; z-index:5; width:40px; height:40px; padding:0;
+    position:fixed; top:166px; left:14px; z-index:5; width:40px; height:40px; padding:0;
     display:none; align-items:center; justify-content:center; cursor:pointer;
     background:linear-gradient(180deg,#f6ead2,#e8d3ab); border:2px solid var(--wood-dark); border-radius:10px;
     box-shadow:0 3px 0 var(--wood-dark), 0 5px 12px rgba(0,0,0,0.25); transition:transform .1s;
@@ -186,7 +186,7 @@
   #evaToggle.pulse{ animation:evaPulse 1s ease-in-out infinite; }
   @keyframes evaPulse{ 0%,100%{ box-shadow:0 3px 0 var(--wood-dark), 0 0 0 rgba(217,164,65,0); } 50%{ box-shadow:0 3px 0 var(--wood-dark), 0 0 12px rgba(217,164,65,0.85); } }
   #eva-panel{
-    position:fixed; top:132px; left:62px; transform:none;
+    position:fixed; top:166px; left:62px; transform:none;
     width:min(280px, calc(100vw - 90px)); display:none; align-items:flex-start; gap:8px; color:var(--ink);
     border:1.5px solid rgba(62,38,23,0.55); box-shadow:0 2px 0 rgba(62,38,23,0.4), 0 8px 20px rgba(0,0,0,0.25); border-radius:12px; padding:10px 30px 10px 14px; z-index:6;
   }
@@ -551,9 +551,9 @@
   <h1>PROJECT EDEN</h1>
   <div class="subtitle pixel">: GENESIS &nbsp;·&nbsp; ALPHA 0.7</div>
 
-  <button id="menuBtn" title="เมนู (ESC)">☰</button>
+  <button id="menuBtn" title="เมนู (Tab)">☰</button>
   <div class="toolbar">
-    <div class="toolbarTitle">เมนู · กด ESC เพื่อปิด</div>
+    <div class="toolbarTitle">เมนู · กด Tab เพื่อเปิด/ปิด</div>
     <button id="statsToggle">📊 สถานะ</button>
     <button id="questToggle">📜 เควส</button>
     <button id="controlsToggle">⌨ ปุ่มควบคุม</button>
@@ -1092,10 +1092,18 @@
       if (btn.id!=='soundToggle' && btn.id!=='fullscreenToggle') btn.addEventListener('click', ()=> document.body.classList.remove('menu-open'));
     });
     window.addEventListener('keydown', e=>{
+      // Tab = เปิด/ปิดเมนู ☰ (ย้ายมาจาก ESC เพื่อไม่ให้ชนคำสั่งย่อจอ/ออกฟูลสกรีนของเบราว์เซอร์)
+      if (e.key === 'Tab'){
+        e.preventDefault();
+        if (!gameStarted) return;
+        if (anyOverlayOpen()){ closeAllOverlays(); return; }
+        toggleGameMenu();
+        return;
+      }
+      // ESC = ปิดเท่านั้น (ไม่เปิดเมนูแล้ว) — ปิด overlay ก่อน ถ้าไม่มีก็ปิดเมนูที่เปิดค้าง
       if (e.key === 'Escape'){
-        if (anyOverlayOpen()){ closeAllOverlays(); }           // มี overlay เปิด → ปิดก่อน
+        if (anyOverlayOpen()){ closeAllOverlays(); }
         else if (document.body.classList.contains('menu-open')){ document.body.classList.remove('menu-open'); }
-        else if (gameStarted){ toggleGameMenu(); }              // ไม่มีอะไรเปิด → เปิดเมนู
       }
     });
 
@@ -3701,6 +3709,21 @@
     };
     let bossesDefeated = {}; // {bossId:true} — เก็บลงเซฟ (v4)
 
+    // บอสที่ "กำลังรออยู่" ในดันเจี้ยนโซนนี้ (chapter ตรง + ยังไม่ปราบ) — ใช้ชี้ทาง/ลำแสงประตู
+    function activeBossForDungeon(dungeonZone){
+      for (const id in BOSS_DB){
+        const def = BOSS_DB[id];
+        if (def.map === dungeonZone && chapterIndex === def.chapter && !bossesDefeated[id]) return def;
+      }
+      return null;
+    }
+    // ถ้ายืนใน overworld ที่มีประตูลงดันเจี้ยน คืนบอสที่รออยู่ในดันเจี้ยนนั้น (ไว้โชว์ hint)
+    function overworldActiveBoss(overworldZone){
+      const meta = (typeof ZONE_META!=='undefined') ? ZONE_META[overworldZone] : null;
+      if (!meta || !meta.dungeon) return null;
+      return activeBossForDungeon(meta.dungeon);
+    }
+
     // ---------- Spawn boss ในโลกตอนเข้าแมพ ----------
     function maybeSpawnChapterBoss(map){
       for (const id in BOSS_DB){
@@ -4000,6 +4023,12 @@
       } else {
         mapBanner = { text:"🌾 ฟาร์มเอเดน", sub:"ไร่ของเรา — ปลูก/เก็บ/เลี้ยงสัตว์", timer:120 };
         updateEVA("กลับมาที่ไร่แล้ว นำผลผลิตที่ได้ไปดูแลสัตว์เลี้ยงกันเถอะ!");
+      }
+      // ถ้าโซนนี้มีประตูดันเจี้ยนที่บอสประจำบทกำลังรออยู่ → ย้ำให้ผู้เล่นหาปากถ้ำ (กันหลงว่า "บอสหายไป")
+      const _obBoss = (typeof overworldActiveBoss==='function') ? overworldActiveBoss(newMap) : null;
+      if (_obBoss){
+        mapBanner = { text:`👑 ${_obBoss.name} รออยู่!`, sub:"หาปากถ้ำเรืองแสง (ลำแสงทอง + จุด 👑 บนมินิแมพ) แล้วเดินเข้าไปสู้", timer:170 };
+        updateEVA(`👑 บอส "${_obBoss.name}" กำลังเฝ้าอยู่ใน "ดันเจี้ยน" ของโซนนี้ — ไม่ได้อยู่กลางแจ้งแล้วนะ! มองหา "ปากถ้ำเรืองแสง" (มีลำแสงทองพุ่งขึ้นสูง + จุด 👑 บนมินิแมพ) แล้วเดินเข้าไปเพื่อลงไปสู้`);
       }
       spawnAtReturnGate(newMap, fromMap); // วางผู้เล่นข้างประตูย้อนกลับ (reciprocal)
       c.x = player.x - 24; c.y = player.y + 4;
@@ -5618,7 +5647,15 @@
     };
     // ประตูลงดันเจี้ยน — วาดเป็นปากถ้ำ/ซุ้มโบราณเรืองแสงกลางโซน (ไม่ใช่ทางออกขอบจอ)
     function drawDungeonDoorMarker(g, cx, cy, near){
+      const boss = (typeof activeBossForDungeon==='function') ? activeBossForDungeon(g.to) : null;
       ctx.save();
+      // ลำแสงบอกตำแหน่งประตูเมื่อมีบอสรออยู่ — มองเห็นจากไกลทั่วโซน
+      if (boss){
+        const bp = 0.25 + Math.sin(frameCount*0.08)*0.15;
+        const bg = ctx.createLinearGradient(cx, cy-460, cx, cy);
+        bg.addColorStop(0, "rgba(255,210,90,0)"); bg.addColorStop(1, `rgba(255,205,70,${bp})`);
+        ctx.fillStyle = bg; ctx.fillRect(cx-22, cy-460, 44, 460);
+      }
       const glow = 0.45 + Math.sin(frameCount*0.09)*0.2;
       // แสงเรือง
       const rg = ctx.createRadialGradient(cx, cy, 4, cx, cy, g.w*1.3);
@@ -5645,6 +5682,13 @@
       ctx.fillStyle = near ? "rgba(40,90,140,0.95)" : "rgba(15,25,40,0.8)";
       ctx.beginPath(); ctx.roundRect(cx-52, ly-11, 104, 16, 5); ctx.fill();
       ctx.fillStyle = "#dff0ff"; ctx.fillText(`⬇ ${g.label}`, cx, ly+1);
+      // ป้ายบอส (ถ้ามีบอสรออยู่) — เด่นเป็นทอง
+      if (boss){
+        const by = ly - 18;
+        ctx.fillStyle = "rgba(120,70,10,0.95)";
+        ctx.beginPath(); ctx.roundRect(cx-64, by-11, 128, 16, 5); ctx.fill();
+        ctx.fillStyle = "#ffe066"; ctx.fillText(`👑 บอส: ${boss.name}`, cx, by+1);
+      }
       if (near){ ctx.fillStyle="#fff2cf"; ctx.fillText("เดินเข้าเพื่อลงดันเจี้ยน", cx, g.y+g.h+16); }
       ctx.textAlign="left";
     }
@@ -6194,8 +6238,21 @@
         dot(bed.x+bed.w/2, bed.y+bed.h/2, "#7a9cc0", 3);   // เตียง
         dot(shippingBin.x+shippingBin.w/2, shippingBin.y+shippingBin.h/2, "#ffe082", 3); // กล่องขาย
       }
-      // ประตู/ทางออก
+      // ประตู/ทางออก (ทางออกขอบ = เหลือง · ประตูดันเจี้ยน = จุดใหญ่ · มีบอส = ทองกระพริบ)
       for (const g of (GATES[currentMap] || [])){
+        if (g.door) continue;
+        if (g.dungeon){
+          const boss = (typeof activeBossForDungeon==='function') ? activeBossForDungeon(g.to) : null;
+          const cxm=(g.x+g.w/2)*sx, cym=(g.y+g.h/2)*sy;
+          if (boss){
+            const pr = 4 + Math.sin(frameCount*0.12)*1.6;
+            m.fillStyle = "#ffcf3a"; m.beginPath(); m.arc(cxm, cym, pr, 0, Math.PI*2); m.fill();
+            m.fillStyle = "#7a1010"; m.font = "bold 6px sans-serif"; m.textAlign="center"; m.fillText("👑", cxm, cym+2.2); m.textAlign="left";
+          } else {
+            m.fillStyle = "#9b7ad0"; m.beginPath(); m.arc(cxm, cym, 3, 0, Math.PI*2); m.fill();
+          }
+          continue;
+        }
         m.fillStyle = "#ffe066";
         m.fillRect(g.x*sx, g.y*sy, Math.max(3, g.w*sx), Math.max(3, g.h*sy));
       }
