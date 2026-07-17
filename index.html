@@ -164,7 +164,7 @@
     border:1.5px solid rgba(62,38,23,0.55); box-shadow:0 2px 0 rgba(62,38,23,0.4), 0 8px 20px rgba(0,0,0,0.25); border-radius:12px; padding:11px 16px; z-index:3;
   }
   .eva-avatar{ flex:0 0 auto; width:32px; height:32px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #eaf6f6, var(--sky-dark) 70%, #33555a 100%); box-shadow:0 0 0 2px var(--wood-dark); position:relative; margin-top:2px;}
-  .eva-avatar::after{ content:"\\2728"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:11px; }
+  .eva-avatar::after{ content:"\2728"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:11px; }
   .eva-text{ color:var(--ink); font-size:var(--fs-label); line-height:1.5;}
   .eva-text::after{ content:"\\2588"; animation: blink 1s steps(1) infinite; margin-left:2px; color:var(--sky-dark);}
   @keyframes blink{ 50%{ opacity:0; } }
@@ -543,6 +543,8 @@
         <div class="invChip"><span class="ic">🐟</span><span class="val" id="ui-fish">0</span></div>
         <div class="invChip"><span class="ic">🎃</span><span class="val" id="ui-pumpkin">0</span></div>
         <div class="invChip"><span class="ic">🫐</span><span class="val" id="ui-frostberry">0</span></div>
+        <div class="invChip"><span class="ic">🍃</span><span class="val" id="ui-icemint">0</span></div>
+        <div class="invChip"><span class="ic">🫚</span><span class="val" id="ui-ginseng">0</span></div>
         <div class="invChip"><span class="ic">🍓</span><span class="val" id="ui-berries">0</span></div>
       </div>
       <div class="metaLine" id="ui-seedsel">เมล็ดที่เลือก [Z]: 🥦 ผัก</div>
@@ -954,7 +956,9 @@
       { id:'seeds5', name:'🥦 เมล็ดผัก x5', price:10, sub:'พืชพื้นฐาน: ปลูกได้ 3 ฤดู (ยกเว้นหนาว) โตไว ขายถูก', buy:()=>{ inv.seeds+=5; } },
       { id:'chiliSeeds', name:'🌶️ เมล็ดพริกไฟ x3', price:9, sub:'ปลูกได้เฉพาะฤดูร้อน ขายแพงกว่าผัก 2 เท่า', buy:()=>{ inv.seedChili+=3; } },
       { id:'pumpkinSeeds', name:'🎃 เมล็ดฟักทองทองคำ x2', price:10, sub:'ปลูกได้เฉพาะใบไม้ร่วง โตช้าแต่ขายแพงมาก (กำไรสูงสุดต่อแปลง)', buy:()=>{ inv.seedPumpkin+=2; } },
-      { id:'frostSeeds', name:'🫐 เมล็ดเบอร์รี่น้ำแข็ง x2', price:12, sub:'พืชเดียวที่ปลูกได้ในฤดูหนาว (ไม่ต้องมีโรงเรือน) ราคาขายสูง', buy:()=>{ inv.seedFrost+=2; } },
+      { id:'frostSeeds', name:'🫐 เมล็ดเบอร์รี่น้ำแข็ง x2', price:12, sub:'พืชฤดูหนาว ราคาขายสูง โตปานกลาง', buy:()=>{ inv.seedFrost+=2; } },
+      { id:'mintSeeds', name:'🍃 เมล็ดมิ้นต์น้ำแข็ง x3', price:10, sub:'พืชฤดูหนาวโตไวที่สุด — เหมาะหมุนเงินเร็วช่วงหนาว', buy:()=>{ inv.seedMint+=3; } },
+      { id:'ginsengSeeds', name:'🫚 เมล็ดโสมหิมะ x1', price:9, sub:'พืชฤดูหนาวระดับพรีเมียม โตช้ามากแต่ขายแพงที่สุดในเกม', buy:()=>{ inv.seedGinseng+=1; } },
       { id:'energyBar', name:'🍪 บาร์พลังงาน', price:15, sub:'ฟื้นพลังงาน +30 ทันที', buy:()=>{ energy=Math.min(maxEnergy,energy+30); } },
       { id:'fireBerry', name:'🍓 Fire Berry', price:12, sub:'ป้อนให้สัตว์เลี้ยง: +10 Affinity 🔥ไฟ มีผลต่อทิศทางวิวัฒนาการ', buy:()=>{ inv.fireBerry+=1; } },
       { id:'waterBerry', name:'🫐 Water Berry', price:12, sub:'ป้อนให้สัตว์เลี้ยง: +10 Affinity 💧น้ำ มีผลต่อทิศทางวิวัฒนาการ', buy:()=>{ inv.waterBerry+=1; } },
@@ -962,8 +966,8 @@
       { id:'leafBerry', name:'🍏 Leaf Berry', price:12, sub:'ป้อนให้สัตว์เลี้ยง: +10 Affinity 🌿ใบไม้ มีผลต่อทิศทางวิวัฒนาการ', buy:()=>{ inv.leafBerry+=1; } },
       { id:'electricBerry', name:'⚡ Electric Berry', price:12, sub:'ป้อนให้สัตว์เลี้ยง: +10 Affinity ⚡ไฟฟ้า มีผลต่อทิศทางวิวัฒนาการ', buy:()=>{ inv.electricBerry+=1; } }
     ];
-    const sellPrices = { veggie:2, meat:3, chili:4, pumpkin:10, frostberry:11, crystal:8, wood:3, ore:6, fish:5, obsidian:10, relic:15, fur:7 };
-    const sellLabels = { veggie:'🥦 ผัก', meat:'🍖 เนื้อ', chili:'🌶️ พริกไฟ', pumpkin:'🎃 ฟักทองทองคำ', frostberry:'🫐 เบอร์รี่น้ำแข็ง', crystal:'💎 คริสตัล', wood:'🪵 ไม้', ore:'🪨 แร่', fish:'🐟 ปลา', obsidian:'🖤 ออบซิเดียน', relic:'🏺 โบราณวัตถุ', fur:'🦊 ขนสัตว์' };
+    const sellPrices = { veggie:2, meat:3, chili:4, pumpkin:10, frostberry:11, iceMint:5, snowGinseng:18, crystal:8, wood:3, ore:6, fish:5, obsidian:10, relic:15, fur:7 };
+    const sellLabels = { veggie:'🥦 ผัก', meat:'🍖 เนื้อ', chili:'🌶️ พริกไฟ', pumpkin:'🎃 ฟักทองทองคำ', frostberry:'🫐 เบอร์รี่น้ำแข็ง', iceMint:'🍃 มิ้นต์น้ำแข็ง', snowGinseng:'🫚 โสมหิมะ', crystal:'💎 คริสตัล', wood:'🪵 ไม้', ore:'🪨 แร่', fish:'🐟 ปลา', obsidian:'🖤 ออบซิเดียน', relic:'🏺 โบราณวัตถุ', fur:'🦊 ขนสัตว์' };
     // ---------- ตลาดผันผวนรายวัน ----------
     // ราคาคำนวณ deterministic จาก (ชื่อของ + วันที่) — ไม่ต้องเก็บลงเซฟ โหลดกลับมาก็ได้ราคาเดิมของวันนั้น
     // ทุกวันมี "ของฮอต" 1 อย่าง ราคา x1.5 → สร้างการตัดสินใจว่าจะขายวันนี้หรือเก็บรอ
@@ -1581,6 +1585,7 @@
 
     let inv = { coin: 20, seeds: 5, veggie: 0, meat: 0, chili: 0, crystal: 0, wood: 0, ore: 0, fish: 0, obsidian: 0, relic: 0, fur: 0, eggs: [],
       seedChili: 0, seedPumpkin: 0, seedFrost: 0, pumpkin: 0, frostberry: 0,
+      seedMint: 0, seedGinseng: 0, iceMint: 0, snowGinseng: 0,
       fireBerry:0, waterBerry:0, earthBerry:0, leafBerry:0, electricBerry:0 };
     let energy = 100, maxEnergy = 100, energyRegenTimer = 0;
     function spendEnergy(amount){
@@ -1617,6 +1622,8 @@
       chili:      { id:'chili',      name:'พริกไฟ',         icon:'🌶️', seedKey:'seedChili',   seedPrice:3, growTime:200, seasons:[1],     sellPrice:4,  color:'#ff5722', stemColor:'#c0392b', glow:'#ffab91' },
       pumpkin:    { id:'pumpkin',    name:'ฟักทองทองคำ',    icon:'🎃', seedKey:'seedPumpkin', seedPrice:5, growTime:320, seasons:[2],     sellPrice:10, color:'#ff9800', stemColor:'#8a6a2a', glow:'#ffe0b2' },
       frostberry: { id:'frostberry', name:'เบอร์รี่น้ำแข็ง', icon:'🫐', seedKey:'seedFrost',   seedPrice:6, growTime:260, seasons:[3],     sellPrice:11, color:'#4fc3f7', stemColor:'#4a7a8a', glow:'#b3e5fc' },
+      iceMint:    { id:'iceMint',    name:'มิ้นต์น้ำแข็ง',   icon:'🍃', seedKey:'seedMint',    seedPrice:4, growTime:140, seasons:[3],     sellPrice:5,  color:'#80f2d8', stemColor:'#3a8a72', glow:'#d0fff5' },
+      snowGinseng:{ id:'snowGinseng',name:'โสมหิมะ',        icon:'🫚', seedKey:'seedGinseng', seedPrice:9, growTime:420, seasons:[3],     sellPrice:18, color:'#e8d5a8', stemColor:'#8a7a5a', glow:'#fff2d0' },
     };
     const CROP_KEYS = Object.keys(CROP_DB);
     function cropInfo(id){ return CROP_DB[id] || CROP_DB.veggie; }
@@ -2583,6 +2590,15 @@
     function winBattle(){
       battle.ended = true; battle.endTimer = 70;
       for (const u of battle.units){ if (u.isPlayer && u.ref) u.ref.hp = Math.min(u.ref.maxHp, Math.max(1, Math.round(u.hp))); } // clamp กัน HP เกินเพราะโบนัสอุปกรณ์
+      // ชัยชนะสร้างสายใย: ตัวที่รอดชีวิตได้ Bond (สู้ boss ได้มากกว่า) — คูณด้วย trait/นิสัยตามระบบเดิม
+      const wasBossFight = battle.units.some(x=>x.bossDef);
+      for (const u of battle.units){
+        if (!u.isPlayer || !u.alive || !u.ref) continue;
+        const c = u.ref;
+        const gain = Math.round((wasBossFight ? 8 : 3) * traitBondMult(c.trait) * personalityBondMult(c.personality));
+        c.bond = Math.min(100, c.bond + gain);
+        spawnText(c.x, c.y-30, `+${gain} Bond ❤`, "#f48fb1");
+      }
       const isTournament = battle.units.some(u=>!u.isPlayer && u.ref && u.ref.tournamentName);
       if (isTournament){
         tournamentWon = true;
@@ -3692,7 +3708,7 @@
     // ---------- Save versioning ----------
     // ทุกครั้งที่เพิ่ม field ใหม่ลงเซฟ: เพิ่ม SAVE_VERSION แล้วเขียน migration step ใน migrateSave
     // ห้ามอ่าน field ใหม่ตรงๆ จาก data โดยไม่ผ่าน migration — ไม่งั้นเซฟเก่าพัง
-    const SAVE_VERSION = 9;
+    const SAVE_VERSION = 10;
 
     // ---------- เวลาเล่นสะสม (playtime) ----------
     // สะสมเป็นวินาทีใน update() (22-game-loop.js) เฉพาะตอน gameStarted — เก็บลงเซฟต่อ slot
@@ -3760,6 +3776,10 @@
         // v8 → v9: เวลาเล่นสะสม — เซฟเก่าไม่เคยจับเวลา ประมาณจากจำนวนวันในเกม (1 วัน = 7200 เฟรม ≈ 120 วิ)
         data.playTimeSec = ((data.dayCount || 1) - 1) * 120;
         v = 9;
+      }
+      if (v === 9){
+        // v9 → v10: พืชหน้าหนาวใหม่ (มิ้นต์น้ำแข็ง/โสมหิมะ) — inv keys ใหม่ default ผ่าน Object.assign ตอนโหลด ไม่ต้องแปลง
+        v = 10;
       }
       data.version = v;
       return data;
@@ -4003,7 +4023,7 @@
         const si = seasonIdx();
         if (si !== lastSeasonIdx){
           lastSeasonIdx = si;
-          mapBanner = { text: `${seasonIcon()} ฤดู${seasonName()}มาถึงแล้ว`, sub: si===1?"อากาศร้อน เหมาะกับการปลูกพริกไฟ":si===3?"ฤดูหนาว ปลูกพืชไม่ได้ถ้าไม่มีโรงเรือน":"พืชผลเติบโตได้ตามปกติ", timer:150 };
+          mapBanner = { text: `${seasonIcon()} ฤดู${seasonName()}มาถึงแล้ว`, sub: si===1?"อากาศร้อน เหมาะกับการปลูกพริกไฟ":si===3?"หนาวแล้ว! ปลูกได้: เบอร์รี่น้ำแข็ง มิ้นต์ โสมหิมะ (กด Z สลับเมล็ด)":"พืชผลเติบโตได้ตามปกติ", timer:150 };
           updateEVA(`${seasonIcon()} ฤดูกาลเปลี่ยนเป็น "${seasonName()}" แล้ว! การปลูกพืชและสภาพอากาศจะเปลี่ยนไปตามฤดูนี้`);
         }
       }
@@ -4147,13 +4167,13 @@
         }
       }
       if (keys['1'] && feedCooldown<=0 && inv.veggie>0 && energy>=1){
-        inv.veggie--; c.veggieEaten++; c.hp=Math.min(c.maxHp,c.hp+20); c.bond=Math.min(100,c.bond+2*traitBondMult(c.trait)*personalityBondMult(c.personality)); energy=Math.max(0,energy-1);
+        inv.veggie--; c.veggieEaten++; c.hp=Math.min(c.maxHp,c.hp+20); c.bond=Math.min(100,c.bond+3*traitBondMult(c.trait)*personalityBondMult(c.personality)); energy=Math.max(0,energy-1);
         feedCooldown=30; spawnText(c.x,c.y-24,"+20 HP","#8BC34A"); spawnBurst(c.x,c.y,'#8BC34A',8,2,24,3);
         sfx.feed(); tut.fedVeggie = true;
         checkEvolution(c);
       }
       if (keys['2'] && feedCooldown<=0 && inv.meat>0 && energy>=1){
-        inv.meat--; c.meatEaten++; c.atk+=2; c.bond=Math.min(100,c.bond+2*traitBondMult(c.trait)*personalityBondMult(c.personality)); energy=Math.max(0,energy-1);
+        inv.meat--; c.meatEaten++; c.atk+=2; c.bond=Math.min(100,c.bond+3*traitBondMult(c.trait)*personalityBondMult(c.personality)); energy=Math.max(0,energy-1);
         feedCooldown=30; spawnText(c.x,c.y-24,"+2 ATK","#ff8a65"); spawnBurst(c.x,c.y,'#ff8a65',8,2,24,3);
         sfx.feed(); tut.fedMeat = true;
         checkEvolution(c);
@@ -4333,6 +4353,8 @@
       document.getElementById('ui-fish').innerText = inv.fish;
       document.getElementById('ui-pumpkin').innerText = inv.pumpkin;
       document.getElementById('ui-frostberry').innerText = inv.frostberry;
+      document.getElementById('ui-icemint').innerText = inv.iceMint;
+      document.getElementById('ui-ginseng').innerText = inv.snowGinseng;
       document.getElementById('ui-berries').innerText = AFFINITY_KEYS.reduce((sum,k)=>sum+(inv[BERRIES[k].key]||0),0);
       document.getElementById('ui-energy').innerText = Math.round(energy)+"/"+maxEnergy;
       document.getElementById('ui-energybar').style.width = (energy/maxEnergy*100)+"%";
