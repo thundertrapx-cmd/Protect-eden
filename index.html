@@ -488,6 +488,20 @@
   #dayEndBody{ text-align:left; margin-bottom:10px; }
   #dayEndBody .deRow{ display:flex; justify-content:space-between; padding:5px 2px; border-bottom:1px solid rgba(93,64,37,0.18); font-size:var(--fs-body); }
   #dayEndBody .deRow span:last-child{ font-weight:700; color:var(--wood-dark); }
+  /* ---------- กล่องขายของ (shipping) ---------- */
+  #shipOverlay{ position:fixed; inset:0; background:rgba(20,14,9,0.8); display:none; align-items:center; justify-content:center; z-index:56; padding:20px;}
+  #shipOverlay.open{ display:flex; }
+  #shipCard{ width:min(560px,94vw); max-height:88vh; overflow-y:auto; background:linear-gradient(180deg,#f6ead2,#e8d3ab); color:var(--ink); border:2px solid var(--wood-dark); border-radius:14px; padding:18px 20px 18px; box-shadow:0 8px 0 var(--wood-dark), 0 20px 40px rgba(0,0,0,0.4);}
+  #shipCard h2{ font-family:'Press Start 2P','Kanit',monospace; font-size:14px; color:var(--gold-dark); margin:0 0 8px;}
+  #shipCols{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
+  .shipColTitle{ font-weight:700; font-size:var(--fs-body); color:var(--wood-dark); margin-bottom:5px; border-bottom:1.5px solid rgba(93,64,37,0.3); padding-bottom:3px; }
+  #shipFooter{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding:8px 10px; background:rgba(217,164,65,0.2); border-radius:8px; font-weight:700; }
+  #shipFooter #shipTotal{ font-size:16px; color:#8a6410; }
+  @media (max-width:520px){ #shipCols{ grid-template-columns:1fr; } }
+  /* deSection ในหน้าสรุปวัน */
+  #dayEndBody .deSection{ font-weight:700; color:var(--wood-dark); margin:6px 0 2px; font-size:var(--fs-small); }
+  #dayEndBody .deShip{ font-size:var(--fs-small); opacity:0.9; }
+  #dayEndBody .deShipTotal{ font-weight:700; border-bottom:2px solid rgba(93,64,37,0.3); }
 </style>
 
 </head>
@@ -794,6 +808,19 @@
     </div>
   </div>
 
+  <div id="shipOverlay">
+    <div id="shipCard">
+      <h2>📦 กล่องขายของ</h2>
+      <div class="skillLearnHint">ใส่ของลงกล่องจากกระเป๋า (ฝั่งซ้าย) — จะขายอัตโนมัติตอนนอน/จบวัน ตามราคาตลาดของวันนั้น</div>
+      <div id="shipCols">
+        <div class="shipCol"><div class="shipColTitle">🎒 ในกระเป๋า</div><div id="shipInvList"></div></div>
+        <div class="shipCol"><div class="shipColTitle">📦 ในกล่อง (รอขาย)</div><div id="shipBinList"></div></div>
+      </div>
+      <div id="shipFooter"><span>รายได้ที่จะได้ตอนจบวัน:</span> <span id="shipTotal">🪙 0</span></div>
+      <button class="btn" id="shipCloseBtn" style="width:100%; margin-top:8px;">ปิด ✕</button>
+    </div>
+  </div>
+
   <div id="dayEndOverlay">
     <div id="dayEndCard">
       <div id="dayEndDay">🌅 Day 2</div>
@@ -1058,30 +1085,83 @@
       }
       const hotKey = todayHotItem();
       const sellEl = document.getElementById('shopSellList');
-      sellEl.innerHTML = `<div class="metaLine" style="margin-bottom:6px;">📈 ราคาตลาดเปลี่ยนทุกวัน · วันนี้ของฮอต: <b>${sellLabels[hotKey]}</b> (x1.5)</div>`;
-      for (const key in sellPrices){
-        const owned = inv[key] || 0;
-        const price = sellPriceToday(key);
-        const trend = price > sellPrices[key] ? '📈' : price < sellPrices[key] ? '📉' : '➖';
-        const row = document.createElement('div');
-        row.className = 'shopRow';
-        row.innerHTML = `<div class="shopInfo"><div class="shopName">${key===hotKey?'🔥 ':''}${sellLabels[key]}</div><div class="shopSub">มี ${owned} ชิ้น · วันนี้ ${trend} 🪙${price}/ชิ้น (ปกติ ${sellPrices[key]})</div></div>
-          <button ${owned<1?'disabled':''}>ขาย 1</button>`;
-        row.querySelector('button').addEventListener('click', ()=>{
-          if ((inv[key]||0) < 1) return;
-          const p = sellPriceToday(key);
-          inv[key] -= 1; inv.coin += p; sfx.pickup();
-          updateEVA(`ขาย ${sellLabels[key]} ได้ 🪙${p}${key===todayHotItem()?' (ราคาของฮอต!)':''}`);
-          renderShop(); updateUI();
-        });
-        sellEl.appendChild(row);
-      }
+      // ขายของย้ายไป "กล่องขายของ" ที่ฟาร์มแล้ว (Stardew-style) — ร้านค้าเหลือแต่ซื้อ
+      sellEl.innerHTML = `<div class="metaLine">📦 ขายของผ่าน <b>กล่องขายของ</b> ที่ฟาร์ม (เดินไปที่กล่องแล้วกด SPACE ใส่ของ) — ได้เงินตอนจบวันตามราคาตลาด<br>📈 วันนี้ของฮอต: <b>${sellLabels[hotKey]}</b> ขายได้ราคา x1.5</div>`;
     }
     document.getElementById('shopToggle').addEventListener('click', openShop);
     document.getElementById('closeShopBtn').addEventListener('click', closeShop);
     shopOverlay.addEventListener('click', e=>{ if (e.target === shopOverlay) closeShop(); });
 
-    // ---------- Story (Intro) ----------
+    // ---------- กล่องขายของ (Shipping Bin) — ใส่ของ แล้วได้เงินตอนจบวัน ----------
+    // ขายผ่านกล่องนี้เท่านั้น (ร้านค้าเหลือแต่ซื้อ) — เหมือน Stardew: ของในกล่องขายอัตโนมัติตอนนอน
+    let shipOpen = false;
+    const shipOverlayEl = document.getElementById('shipOverlay');
+    function shipQty(key){ return shipItems[key] || 0; }
+    function shipTotalCount(){ return Object.values(shipItems).reduce((a,b)=>a+b,0); }
+    // คำนวณรายได้จากของในกล่อง (ราคาตลาดของ "วันนี้" — เรียกใน endDay ก่อน dayCount++)
+    function computeShippingIncome(){
+      let total = 0; const lines = [];
+      for (const key in shipItems){
+        const qty = shipItems[key]; if (qty <= 0) continue;
+        const price = sellPriceToday(key);
+        const sub = qty * price;
+        total += sub;
+        lines.push({ key, label: sellLabels[key], qty, price, sub, hot: key === todayHotItem() });
+      }
+      lines.sort((a,b)=> b.sub - a.sub);
+      return { total, lines };
+    }
+    function openShipping(){ shipOpen = true; renderShipping(); shipOverlayEl.classList.add('open'); }
+    function closeShipping(){ shipOpen = false; shipOverlayEl.classList.remove('open'); }
+    function shipAdd(key, amount){
+      const have = inv[key] || 0;
+      const n = Math.min(amount, have);
+      if (n <= 0) return;
+      inv[key] = have - n;
+      shipItems[key] = (shipItems[key] || 0) + n;
+      sfx.pickup(); renderShipping(); updateUI();
+    }
+    function shipRemove(key, amount){
+      const inBin = shipItems[key] || 0;
+      const n = Math.min(amount, inBin);
+      if (n <= 0) return;
+      shipItems[key] = inBin - n;
+      if (shipItems[key] <= 0) delete shipItems[key];
+      inv[key] = (inv[key] || 0) + n;
+      sfx.pickup(); renderShipping(); updateUI();
+    }
+    function renderShipping(){
+      const hotKey = todayHotItem();
+      // ฝั่งซ้าย: ของในกระเป๋าที่ขายได้
+      const invEl = document.getElementById('shipInvList');
+      let invHtml = '';
+      for (const key in sellPrices){
+        const owned = inv[key] || 0;
+        if (owned <= 0 && shipQty(key) <= 0) continue;
+        const price = sellPriceToday(key);
+        const trend = price > sellPrices[key] ? '📈' : price < sellPrices[key] ? '📉' : '➖';
+        invHtml += `<div class="shopRow"><div class="shopInfo"><div class="shopName">${key===hotKey?'🔥 ':''}${sellLabels[key]}</div>
+          <div class="shopSub">มี ${owned} · ${trend} 🪙${price}/ชิ้น</div></div>
+          <div style="display:flex; gap:4px;">
+            <button ${owned<1?'disabled':''} onclick="shipAdd('${key}',1)">+1</button>
+            <button ${owned<1?'disabled':''} onclick="shipAdd('${key}',${owned})">ทั้งหมด</button>
+          </div></div>`;
+      }
+      invEl.innerHTML = invHtml || '<div class="metaLine">ไม่มีของขายได้ในกระเป๋า</div>';
+      // ฝั่งขวา: ของในกล่อง + รายได้ที่คาดว่าจะได้
+      const binEl = document.getElementById('shipBinList');
+      const inc = computeShippingIncome();
+      let binHtml = '';
+      for (const ln of inc.lines){
+        binHtml += `<div class="shopRow"><div class="shopInfo"><div class="shopName">${ln.hot?'🔥 ':''}${ln.label} x${ln.qty}</div>
+          <div class="shopSub">= 🪙${ln.sub}</div></div>
+          <button onclick="shipRemove('${ln.key}',1)">เอาคืน</button></div>`;
+      }
+      binEl.innerHTML = binHtml || '<div class="metaLine">กล่องยังว่าง — ใส่ของจากกระเป๋า (ฝั่งซ้าย)</div>';
+      document.getElementById('shipTotal').innerText = `🪙 ${inc.total}`;
+    }
+    document.getElementById('shipCloseBtn').addEventListener('click', closeShipping);
+    shipOverlayEl.addEventListener('click', e=>{ if (e.target === shipOverlayEl) closeShipping(); });    // ---------- Story (Intro) ----------
     let storyActive = false;
     const storySlides = [
       { icon:"🌫️", text:"สายลมพัดผ่านฟาร์มร้างที่ปกคลุมด้วยหมอกสีเขียว... เจ้าลืมตาตื่นขึ้นกลางแปลงดินที่ไม่คุ้นเคย โดยจำอะไรก่อนหน้านี้ไม่ได้เลย" },
@@ -1689,6 +1769,10 @@
     // เตียงนอน (ตอนนี้อยู่มุมฟาร์ม — เฟสบ้านจะย้ายเข้าบ้าน) เดินไปใกล้แล้วกด SPACE เพื่อจบวัน
     const bed = { x: 70, y: 60, w: 52, h: 34 };
     function nearBed(){ return currentMap === "Farm" && Math.hypot((player.x+player.size/2)-(bed.x+bed.w/2), (player.y+player.size/2)-(bed.y+bed.h/2)) < 46; }
+    // กล่องขายของ (shipping bin) — ใส่ของลงกล่อง แล้วได้เงินตอนจบวัน (ราคาตลาดวันนั้น)
+    const shippingBin = { x: 168, y: 62, w: 48, h: 36 };
+    let shipItems = {}; // { itemKey: qty } ของที่รอขาย
+    function nearShippingBin(){ return currentMap === "Farm" && Math.hypot((player.x+player.size/2)-(shippingBin.x+shippingBin.w/2), (player.y+player.size/2)-(shippingBin.y+shippingBin.h/2)) < 46; }
 
     // ---------- Seasons ----------
     const SEASON_NAMES = ["ใบไม้ผลิ","ร้อน","ใบไม้ร่วง","หนาว"];
@@ -3992,14 +4076,19 @@
     let _dayEndData = null;
     function endDay(slept){
       if (dayEndActive) return;
-      const prevDay = dayCount;
+      // ขายของในกล่องด้วยราคาตลาด "วันนี้" (ก่อน dayCount++) แล้วเคลียร์กล่อง
+      const ship = computeShippingIncome();
+      inv.coin += ship.total;
+      shipItems = {};
+      const prevDay = dayCount, goldBefore = inv.coin - ship.total;
       dayCount++;
       // ตื่น: นอนทัน = 6:00 (dayTimer 0) + energy เต็ม · หมดสติ = 8:00 + energy ครึ่งเดียว (ตื่นสาย)
       dayTimer = slept ? 0 : Math.round(((8-START_HOUR)/DAY_HOURS)*DAY_LENGTH);
       energy = slept ? maxEnergy : Math.round(maxEnergy*0.5);
       applyNewDay();
       _dayEndData = { slept, prevDay, newDay:dayCount, season:seasonName(), seasonIcon:seasonIcon(),
-        gold:inv.coin, hot: sellLabels[todayHotItem()], playtime: (typeof formatPlayTime==='function'? formatPlayTime(playTimeSec):'') };
+        goldBefore, ship, gold:inv.coin, hot: sellLabels[todayHotItem()],
+        playtime: (typeof formatPlayTime==='function'? formatPlayTime(playTimeSec):'') };
       showDayEndOverlay();
       saveGame(); // เซฟอัตโนมัติทุกเช้า (เหมือน Stardew)
     }
@@ -4010,13 +4099,21 @@
       dayEndActive = true;
       const d = _dayEndData;
       document.getElementById('dayEndTitle').innerText = d.slept ? "😴 นอนหลับฝันดี" : "😵 ดึกเกินไป — หมดสติ!";
-      const rows = [
-        `<div class="deRow"><span>📅 วันที่ผ่านไป</span><span>Day ${d.prevDay}</span></div>`,
-        `<div class="deRow"><span>${d.seasonIcon} ฤดู</span><span>${d.season}</span></div>`,
-        `<div class="deRow"><span>🪙 เงินที่มี</span><span>${d.gold}</span></div>`,
-        d.playtime ? `<div class="deRow"><span>⏱ เวลาเล่นสะสม</span><span>${d.playtime}</span></div>` : '',
-        `<div class="deRow"><span>📈 ของฮอตพรุ่งนี้</span><span>${d.hot}</span></div>`,
-      ].join('');
+      // รายการขายจากกล่อง
+      let shipRows = '';
+      if (d.ship.lines.length){
+        shipRows = `<div class="deSection">📦 ขายของจากกล่อง</div>` +
+          d.ship.lines.map(ln=>`<div class="deRow deShip"><span>${ln.hot?'🔥 ':''}${ln.label} x${ln.qty}</span><span>🪙${ln.sub}</span></div>`).join('') +
+          `<div class="deRow deShipTotal"><span>รวมขายได้</span><span>🪙${d.ship.total}</span></div>`;
+      } else {
+        shipRows = `<div class="deRow" style="opacity:.7;"><span>📦 กล่องขายของ</span><span>ว่าง</span></div>`;
+      }
+      const rows = shipRows + `
+        <div class="deRow"><span>🪙 เงินก่อนหน้า</span><span>${d.goldBefore}</span></div>
+        <div class="deRow" style="font-weight:700;"><span>🪙 เงินรวมตอนนี้</span><span>${d.gold}</span></div>
+        <div class="deRow"><span>${d.seasonIcon} ฤดู</span><span>${d.season}</span></div>
+        <div class="deRow"><span>📈 ของฮอตพรุ่งนี้</span><span>${d.hot}</span></div>` +
+        (d.playtime ? `<div class="deRow"><span>⏱ เวลาเล่นสะสม</span><span>${d.playtime}</span></div>` : '');
       document.getElementById('dayEndBody').innerHTML = rows;
       document.getElementById('dayEndNote').innerText = d.slept
         ? "พลังงานฟื้นเต็ม พร้อมลุยวันใหม่!"
@@ -4038,7 +4135,7 @@
     // ---------- Save versioning ----------
     // ทุกครั้งที่เพิ่ม field ใหม่ลงเซฟ: เพิ่ม SAVE_VERSION แล้วเขียน migration step ใน migrateSave
     // ห้ามอ่าน field ใหม่ตรงๆ จาก data โดยไม่ผ่าน migration — ไม่งั้นเซฟเก่าพัง
-    const SAVE_VERSION = 11;
+    const SAVE_VERSION = 12;
 
     // ---------- เวลาเล่นสะสม (playtime) ----------
     // สะสมเป็นวินาทีใน update() (22-game-loop.js) เฉพาะตอน gameStarted — เก็บลงเซฟต่อ slot
@@ -4118,6 +4215,11 @@
         data.tools = { hoe:true, wateringCan:true, axe:true, pickaxe:true, rod:!!couldFish };
         data.hotbarSlot = 0;
         v = 11;
+      }
+      if (v === 11){
+        // v11 → v12: กล่องขายของ — เซฟเก่าเริ่มด้วยกล่องว่าง
+        data.shipItems = {};
+        v = 12;
       }
       data.version = v;
       return data;
@@ -4210,6 +4312,7 @@
           npcState: Object.fromEntries(NPCS.map(n=>[n.id, { f:n.friendship, d:n.lastTalkDay, q:n.questDone }])),
           chapterIndex,
           tools: Object.assign({}, tools), hotbarSlot: hotbarSlot, // v11: เครื่องมือที่ได้รับ + ช่อง hotbar ที่เลือก
+          shipItems: Object.assign({}, shipItems), // v12: ของในกล่องขาย (ยังไม่ได้ขาย)
           discoveredSpecies: [...discoveredSpecies], dexRewarded,
           bossesDefeated: Object.assign({}, bossesDefeated),
           quest: { tutorialIndex, tut: Object.assign({}, tut),
@@ -4259,6 +4362,7 @@
           }
           // เครื่องมือ (v11) — เซฟเก่าไม่มี tools: migrate ให้ค่าเริ่มต้น (มีครบยกเว้นเบ็ด เว้นแต่เคยตกปลามาก่อน)
           tools = Object.assign({ hoe:true, wateringCan:true, axe:true, pickaxe:true, rod:false }, data.tools || {});
+          shipItems = Object.assign({}, data.shipItems || {}); // v12: ของในกล่องขาย
           hotbarSlot = data.hotbarSlot || 0;
           // แปลงเป็น dynamic (v11): สร้างแปลงใหม่จากพิกัดที่เซฟไว้
           plots.length = 0;
@@ -4355,7 +4459,7 @@
       frameCount++;
       // จับเวลาเล่นสะสม (นับเฉพาะหลังเริ่มเกม รวมตอนเปิดเมนู/ต่อสู้ด้วย — ถือว่ากำลังเล่นอยู่)
       if (gameStarted) tickPlayTime(); else lastPlayTick = 0;
-      if (storyActive || starterActive || dialogueOpen || shopOpen || craftOpen || storageOpen || skillLearnOpen || pathChooseOpen || dexOpen || dayEndActive){ pressedOnce = {}; updateUI(); return; }
+      if (storyActive || starterActive || dialogueOpen || shopOpen || craftOpen || storageOpen || skillLearnOpen || pathChooseOpen || dexOpen || dayEndActive || shipOpen){ pressedOnce = {}; updateUI(); return; }
       if (battleActive){ updateBattle(); pressedOnce = {}; updateUI(); return; }
       const c = active();
 
@@ -4426,10 +4530,11 @@
       } else if (pressedOnce.n){
         updateEVA("ผสมพันธุ์ได้เฉพาะที่รังในฟาร์มเท่านั้น");
       }
-      // SPACE ที่เตียง = นอนจบวัน · ที่อื่น = ใช้เครื่องมือที่เลือกใน hotbar (useTool ใน 07b)
+      // SPACE ที่เตียง = นอน · ที่กล่องขาย = เปิดกล่อง · ที่อื่น = ใช้เครื่องมือ hotbar
       if (keys[' '] && interactCooldown<=0){
         interactCooldown = 10;
         if (nearBed()) sleepInBed();
+        else if (nearShippingBin()) openShipping();
         else useTool();
       }
       // เลือก hotbar ด้วยเลข 1-6
@@ -5250,6 +5355,24 @@
         ctx.textAlign = "left";
       }
     }
+    // ---------- กล่องขายของ (shipping bin) ----------
+    function drawShippingBin(){
+      const s = shippingBin;
+      drawShadow(s.x+s.w/2, s.y+s.h+2, s.w*0.55, 6);
+      ctx.fillStyle = "#7a5230"; ctx.beginPath(); ctx.roundRect(s.x, s.y, s.w, s.h, 4); ctx.fill();
+      ctx.strokeStyle = "#4a3018"; ctx.lineWidth = 2; ctx.stroke();
+      // ฝากล่องเปิด + แถบไม้
+      ctx.fillStyle = "#5a3c22"; ctx.fillRect(s.x+2, s.y+2, s.w-4, 7);
+      ctx.strokeStyle = "#3a2414"; ctx.lineWidth = 1;
+      for (let i=1;i<3;i++){ ctx.beginPath(); ctx.moveTo(s.x, s.y+i*s.h/3); ctx.lineTo(s.x+s.w, s.y+i*s.h/3); ctx.stroke(); }
+      const cnt = (typeof shipTotalCount==='function') ? shipTotalCount() : 0;
+      if (cnt>0){ ctx.font="11px sans-serif"; ctx.textAlign="center"; ctx.fillStyle="#ffe082"; ctx.fillText(`📦${cnt}`, s.x+s.w/2, s.y+s.h*0.7); ctx.textAlign="left"; }
+      if (nearShippingBin()){
+        const bob = Math.sin(frameCount*0.15)*2;
+        ctx.font="12px sans-serif"; ctx.textAlign="center"; ctx.fillStyle="#fff2cf";
+        ctx.fillText("📦 SPACE ใส่ของขาย", s.x+s.w/2, s.y-8+bob); ctx.textAlign="left";
+      }
+    }
     function drawNest(){
       drawShadow(nest.x, nest.y+10, 30, 10);
       ctx.fillStyle = "#8a5a30";
@@ -5541,6 +5664,7 @@
 
 
         drawBed();
+        drawShippingBin();
         drawFarmField();
         drawNest();
         drawArena();
