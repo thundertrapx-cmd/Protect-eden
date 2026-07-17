@@ -502,6 +502,16 @@
   #dayEndBody .deSection{ font-weight:700; color:var(--wood-dark); margin:6px 0 2px; font-size:var(--fs-small); }
   #dayEndBody .deShip{ font-size:var(--fs-small); opacity:0.9; }
   #dayEndBody .deShipTotal{ font-weight:700; border-bottom:2px solid rgba(93,64,37,0.3); }
+  /* ---------- ตอนต่อสู้: ซ่อน HUD โลกภายนอก เหลือแค่เมนูสกิล ---------- */
+  body.in-battle .toolbar,
+  body.in-battle #minimapWrap,
+  body.in-battle #dayWeatherHUD,
+  body.in-battle #hotbar,
+  body.in-battle #tutorialBar,
+  body.in-battle #questPanel,
+  body.in-battle #eva-panel,
+  body.in-battle #ui,
+  body.in-battle #ui2{ display:none !important; }
 </style>
 
 </head>
@@ -1286,7 +1296,7 @@
       { id:'plant', title:"หว่านความหวัง", desc:"เลือกมือ/เมล็ด (ช่อง 1) ยืนบนแปลงที่พรวนแล้วกด SPACE เพื่อปลูก (กด Z สลับชนิดเมล็ด)", done:()=> tut.planted },
       { id:'water', title:"หยาดน้ำหล่อเลี้ยง", desc:"เลือกบัวรดน้ำ (ช่อง 3) ยืนบนแปลงที่ปลูกแล้วกด SPACE รดน้ำ — ไม่รดน้ำพืชไม่โต!", done:()=> tut.watered },
       { id:'harvest', title:"ผลแรกของฟาร์ม", desc:"รอพืชโตเต็มที่ (รดน้ำทุกเช้า) แล้วเลือกมือ กด SPACE เก็บเกี่ยว", done:()=> tut.harvested },
-      { id:'meet', title:"พบผู้เฒ่าโรวัน", desc:"เดินเข้าใกล้ผู้เฒ่าโรวันแล้วกด T เพื่อพูดคุย", done:()=> tut.talkedToRowan },
+      { id:'meet', title:"พบผู้เฒ่าโรวัน", desc:"เดินลงหมู่บ้าน (ประตูล่างของฟาร์ม) หาผู้เฒ่าโรวันแล้วกด T", done:()=> tut.talkedToRowan },
       { id:'feed', title:"สายสัมพันธ์แรก", desc:"กด F ป้อนผัก หรือ G ป้อนเนื้อให้สัตว์เลี้ยง", done:()=> tut.fedVeggie || tut.fedMeat },
       { id:'venture', title:"ก้าวออกจากเขตปลอดภัย", desc:"เดินเข้าประตูทางออก (เรืองแสงสีเหลือง) ไป Forest Dungeon หรือ Crystal Cave", done:()=> tut.enteredDungeon },
       { id:'defeat', title:"ปราบสิ่งมีชีวิตแปลกปลอม", desc:"เดินเข้าใกล้ศัตรูเพื่อเริ่ม Tactical Battle แล้วเอาชนะศัตรูสักตัว", done:()=> tut.defeated },
@@ -1418,6 +1428,12 @@
     let chapterIndex = 0; // 0-based; >= CHAPTERS.length = เนื้อเรื่องจบ (endgame)
     let chapterPanelSig = null;
     function zoneUnlocked(map){
+      if (map === "Farm" || map === "Home" || map === "Village") return true; // โซนบ้าน/หมู่บ้าน ไม่ล็อกตาม chapter
+      const upTo = Math.min(chapterIndex, CHAPTERS.length-1);
+      for (let i=0;i<=upTo;i++) if (CHAPTERS[i].zones.includes(map)) return true;
+      return false;
+    }
+    function _zoneUnlocked_old(map){
       if (map === "Farm") return true;
       const upTo = Math.min(chapterIndex, CHAPTERS.length-1);
       for (let i=0;i<=upTo;i++) if (CHAPTERS[i].zones.includes(map)) return true;
@@ -1538,10 +1554,10 @@
     }
 
     // ---------- ข้อมูล NPC ทั้งหมด ----------
-    defineNPC({ id:'rowan', name:"ผู้เฒ่าโรวัน", size:22, range:58,
+    defineNPC({ id:'rowan', name:"ผู้เฒ่าโรวัน", size:22, range:58, map:"Village",
       robeColor:"#5a7a4a", hoodColor:"#e8e8e8",
       loves:['crystal'], likes:['veggie','wood'], dislikes:['fish'],
-      schedule:[ {phase:'dawn',x:110,y:120}, {phase:'day',x:110,y:120}, {phase:'dusk',x:150,y:160}, {phase:'night',x:100,y:100} ],
+      schedule:[ {phase:'dawn',x:110,y:215}, {phase:'day',x:130,y:230}, {phase:'dusk',x:110,y:215}, {phase:'night',x:105,y:160} ],
       baseLines:[
         "ฟาร์มนี้กลับมามีชีวิตชีวาอีกครั้งเพราะเจ้าเลยนะ",
         "สัตว์เลี้ยงของเจ้าดูมีความสุขดี ดูแลมันต่อไปนะ",
@@ -1583,10 +1599,10 @@
         return true;
       } });
 
-    defineNPC({ id:'maya', name:"มายา นักสมุนไพร", size:20, range:55,
+    defineNPC({ id:'maya', name:"มายา นักสมุนไพร", size:20, range:55, map:"Village",
       robeColor:"#4a6a8a", hoodColor:"#ffca9e",
       loves:['fish'], likes:['chili','veggie'], dislikes:['ore'],
-      schedule:[ {phase:'dawn',x:70,y:340}, {phase:'day',x:160,y:420}, {phase:'dusk',x:260,y:100}, {phase:'night',x:70,y:360} ],
+      schedule:[ {phase:'dawn',x:270,y:215}, {phase:'day',x:250,y:235}, {phase:'dusk',x:280,y:230}, {phase:'night',x:265,y:160} ],
       // คุยครั้งแรก = มายามอบเบ็ดตกปลาให้ (ปลดล็อกช่อง 6 ใน hotbar)
       onTalk(n){
         if (!tools.rod){
@@ -1624,6 +1640,12 @@
       robeColor:"#7a4a3a", hoodColor:"#caa472",
       loves:['ore','obsidian'], likes:['crystal','wood'], dislikes:['veggie'],
       schedule:[ {phase:'dawn',x:520,y:400}, {phase:'day',x:480,y:360}, {phase:'dusk',x:520,y:400}, {phase:'night',x:560,y:420} ],
+      // เตาหลอมติดแล้ว (จบเควส) = คุยเฟย์เปิดเมนูตีของ (คราฟ)
+      onTalk(n){
+        if (npcQuestReady(n)) return false;
+        if (n.questDone){ sfx.chime(); updateEVA("เฟย์: เตาหลอมพร้อมแล้ว อยากตีอะไรก็เลือกเลย! ⚒️"); openCraft(); return true; }
+        return false;
+      },
       baseLines:[
         "ระวังตัวด้วยล่ะ ถ้ำนี้ไม่ใช่ที่เดินเล่น...แต่แร่ที่นี่คือเกรดดีที่สุดในเอเดน",
         "เตาหลอมของข้าดับไปตั้งแต่เอเดนล่ม ตอนนี้ได้แต่เคาะๆ เย็นๆ ไปวันๆ",
@@ -1644,10 +1666,15 @@
         consume:()=>{ inv.ore-=5; },
         reward:()=>{ inv.coin+=30; inv.crystal+=2; updateEVA("🔖 เควสของเฟย์สำเร็จ! ได้รับ 30 เหรียญ + คริสตัล 2"); } } });
 
-    defineNPC({ id:'nils', name:"นิลส์ พ่อค้าเร่", size:20, range:55,
+    defineNPC({ id:'nils', name:"นิลส์ พ่อค้า", size:20, range:58, map:"Village",
       robeColor:"#8a6a2a", hoodColor:"#e8d8b8",
       loves:['relic'], likes:['fish','fur'], dislikes:['wood'],
-      schedule:[ {phase:'dawn',x:520,y:300}, {phase:'day',x:440,y:380}, {phase:'dusk',x:520,y:300}, {phase:'night',x:560,y:340} ],
+      schedule:[ {phase:'dawn',x:435,y:220}, {phase:'day',x:435,y:230}, {phase:'dusk',x:435,y:220}, {phase:'night',x:430,y:165} ],
+      // คุยนิลส์ = เปิดร้านค้า (ยกเว้นตอนมีเควสให้ทำ)
+      onTalk(n){
+        if (npcQuestReady(n)) return false;
+        sfx.chime(); updateEVA("นิลส์: เชิญเลือกซื้อได้ตามสบายเลยเพื่อน! 🛒"); openShop(); return true;
+      },
       baseLines:[
         "ของดีราคาถูก! ...เอ่อ จริงๆ ข้ายังไม่มีของขาย แต่เร็วๆ นี้แน่นอน!",
         "ข้าเดินทางมาหลายแคว้น ไม่มีที่ไหนของแปลกเท่าเอเดนอีกแล้ว",
@@ -1690,10 +1717,10 @@
         consume:()=>{ inv.fur-=2; },
         reward:()=>{ inv.waterBerry+=2; inv.coin+=15; updateEVA("🔖 เควสของลูน่าสำเร็จ! ได้รับ Water Berry 2 + 15 เหรียญ"); } } });
 
-    defineNPC({ id:'taro', name:"ทาโร่ เด็กชายรักสัตว์", size:16, range:50,
+    defineNPC({ id:'taro', name:"ทาโร่ เด็กชายรักสัตว์", size:16, range:50, map:"Village",
       robeColor:"#c05a3a", hoodColor:"#ffdca8",
       loves:['veggie'], likes:['fish'], dislikes:['obsidian'],
-      schedule:[ {phase:'dawn',x:380,y:150}, {phase:'day',x:300,y:220}, {phase:'dusk',x:380,y:150}, {phase:'night',x:420,y:120} ],
+      schedule:[ {phase:'dawn',x:575,y:220}, {phase:'day',x:520,y:300}, {phase:'dusk',x:575,y:220}, {phase:'night',x:575,y:170} ],
       baseLines:[
         "พี่! สัตว์เลี้ยงพี่เท่มากเลย ขอจับได้มั้ย...ได้มั้ย!?",
         "โตขึ้นทาโร่จะเป็นนักเลี้ยงมอนสเตอร์ที่เก่งที่สุดในเอเดน!",
@@ -1766,13 +1793,12 @@
       return 'night';
     }
     function isNight(){ return dayPhase() === 'night'; }
-    // เตียงนอน (ตอนนี้อยู่มุมฟาร์ม — เฟสบ้านจะย้ายเข้าบ้าน) เดินไปใกล้แล้วกด SPACE เพื่อจบวัน
-    const bed = { x: 70, y: 60, w: 52, h: 34 };
-    function nearBed(){ return currentMap === "Farm" && Math.hypot((player.x+player.size/2)-(bed.x+bed.w/2), (player.y+player.size/2)-(bed.y+bed.h/2)) < 46; }
-    // กล่องขายของ (shipping bin) — ใส่ของลงกล่อง แล้วได้เงินตอนจบวัน (ราคาตลาดวันนั้น)
-    const shippingBin = { x: 168, y: 62, w: 48, h: 36 };
+    // เตียงนอน + กล่องขาย อยู่ใน "บ้านเรา" (โซน Home) — เดินไปใกล้แล้วกด SPACE
+    const bed = { x: 90, y: 120, w: 64, h: 42 };
+    function nearBed(){ return currentMap === "Home" && Math.hypot((player.x+player.size/2)-(bed.x+bed.w/2), (player.y+player.size/2)-(bed.y+bed.h/2)) < 52; }
+    const shippingBin = { x: 470, y: 300, w: 54, h: 40 };
     let shipItems = {}; // { itemKey: qty } ของที่รอขาย
-    function nearShippingBin(){ return currentMap === "Farm" && Math.hypot((player.x+player.size/2)-(shippingBin.x+shippingBin.w/2), (player.y+player.size/2)-(shippingBin.y+shippingBin.h/2)) < 46; }
+    function nearShippingBin(){ return currentMap === "Home" && Math.hypot((player.x+player.size/2)-(shippingBin.x+shippingBin.w/2), (player.y+player.size/2)-(shippingBin.y+shippingBin.h/2)) < 50; }
 
     // ---------- Seasons ----------
     const SEASON_NAMES = ["ใบไม้ผลิ","ร้อน","ใบไม้ร่วง","หนาว"];
@@ -1881,7 +1907,7 @@
     let rainDrops = [];
     for (let i=0;i<60;i++) rainDrops.push({x:Math.random()*640, y:Math.random()*480, len:10+Math.random()*8});
 
-    const player = { x: 100, y: 240, size: 24, speed: 4, color: "#4fa3ff", facing:{x:0,y:1}, moving:false };
+    const player = { x: 100, y: 240, size: 24, speed: 2.7, color: "#4fa3ff", facing:{x:0,y:1}, moving:false };
 
     // ---------- แปลงเพาะปลูกแบบขุดเอง (v11) ----------
     // ผู้เล่นใช้ "จอบ" พรวนดินสร้างแปลงเองในเขตไร่ (สูงสุด 5x5 = 25 แปลง) — ไม่มีแปลงสำเร็จรูปอีกต่อไป
@@ -1929,7 +1955,11 @@
         { x:612, y:196, w:28, h:100, to:'Dungeon', label:'ป่าตะวันออก' },
         { x:0,   y:196, w:28, h:100, to:'Cave',    label:'ถ้ำคริสตัล' },
         { x:276, y:0,   w:96, h:26,  to:'Snow',    label:'ทุ่งหิมะเหนือ' },
+        { x:56,  y:46,  w:58, h:26,  to:'Home',    label:'บ้านของเรา', door:true }, // ประตูบ้าน (อาคารมุมซ้ายบน)
+        { x:270, y:454, w:100,h:26,  to:'Village', label:'หมู่บ้านเอเดน' },          // ทางลงหมู่บ้าน (ขอบล่าง)
       ],
+      Home:    [ { x:270, y:454, w:100, h:26, to:'Farm', label:'ออกไปฟาร์ม' } ],
+      Village: [ { x:270, y:0,   w:100, h:26, to:'Farm', label:'กลับฟาร์ม' } ],
       Dungeon: [
         { x:0,   y:180, w:28, h:120, to:'Farm',  label:'กลับฟาร์ม' },
         { x:612, y:180, w:28, h:120, to:'Ruins', label:'ซากโบราณ' },
@@ -2391,7 +2421,7 @@
       const atkM = ivMult(iv.atk) * traitMultAtk(trait,mutant) * personalityMultAtk(personality) * spec.atkMult;
       const maxHp = Math.round(100*hpM);
       const base = {
-        x, y, size:20, speed:3.5*personalitySpeedMult(personality)*spec.spdMult, color, name, element, stage:0, species,
+        x, y, size:20, speed:2.5*personalitySpeedMult(personality)*spec.spdMult, color, name, element, stage:0, species,
         hp:maxHp, maxHp, atk:Math.round(15*atkM),
         veggieEaten:0, meatEaten:0, bond:20,
         level:1, exp:0,
@@ -3721,10 +3751,16 @@
       if (!back){ player.x = 60; player.y = 240; return; }
       const cx = back.x + back.w/2, cy = back.y + back.h/2;
       let px = cx - player.size/2, py = cy - player.size/2;
-      if (back.x <= 2) px = back.x + back.w + 26;                              // ประตูขอบซ้าย → โผล่เยื้องขวา
-      else if (back.x + back.w >= canvas.width-2) px = back.x - 26 - player.size; // ขอบขวา → เยื้องซ้าย
-      if (back.y <= 2) py = back.y + back.h + 26;                              // ขอบบน → เยื้องลง
-      else if (back.y + back.h >= canvas.height-2) py = back.y - 26 - player.size; // ขอบล่าง → เยื้องขึ้น
+      const onLeft = back.x <= 2, onRight = back.x + back.w >= canvas.width-2;
+      const onTop = back.y <= 2, onBottom = back.y + back.h >= canvas.height-2;
+      if (onLeft) px = back.x + back.w + 26;                    // ประตูขอบซ้าย → โผล่เยื้องขวา
+      else if (onRight) px = back.x - 26 - player.size;          // ขอบขวา → เยื้องซ้าย
+      if (onTop) py = back.y + back.h + 26;                     // ขอบบน → เยื้องลง
+      else if (onBottom) py = back.y - 26 - player.size;         // ขอบล่าง → เยื้องขึ้น
+      // ประตูบ้าน/interior (ไม่ติดขอบจอ) → ดันผู้เล่นออกมา "ใต้ประตู" ให้พ้นกล่อง trigger กันเข้าซ้ำทันที
+      if (!onLeft && !onRight && !onTop && !onBottom){
+        py = back.y + back.h + 8;
+      }
       player.x = Math.min(Math.max(px, 10), canvas.width-10-player.size);
       player.y = Math.min(Math.max(py, 10), canvas.height-10-player.size);
     }
@@ -3779,10 +3815,18 @@
         enemies.push({ x:300,y:150,size:23,hp:50,maxHp:50,color:"#81d4fa",speed:1,squish:0 });
         enemies.push({ x:460,y:280,size:23,hp:50,maxHp:50,color:"#81d4fa",speed:1,squish:0 });
         enemies.push({ x:520,y:120,size:32,hp:140,maxHp:140,color:"#0288d1",speed:0.8,squish:0,boss:true });
+      } else if (newMap === "Home"){
+        document.getElementById('ui-map').innerText = "บ้านของเรา";
+        mapBanner = { text:"บ้านของเรา", sub:"เตียงนอน 😴 · กล่องขายของ 📦", timer:110 };
+        updateEVA("เข้าบ้านแล้ว! เดินไปที่เตียงกด SPACE เพื่อนอนจบวัน · ใส่ของในกล่องขายทางขวา");
+      } else if (newMap === "Village"){
+        document.getElementById('ui-map').innerText = "หมู่บ้านเอเดน";
+        mapBanner = { text:"หมู่บ้านเอเดน", sub:"บ้านของชาวเมือง — คุยเพื่อซื้อของ/ตีของ (T)", timer:120 };
+        updateEVA("ยินดีต้อนรับสู่หมู่บ้าน! คุยกับนิลส์เพื่อซื้อของ คุยกับชาวบ้านคนอื่นเพื่อทำเควส (กด T)");
       } else {
         document.getElementById('ui-map').innerText = "Farm Zone";
-        mapBanner = { text:"FARM ZONE", sub:"กลับสู่บ้านอันอบอุ่น", timer:120 };
-        updateEVA("กลับมาที่ฟาร์มแล้ว นำผลผลิตที่ได้ไปดูแลสัตว์เลี้ยงกันเถอะ!");
+        mapBanner = { text:"FARM ZONE", sub:"ไร่ของเรา — ปลูก/เก็บ/เลี้ยงสัตว์", timer:120 };
+        updateEVA("กลับมาที่ไร่แล้ว นำผลผลิตที่ได้ไปดูแลสัตว์เลี้ยงกันเถอะ!");
       }
       spawnAtReturnGate(newMap, fromMap); // วางผู้เล่นข้างประตูย้อนกลับ (reciprocal)
       c.x = player.x - 24; c.y = player.y + 4;
@@ -4735,6 +4779,8 @@
     // ---------- UI ----------
     function updateUI(){
       const c = active();
+      // ตอนต่อสู้: ซ่อน HUD โลกภายนอกทั้งหมด เหลือแค่เมนูสกิล (CSS body.in-battle)
+      document.body.classList.toggle('in-battle', !!battleActive);
       document.getElementById('ui-coin').innerText = inv.coin;
       const goldEl = document.getElementById('hud-gold'); if (goldEl) goldEl.innerText = inv.coin;
       renderHotbar();
@@ -5290,6 +5336,7 @@
     function drawGateMarkers(){
       const pcx = player.x+player.size/2, pcy = player.y+player.size/2;
       for (const g of (GATES[currentMap] || [])){
+        if (g.door) continue; // ประตูบ้าน (Home) วาดเป็นอาคารใน drawFarmBuildings แล้ว
         const cx = g.x + g.w/2, cy = g.y + g.h/2;
         const near = Math.hypot(pcx-cx, pcy-cy) < 100;
         const st = GATE_STYLE[g.to] || GATE_STYLE.Farm;
@@ -5658,13 +5705,7 @@
         for (const g of grassTufts){ ctx.beginPath(); ctx.ellipse(g.x,g.y,3*g.s,6*g.s,0,0,Math.PI*2); ctx.fill(); }
         drawFlowers();
         drawPond();
-
-        ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#fff8"; ctx.fillText("Forest →", canvas.width-95,172);
-
-
-
-        drawBed();
-        drawShippingBin();
+        drawFarmBuildings(); // บ้านเรา (ประตูเข้า Home) + ป้ายทางลงหมู่บ้าน
         drawFarmField();
         drawNest();
         drawArena();
@@ -5731,6 +5772,10 @@
         ctx.fillStyle="rgba(255,255,255,0.85)";
         ctx.fillRect(0,canvas.height-40,canvas.width,40);
         drawSnow();
+      } else if (currentMap === "Home"){
+        drawHomeInterior();
+      } else if (currentMap === "Village"){
+        drawVillage();
       }
 
       for (const item of items){
@@ -5768,9 +5813,83 @@
       drawMinimap();
     }
 
+    // ---------- อาคารบนฟาร์ม: บ้านเรา (เข้า Home) + ป้ายหมู่บ้าน ----------
+    function drawFarmBuildings(){
+      // บ้านเรา (มุมซ้ายบน) — ประตูตรงกับ GATE 'Home' (x56,y46,w58)
+      const hx = 40, hy = 8, hw = 96, hh = 66;
+      drawShadow(hx+hw/2, hy+hh+2, hw*0.5, 8);
+      ctx.fillStyle = "#c99a5e"; ctx.fillRect(hx, hy+22, hw, hh-22);           // ผนัง
+      ctx.strokeStyle = "#7a5230"; ctx.lineWidth = 2; ctx.strokeRect(hx, hy+22, hw, hh-22);
+      ctx.fillStyle = "#a0472e"; ctx.beginPath(); ctx.moveTo(hx-6, hy+24); ctx.lineTo(hx+hw/2, hy-2); ctx.lineTo(hx+hw+6, hy+24); ctx.closePath(); ctx.fill(); // หลังคา
+      ctx.strokeStyle = "#6a2e1c"; ctx.stroke();
+      ctx.fillStyle = "#5a3a1c"; ctx.fillRect(56, 46, 26, 28);               // ประตู (= gate)
+      ctx.fillStyle = "#ffe082"; ctx.fillRect(hx+hw-30, hy+32, 16, 14);       // หน้าต่าง
+      ctx.font = "bold 10px Kanit, sans-serif"; ctx.fillStyle = "#fff2cf"; ctx.textAlign="center";
+      ctx.fillText("🏠 บ้านของเรา", hx+hw/2, hy+hh+14); ctx.textAlign="left";
+      // ป้ายทางลงหมู่บ้าน (ขอบล่าง)
+      ctx.fillStyle = "#8a6a3a"; ctx.fillRect(300, 452, 40, 26);
+      ctx.fillStyle = "#5a3a1c"; ctx.fillRect(316, 452, 8, 26);
+      ctx.font = "bold 10px Kanit, sans-serif"; ctx.fillStyle = "#fff2cf"; ctx.textAlign="center";
+      ctx.fillText("↓ หมู่บ้าน", 320, 448); ctx.textAlign="left";
+    }
+
+    // ---------- บ้านเรา (Home interior) ----------
+    function drawHomeInterior(){
+      // พื้นไม้
+      ctx.fillStyle = "#8a6440"; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.strokeStyle = "rgba(0,0,0,0.12)"; ctx.lineWidth = 1;
+      for (let y=0; y<canvas.height; y+=28){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+      // ผนังบน
+      ctx.fillStyle = "#b99a6e"; ctx.fillRect(0,0,canvas.width,40);
+      ctx.fillStyle = "#a0855a"; ctx.fillRect(0,38,canvas.width,4);
+      // พรมกลางห้อง
+      ctx.fillStyle = "rgba(120,60,70,0.35)"; ctx.beginPath(); ctx.roundRect(220,180,200,140,10); ctx.fill();
+      drawBed();
+      drawShippingBin();
+      // โต๊ะ
+      ctx.fillStyle = "#7a5230"; ctx.fillRect(300,150,70,34); ctx.strokeStyle="#4a3018"; ctx.strokeRect(300,150,70,34);
+    }
+
+    // ---------- หมู่บ้าน (Village) + บ้าน NPC ตามอาชีพ ----------
+    const VILLAGE_HOUSES = [
+      { owner:'rowan', x:64,  y:96,  w:96,  h:84, wall:"#8aa06a", roof:"#4a6a2a", label:"ผู้เฒ่าโรวัน", icon:"🌿" },
+      { owner:'maya',  x:224, y:96,  w:92,  h:84, wall:"#8a9ab8", roof:"#3a5a8a", label:"มายา", icon:"🌱" },
+      { owner:'nils',  x:384, y:92,  w:104, h:88, wall:"#c0a060", roof:"#8a6a2a", label:"ร้านนิลส์", icon:"🛒" },
+      { owner:'taro',  x:540, y:110, w:78,  h:70, wall:"#e0a070", roof:"#c05a3a", label:"ทาโร่", icon:"🧸" },
+    ];
+    function drawVillage(){
+      // พื้นหญ้าหมู่บ้าน + ทางเดินหิน
+      const sky = ctx.createLinearGradient(0,0,0,canvas.height);
+      sky.addColorStop(0,"#6aa050"); sky.addColorStop(1,"#4c7a34");
+      ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
+      const phase = dayPhase();
+      if (phase==='night'){ ctx.fillStyle='rgba(10,20,55,0.42)'; ctx.fillRect(0,0,canvas.width,canvas.height); }
+      else if (phase==='dusk'){ ctx.fillStyle='rgba(255,110,60,0.2)'; ctx.fillRect(0,0,canvas.width,canvas.height); }
+      // ถนนหมู่บ้าน (แนวนอนกลางจอ)
+      ctx.fillStyle = "#c9a86a"; ctx.fillRect(0, 250, canvas.width, 60);
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      for (let x=10; x<canvas.width; x+=40){ ctx.fillRect(x, 258, 22, 44); }
+      // บ้าน NPC
+      for (const h of VILLAGE_HOUSES){
+        drawShadow(h.x+h.w/2, h.y+h.h+2, h.w*0.5, 8);
+        ctx.fillStyle = h.wall; ctx.fillRect(h.x, h.y+24, h.w, h.h-24);
+        ctx.strokeStyle = "#3a2a1a"; ctx.lineWidth=2; ctx.strokeRect(h.x, h.y+24, h.w, h.h-24);
+        ctx.fillStyle = h.roof; ctx.beginPath(); ctx.moveTo(h.x-6, h.y+26); ctx.lineTo(h.x+h.w/2, h.y-4); ctx.lineTo(h.x+h.w+6, h.y+26); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = shade(h.roof,-30); ctx.stroke();
+        ctx.fillStyle = "#5a3a1c"; ctx.fillRect(h.x+h.w/2-12, h.y+h.h-30, 24, 30); // ประตู
+        ctx.fillStyle = "#ffe082"; ctx.fillRect(h.x+10, h.y+34, 15, 13); ctx.fillRect(h.x+h.w-25, h.y+34, 15, 13); // หน้าต่าง
+        ctx.font = "bold 10px Kanit, sans-serif"; ctx.fillStyle = "#fff2cf"; ctx.textAlign="center";
+        ctx.fillText(`${h.icon} ${h.label}`, h.x+h.w/2, h.y+h.h+14); ctx.textAlign="left";
+      }
+      // น้ำพุกลางหมู่บ้าน
+      ctx.fillStyle = "#8aa0b0"; ctx.beginPath(); ctx.arc(320, 400, 26, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#5f8f98"; ctx.beginPath(); ctx.arc(320, 400, 18, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#bfe0e8"; ctx.beginPath(); ctx.arc(320, 400, 7, 0, Math.PI*2); ctx.fill();
+    }
+
     // ---------- Minimap (มุมซ้ายบน — สไตล์ Moonstone) ----------
-    const ZONE_LABELS = { Farm:"ฟาร์ม", Dungeon:"ป่าตะวันออก", Cave:"ถ้ำคริสตัล", Volcano:"ปล่องภูเขาไฟ", Ruins:"ซากโบราณ", Snow:"ทุ่งหิมะ" };
-    const ZONE_MINI_BG = { Farm:"#3f6a34", Dungeon:"#1b3320", Cave:"#3a2114", Volcano:"#3a0f0f", Ruins:"#241a3d", Snow:"#8fb8d8" };
+    const ZONE_LABELS = { Farm:"ฟาร์ม", Home:"บ้านของเรา", Village:"หมู่บ้าน", Dungeon:"ป่าตะวันออก", Cave:"ถ้ำคริสตัล", Volcano:"ปล่องภูเขาไฟ", Ruins:"ซากโบราณ", Snow:"ทุ่งหิมะ" };
+    const ZONE_MINI_BG = { Farm:"#3f6a34", Home:"#6a4a2a", Village:"#4c7a34", Dungeon:"#1b3320", Cave:"#3a2114", Volcano:"#3a0f0f", Ruins:"#241a3d", Snow:"#8fb8d8" };
     let _miniCanvas = null, _mctx = null;
     function drawMinimap(){
       if (!gameStarted) return;
@@ -5789,6 +5908,9 @@
         dot(pond.x, pond.y, "#4fc3f7", 2.5);
         dot(nest.x, nest.y, "#f48fb1", 2.5);
         dot(arena.x, arena.y, "#ffb74d", 2);
+      } else if (currentMap === "Home"){
+        dot(bed.x+bed.w/2, bed.y+bed.h/2, "#7a9cc0", 3);   // เตียง
+        dot(shippingBin.x+shippingBin.w/2, shippingBin.y+shippingBin.h/2, "#ffe082", 3); // กล่องขาย
       }
       // ประตู/ทางออก
       for (const g of (GATES[currentMap] || [])){
