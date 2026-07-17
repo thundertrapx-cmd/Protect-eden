@@ -449,6 +449,18 @@
   #slotOverlay.open{ display:flex; }
   #slotCard{ width:min(520px,92vw); max-height:86vh; overflow-y:auto; background:#f6ead2; color:var(--ink); border:2px solid var(--wood-dark); border-radius:12px; padding:20px 22px 20px 26px; box-shadow:0 8px 0 var(--wood-dark), 0 20px 40px rgba(0,0,0,0.4);}
   #slotCard h2{ font-family:'Press Start 2P','Kanit',monospace; font-size:14px; color:var(--gold-dark); margin:0 0 8px;}
+  /* ---------- Hotbar (เครื่องมือ) ---------- */
+  #hotbar{ position:absolute; left:50%; bottom:10px; transform:translateX(-50%); display:none; gap:6px; z-index:6; padding:6px 8px;
+    background:rgba(28,20,12,0.72); border:2px solid var(--wood-dark); border-radius:12px; box-shadow:0 4px 0 rgba(0,0,0,0.35); }
+  body.game-started #hotbar{ display:flex; }
+  .hbSlot{ position:relative; width:46px; height:46px; border-radius:8px; border:2px solid var(--wood-dark);
+    background:linear-gradient(180deg,#f4e6c8,#e2caa0); display:flex; align-items:center; justify-content:center;
+    font-size:22px; cursor:pointer; user-select:none; transition:transform .08s; }
+  .hbSlot:hover{ transform:translateY(-2px); }
+  .hbSlot.active{ border-color:var(--gold-dark); box-shadow:0 0 0 2px var(--gold-dark), 0 0 10px rgba(184,134,11,0.6); background:linear-gradient(180deg,#fff6df,#f2dcae); }
+  .hbSlot.locked{ filter:grayscale(1) brightness(0.7); opacity:0.65; }
+  .hbSlot .hbNum{ position:absolute; top:1px; left:3px; font-size:9px; font-weight:700; color:#5d4025; }
+  .hbSlot .hbLock{ position:absolute; bottom:0; right:2px; font-size:11px; }
 </style>
 
 </head>
@@ -471,6 +483,7 @@
   <div class="frame">
     <canvas id="game" width="640" height="480"></canvas>
     <div id="dayWeatherHUD">
+      <span class="seg"><span>🪙</span> <span id="hud-gold">20</span></span>
       <span class="seg"><span id="hud-daynight">☀️</span> <span id="hud-day">Day 1 · กลางวัน</span></span>
       <span class="seg"><span id="hud-weather">🌤️</span> <span id="hud-weathertext">แจ่มใส</span></span>
       <span class="seg"><span id="hud-season">🌸</span> <span id="hud-seasontext">ใบไม้ผลิ</span></span>
@@ -505,6 +518,7 @@
       <div id="starterGrid"></div>
     </div>
 
+    <div id="hotbar"></div>
   </div>
 
   <!-- ---------- Tactical Battle: player action menu ---------- -->
@@ -642,28 +656,23 @@
     <div class="ctrlGroup">
       <div class="ctrlGroupTitle">🚶 เคลื่อนที่</div>
       <div class="ctrlRow"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>เดิน / เลื่อนช่องต่อสู้</span></div>
-      <div class="ctrlRow"><kbd>SPACE</kbd><span>ปลูก/เก็บพืช · ยืนยัน/โจมตี</span></div>
+      <div class="ctrlRow"><kbd>SPACE</kbd><span>ใช้เครื่องมือที่เลือก · ยืนยัน/โจมตี</span></div>
     </div>
     <div class="ctrlGroup">
-      <div class="ctrlGroupTitle">⚔️ ในศึก</div>
-      <div class="ctrlRow"><kbd>A</kbd><kbd>D</kbd><span>เลือกเป้าหมาย</span></div>
-      <div class="ctrlRow"><kbd>Q</kbd><span>ข้ามตา / สลับสัตว์เลี้ยง</span></div>
+      <div class="ctrlGroupTitle">🧰 เครื่องมือ (Hotbar)</div>
+      <div class="ctrlRow"><kbd>1</kbd>-<kbd>6</kbd><span>เลือกเครื่องมือ (หรือคลิก)</span></div>
+      <div class="ctrlRow"><kbd>1</kbd><span>🌱 มือ/เมล็ด — ปลูก/เก็บ</span></div>
+      <div class="ctrlRow"><kbd>2</kbd><span>⚒️ จอบ — พรวนดินสร้างแปลง</span></div>
+      <div class="ctrlRow"><kbd>3</kbd><span>🚿 บัวรดน้ำ — รดแปลง</span></div>
+      <div class="ctrlRow"><kbd>4</kbd><span>🪓 ขวาน · <kbd>5</kbd> ⛏️ อีเต้อ · <kbd>6</kbd> 🎣 เบ็ด</span></div>
+      <div class="ctrlRow"><kbd>Z</kbd><span>สลับชนิดเมล็ด · <kbd>X</kbd> ปรับปรุงดิน</span></div>
     </div>
     <div class="ctrlGroup">
-      <div class="ctrlGroupTitle">🐾 ดูแลสัตว์เลี้ยง</div>
-      <div class="ctrlRow"><kbd>1</kbd><span>ให้ผัก</span></div>
-      <div class="ctrlRow"><kbd>2</kbd><span>ให้เนื้อ</span></div>
-      <div class="ctrlRow"><kbd>E</kbd><span>ใช้สกิล</span></div>
-      <div class="ctrlRow"><kbd>N</kbd><span>ผสมพันธุ์ที่รัง</span></div>
-    </div>
-    <div class="ctrlGroup">
-      <div class="ctrlGroupTitle">🌾 เก็บเกี่ยว &amp; งานฝีมือ</div>
-      <div class="ctrlRow"><kbd>F</kbd><span>ตกปลา</span></div>
-      <div class="ctrlRow"><kbd>G</kbd><span>ตัดไม้</span></div>
-      <div class="ctrlRow"><kbd>M</kbd><span>ขุดแร่ (ในถ้ำ)</span></div>
-      <div class="ctrlRow"><kbd>C</kbd><span>ทำอาหาร</span></div>
-      <div class="ctrlRow"><kbd>R</kbd><span>ประดิษฐ์</span></div>
-      <div class="ctrlRow"><kbd>X</kbd><span>ปรับปรุงดิน (ใช้ไม้)</span></div>
+      <div class="ctrlGroupTitle">🐾 ดูแลสัตว์เลี้ยง / ศึก</div>
+      <div class="ctrlRow"><kbd>F</kbd><span>ให้ผัก · <kbd>G</kbd> ให้เนื้อ</span></div>
+      <div class="ctrlRow"><kbd>E</kbd><span>ใช้สกิล · <kbd>N</kbd> ผสมพันธุ์</span></div>
+      <div class="ctrlRow"><kbd>Q</kbd><span>สลับสัตว์ / ข้ามตา</span></div>
+      <div class="ctrlRow"><kbd>C</kbd><span>ทำอาหาร · <kbd>R</kbd> ประดิษฐ์ · <kbd>T</kbd> คุย NPC</span></div>
     </div>
     <div class="ctrlGroup">
       <div class="ctrlGroupTitle">📋 ทั่วไป</div>
@@ -1142,17 +1151,19 @@
     // เพิ่ม/แก้ NPC ให้ไปแก้ที่ไฟล์นั้นไฟล์เดียว
 
     // ---------- Main Quest chain (also drives the tutorial banner) ----------
-    const tut = { moved:false, planted:false, harvested:false, fedVeggie:false, fedMeat:false,
+    const tut = { moved:false, tilled:false, planted:false, watered:false, harvested:false, fedVeggie:false, fedMeat:false,
       enteredDungeon:false, defeated:false, cooked:false, skilled:false, bred:false, saved:false,
       talkedToRowan:false, talkedToRowanFinal:false };
     let tutorialIndex = 0, tutorialDismissed = false;
     const tutorialSteps = [
       { id:'wake', title:"ตื่นจากภวังค์", desc:"ใช้ W A S D เพื่อเดินสำรวจฟาร์ม", done:()=> tut.moved },
-      { id:'plant', title:"หว่านความหวัง", desc:"เดินไปที่แปลงดินสีน้ำตาลแล้วกด SPACE เพื่อปลูกเมล็ด", done:()=> tut.planted },
-      { id:'harvest', title:"ผลแรกของฟาร์ม", desc:"รอพืชโตเต็มที่แล้วกด SPACE อีกครั้งเพื่อเก็บเกี่ยว", done:()=> tut.harvested },
+      { id:'till', title:"เบิกดินผืนแรก", desc:"เลือกจอบ (ช่อง 2 หรือกดเลข 2) ยืนในเขตไร่กลางฟาร์มแล้วกด SPACE พรวนดิน", done:()=> tut.tilled },
+      { id:'plant', title:"หว่านความหวัง", desc:"เลือกมือ/เมล็ด (ช่อง 1) ยืนบนแปลงที่พรวนแล้วกด SPACE เพื่อปลูก (กด Z สลับชนิดเมล็ด)", done:()=> tut.planted },
+      { id:'water', title:"หยาดน้ำหล่อเลี้ยง", desc:"เลือกบัวรดน้ำ (ช่อง 3) ยืนบนแปลงที่ปลูกแล้วกด SPACE รดน้ำ — ไม่รดน้ำพืชไม่โต!", done:()=> tut.watered },
+      { id:'harvest', title:"ผลแรกของฟาร์ม", desc:"รอพืชโตเต็มที่ (รดน้ำทุกเช้า) แล้วเลือกมือ กด SPACE เก็บเกี่ยว", done:()=> tut.harvested },
       { id:'meet', title:"พบผู้เฒ่าโรวัน", desc:"เดินเข้าใกล้ผู้เฒ่าโรวันแล้วกด T เพื่อพูดคุย", done:()=> tut.talkedToRowan },
-      { id:'feed', title:"สายสัมพันธ์แรก", desc:"กด 1 ป้อนผัก หรือ 2 ป้อนเนื้อให้สัตว์เลี้ยง", done:()=> tut.fedVeggie || tut.fedMeat },
-      { id:'venture', title:"ก้าวออกจากเขตปลอดภัย", desc:"เดินไปขอบขวาเข้า Forest Dungeon หรือขอบซ้ายเข้า Crystal Cave", done:()=> tut.enteredDungeon },
+      { id:'feed', title:"สายสัมพันธ์แรก", desc:"กด F ป้อนผัก หรือ G ป้อนเนื้อให้สัตว์เลี้ยง", done:()=> tut.fedVeggie || tut.fedMeat },
+      { id:'venture', title:"ก้าวออกจากเขตปลอดภัย", desc:"เดินเข้าประตูทางออก (เรืองแสงสีเหลือง) ไป Forest Dungeon หรือ Crystal Cave", done:()=> tut.enteredDungeon },
       { id:'defeat', title:"ปราบสิ่งมีชีวิตแปลกปลอม", desc:"เดินเข้าใกล้ศัตรูเพื่อเริ่ม Tactical Battle แล้วเอาชนะศัตรูสักตัว", done:()=> tut.defeated },
       { id:'cook', title:"มื้ออาหารแห่งสายใย", desc:"กลับฟาร์มแล้วกด C เพื่อทำอาหารเมื่อมีวัตถุดิบพอ", done:()=> tut.cooked },
       { id:'skill', title:"พลังที่หลับใหล", desc:"เมื่อปลดล็อกสกิลแล้ว กด E เพื่อใช้สกิลพิเศษ", done:()=> tut.skilled },
@@ -1451,6 +1462,19 @@
       robeColor:"#4a6a8a", hoodColor:"#ffca9e",
       loves:['fish'], likes:['chili','veggie'], dislikes:['ore'],
       schedule:[ {phase:'dawn',x:70,y:340}, {phase:'day',x:160,y:420}, {phase:'dusk',x:260,y:100}, {phase:'night',x:70,y:360} ],
+      // คุยครั้งแรก = มายามอบเบ็ดตกปลาให้ (ปลดล็อกช่อง 6 ใน hotbar)
+      onTalk(n){
+        if (!tools.rod){
+          grantTool('rod', 'มายา');
+          openDialogue(n, [
+            "อ้าว! เจ้ามาพอดีเลย ข้าเห็นเจ้ายังไม่มีเบ็ดตกปลาใช่มั้ย?",
+            "เอานี่ไป — เบ็ดคู่ใจข้าเอง บ่อน้ำกลางฟาร์มปลาชุมมาก เลือกเบ็ด (ช่อง 6) แล้วไปยืนริมบ่อกด SPACE ได้เลย",
+            "ตกปลามาเยอะๆ นะ ข้าชอบกินปลาที่สุด เอามาเป็นของขวัญข้าก็ได้ หึหึ"
+          ]);
+          return true;
+        }
+        return false; // มีเบ็ดแล้ว → ใช้บทพูดปกติ (ฤดู/เทศกาล/เควส)
+      },
       baseLines:[
         "โอ้! เจอกันอีกแล้วนะ วันนี้ปลาที่บ่อกัดเบ็ดดีจัง 🎣",
         "ข้าชื่อมายา เดินทางตามหาสมุนไพรหายากมาหลายเมือง แต่หมู่นี้ปักหลักอยู่แถวฟาร์มนี้แหละ",
@@ -1563,9 +1587,9 @@
         check:()=> party.length + storageBox.length >= 2,
         reward:()=>{ inv.leafBerry+=1; inv.earthBerry+=1; updateEVA("🔖 เควสของทาโร่สำเร็จ! ได้รับ Leaf Berry + Earth Berry"); } } });
     // ---------- Input ----------
-    const keys = { w:false, a:false, s:false, d:false, ' ':false, '1':false, '2':false };
-    const actionKeys = ['q','c','e','n','p','t','b','f','g','m','r','w','a','s','d','x','v','z',' '];
-    const gameKeys = ['w','a','s','d',' ','1','2','q','c','e','n','p','t','b','f','g','m','r','x','v','z'];
+    const keys = { w:false, a:false, s:false, d:false, ' ':false };
+    const actionKeys = ['q','c','e','n','p','t','b','f','g','r','w','a','s','d','x','v','z','1','2','3','4','5','6',' '];
+    const gameKeys = ['w','a','s','d',' ','1','2','3','4','5','6','q','c','e','n','p','t','b','f','g','r','x','v','z'];
     let pressedOnce = {};
     window.addEventListener('keydown', e => {
       const k = e.key.toLowerCase();
@@ -1715,20 +1739,73 @@
 
     const player = { x: 100, y: 240, size: 24, speed: 4, color: "#4fa3ff", facing:{x:0,y:1}, moving:false };
 
-    const plots = [
-      {x: 190, y: 190, size: 36, state: 0, timer: 0, maxTimer: 180, soil: 0, crop: null},
-      {x: 236, y: 190, size: 36, state: 0, timer: 0, maxTimer: 180, soil: 0, crop: null},
-      {x: 190, y: 236, size: 36, state: 0, timer: 0, maxTimer: 180, soil: 0, crop: null},
-      {x: 236, y: 236, size: 36, state: 0, timer: 0, maxTimer: 180, soil: 0, crop: null}
-    ];
-    // แปลงเสริม (ซื้อผ่านเมนูประดิษฐ์ ทีละแปลง ราคาไต่ขึ้น) — เก็บลงเซฟเป็น plotsPurchased (v6)
-    const EXTRA_PLOT_POS = [ {x:282,y:190}, {x:282,y:236}, {x:190,y:282}, {x:236,y:282} ];
-    let plotsPurchased = 0;
-    function addPlot(){
-      if (plotsPurchased >= EXTRA_PLOT_POS.length) return;
-      const p = EXTRA_PLOT_POS[plotsPurchased];
-      plots.push({x:p.x, y:p.y, size:36, state:0, timer:0, maxTimer:180, soil:0, crop:null});
-      plotsPurchased++;
+    // ---------- แปลงเพาะปลูกแบบขุดเอง (v11) ----------
+    // ผู้เล่นใช้ "จอบ" พรวนดินสร้างแปลงเองในเขตไร่ (สูงสุด 5x5 = 25 แปลง) — ไม่มีแปลงสำเร็จรูปอีกต่อไป
+    const plots = []; // {x,y,size,state,timer,maxTimer,soil,crop,watered}
+    const FIELD_ORIGIN = 144, FIELD_STEP = 46, FIELD_COLS = 5, FIELD_ROWS = 5;
+    function fieldCellAt(px, py){
+      const cx = Math.round((px - FIELD_ORIGIN) / FIELD_STEP);
+      const cy = Math.round((py - FIELD_ORIGIN) / FIELD_STEP);
+      if (cx < 0 || cx >= FIELD_COLS || cy < 0 || cy >= FIELD_ROWS) return null;
+      return { x: FIELD_ORIGIN + cx*FIELD_STEP, y: FIELD_ORIGIN + cy*FIELD_STEP };
+    }
+    function plotAt(x, y){ return plots.find(p => p.x === x && p.y === y); }
+    function tillPlot(x, y){
+      const p = { x, y, size:36, state:0, timer:0, maxTimer:180, soil:0, crop:null, watered:false };
+      plots.push(p); return p;
+    }
+    let plotsPurchased = 0; // เหลือไว้เพื่อความเข้ากันได้กับเซฟเก่า (ไม่ใช้แล้ว)
+
+    // ---------- เครื่องมือ (ได้รับจากการคุยกับ NPC — ไม่มีขาย) ----------
+    // เพิ่มเครื่องมือใหม่ = เพิ่ม entry + ใส่ gift ให้ NPC สักคนใน 06-npcs.js
+    const TOOL_DB = {
+      hoe:         { id:'hoe',         icon:'⚒️', name:'จอบพรวนดิน', keyHint:'SPACE', desc:'พรวนดินในเขตไร่เพื่อสร้างแปลงปลูก (พลังงาน 4)' },
+      wateringCan: { id:'wateringCan', icon:'🚿', name:'บัวรดน้ำ',    keyHint:'SPACE', desc:'รดน้ำแปลงที่ปลูก — ดินแห้งพืชไม่โต (ฝนตก/สปริงเกอร์ช่วยได้)' },
+      axe:         { id:'axe',         icon:'🪓', name:'ขวานตัดไม้',  keyHint:'G',     desc:'ตัดต้นไม้เก็บไม้' },
+      pickaxe:     { id:'pickaxe',     icon:'⛏️', name:'อีเต้อขุดแร่', keyHint:'M',     desc:'ขุดแร่ใน Crystal Cave' },
+      rod:         { id:'rod',         icon:'🎣', name:'เบ็ดตกปลา',   keyHint:'F',     desc:'ตกปลาที่บ่อน้ำ' },
+    };
+    const TOOL_ORDER = ['hoe','wateringCan','axe','pickaxe','rod'];
+    // เริ่มเกมมีเครื่องมือครบ ยกเว้นเบ็ดตกปลา (rod) ที่ต้องไปรับจากมายาที่ฟาร์ม
+    let tools = { hoe:true, wateringCan:true, axe:true, pickaxe:true, rod:false };
+    function hasTool(id){ return !!tools[id]; }
+    function grantTool(id, fromName){
+      if (tools[id]) return false;
+      tools[id] = true;
+      const t = TOOL_DB[id];
+      spawnText(player.x, player.y-30, `ได้รับ ${t.icon}!`, "#ffe066");
+      updateEVA(`🎁 ได้รับ ${t.icon} ${t.name} จาก${fromName}! (${t.desc})`);
+      return true;
+    }
+
+    // ---------- ประตูเชื่อมโซน (แทนการเดินชนขอบจอ) ----------
+    // เดินเข้าบริเวณป้าย/ทางออกเท่านั้นถึงจะเปลี่ยนโซน — มีป้ายบอกทางวาดใน 25-render
+    const GATES = {
+      Farm: [
+        { x:612, y:196, w:28, h:100, to:'Dungeon', label:'ป่าตะวันออก' },
+        { x:0,   y:196, w:28, h:100, to:'Cave',    label:'ถ้ำคริสตัล' },
+        { x:276, y:0,   w:96, h:26,  to:'Snow',    label:'ทุ่งหิมะเหนือ' },
+      ],
+      Dungeon: [
+        { x:0,   y:180, w:28, h:120, to:'Farm',  label:'กลับฟาร์ม' },
+        { x:612, y:180, w:28, h:120, to:'Ruins', label:'ซากโบราณ' },
+      ],
+      Cave: [
+        { x:612, y:180, w:28, h:120, to:'Farm',    label:'กลับฟาร์ม' },
+        { x:0,   y:180, w:28, h:120, to:'Volcano', label:'ปล่องภูเขาไฟ' },
+      ],
+      Ruins:   [ { x:0,   y:180, w:28, h:120, to:'Dungeon', label:'กลับป่า' } ],
+      Volcano: [ { x:612, y:180, w:28, h:120, to:'Cave',    label:'กลับถ้ำ' } ],
+      Snow:    [ { x:276, y:454, w:96, h:26,  to:'Farm',    label:'กลับฟาร์ม' } ],
+    };
+    function checkGates(){
+      for (const g of (GATES[currentMap] || [])){
+        if (player.x + player.size > g.x && player.x < g.x + g.w &&
+            player.y + player.size > g.y && player.y < g.y + g.h){
+          switchMap(g.to); return true;
+        }
+      }
+      return false;
     }
     // ---------- Farm automation ----------
     let sprinklerBuilt = false, greenhouseBuilt = false, autoFeederBuilt = false;
@@ -1786,6 +1863,134 @@
     let interactCooldown = 0;
     let feedCooldown = 0;
 
+    // ---------- Hotbar + การใช้เครื่องมือ (Moonstone-style) ----------
+    // ช่อง hotbar: มือ/เมล็ด + 5 เครื่องมือ — เลือกด้วยเลข 1-6 หรือคลิก แล้วกด SPACE เพื่อใช้
+    // เพิ่มเครื่องมือใหม่ = เพิ่มใน TOOL_DB (07) + ต่อ action ใน useTool ที่นี่
+    const HOTBAR = ['hand','hoe','wateringCan','axe','pickaxe','rod'];
+    const HAND_INFO = { id:'hand', icon:'🌱', name:'มือ/เมล็ด', desc:'ปลูกเมล็ด · เก็บเกี่ยว (กด Z สลับชนิดเมล็ด)' };
+    let hotbarSlot = 0;
+    function selectSlot(i){
+      if (i < 0 || i >= HOTBAR.length) return;
+      hotbarSlot = i;
+      const id = HOTBAR[i];
+      const info = id === 'hand' ? HAND_INFO : TOOL_DB[id];
+      if (id !== 'hand' && !hasTool(id)){
+        updateEVA(`🔒 ยังไม่มี ${info.icon} ${info.name} — ${id==='rod'?'ลองคุยกับมายาที่ฟาร์มดูสิ':'หาได้จากการคุยกับชาวเมือง'}`);
+      } else {
+        updateEVA(`เลือก ${info.icon} ${info.name} — ${info.desc}`);
+      }
+      renderHotbar();
+    }
+    function currentToolId(){ return HOTBAR[hotbarSlot]; }
+
+    // หาแปลง/เซลล์ที่ผู้เล่นยืนทับ (ใช้จุดกึ่งกลางตัวผู้เล่น)
+    function playerFieldCell(){ return fieldCellAt(player.x + player.size/2, player.y + player.size/2); }
+
+    // ---------- Action: จอบพรวนดิน ----------
+    function tillAction(){
+      if (currentMap !== "Farm"){ updateEVA("พรวนดินได้เฉพาะในเขตไร่ที่ฟาร์ม"); return; }
+      const cell = playerFieldCell();
+      if (!cell){ updateEVA("ยืนในเขตไร่ (พื้นที่ดินสีน้ำตาลกลางฟาร์ม) แล้วใช้จอบพรวนดิน"); return; }
+      if (plotAt(cell.x, cell.y)){ updateEVA("ตรงนี้พรวนเป็นแปลงแล้ว — เลือกมือ/เมล็ด (ช่อง 1) เพื่อปลูก"); return; }
+      if (plots.length >= FIELD_COLS*FIELD_ROWS){ updateEVA("เขตไร่เต็มแล้ว (25 แปลง)"); return; }
+      if (!spendEnergy(4)) return;
+      tillPlot(cell.x, cell.y);
+      interactCooldown = 20;
+      spawnBurst(cell.x+18, cell.y+18, '#8d6e63', 8, 2, 22, 3);
+      sfx.plant(); tut.tilled = true;
+      updateEVA("⚒️ พรวนดินเป็นแปลงใหม่แล้ว! เลือกมือ/เมล็ด (ช่อง 1) กด SPACE เพื่อปลูก");
+    }
+
+    // ---------- Action: บัวรดน้ำ ----------
+    function waterAction(){
+      const cell = playerFieldCell();
+      const p = cell && plotAt(cell.x, cell.y);
+      if (!p){ updateEVA("ยืนบนแปลงที่ปลูกพืชแล้วค่อยรดน้ำ"); return; }
+      if (p.state === 0){ updateEVA("แปลงนี้ยังไม่ได้ปลูกอะไร"); return; }
+      if (p.watered){ updateEVA("💧 แปลงนี้รดน้ำแล้ววันนี้"); return; }
+      if (!spendEnergy(1)) return;
+      p.watered = true;
+      interactCooldown = 12;
+      spawnBurst(p.x+18, p.y+18, '#4fc3f7', 8, 1.8, 20, 3);
+      sfx.pickup(); tut.watered = true;
+      updateEVA("🚿 รดน้ำเรียบร้อย! แปลงที่รดน้ำแล้วจะเติบโตในวันนี้ (รดใหม่ทุกเช้า)");
+    }
+
+    // ---------- Action: มือ/เมล็ด (ปลูก + เก็บเกี่ยว) ----------
+    function handAction(){
+      if (currentMap !== "Farm"){ updateEVA("ปลูก/เก็บเกี่ยวได้เฉพาะที่ฟาร์ม"); return; }
+      const cell = playerFieldCell();
+      const p = cell && plotAt(cell.x, cell.y);
+      if (!p){ updateEVA("ยังไม่มีแปลงตรงนี้ — เลือกจอบ (ช่อง 2) กด SPACE เพื่อพรวนดินก่อน"); return; }
+      if (p.state === 0){
+        const crop = plantableCrop();
+        if (!crop){
+          const anySeed = CROP_KEYS.some(k=>(inv[CROP_DB[k].seedKey]||0)>0);
+          updateEVA(anySeed
+            ? `${seasonIcon()} เมล็ดที่มีปลูกไม่ได้ในฤดู${seasonName()} — ซื้อเมล็ดตามฤดู (B) หรือสร้างโรงเรือน`
+            : "ไม่มีเมล็ดพันธุ์เหลือ ไปซื้อที่ร้านค้าก่อน (กด B)");
+          return;
+        }
+        if (!spendEnergy(2)) return;
+        const ci = cropInfo(crop);
+        const useFert = fertilizerCharges > 0;
+        p.crop = crop; p.state = 1; p.watered = false;
+        p.maxTimer = useFert ? Math.round(ci.growTime/2) : ci.growTime;
+        p.timer = p.maxTimer; inv[ci.seedKey]--; interactCooldown = 20;
+        if (useFert) fertilizerCharges--;
+        spawnBurst(p.x+18, p.y+18, '#8d6e63', 6, 1.5, 18, 3);
+        sfx.plant(); tut.planted = true;
+        updateEVA(useFert
+          ? `ใช้ปุ๋ยเร่งโต! ${ci.icon} ${ci.name}จะโตเร็วขึ้นเท่าตัว — อย่าลืมรดน้ำ (ช่อง 3)`
+          : `ปลูก ${ci.icon} ${ci.name}แล้ว — เลือกบัวรดน้ำ (ช่อง 3) รดน้ำให้พืชโต`);
+      } else if (p.state === 2){
+        if (!spendEnergy(2)) return;
+        const cropType = p.crop || 'veggie';
+        const ci = cropInfo(cropType);
+        let qty = 1;
+        if (p.soil>=2) qty++;
+        else if (p.soil===1 && Math.random()<0.35) qty++;
+        if (seasonIdx()===2) qty++;
+        inv[cropType] += qty; inv[ci.seedKey]++;
+        p.state = 0; p.crop = null; p.watered = false; interactCooldown = 20;
+        spawnBurst(p.x+18, p.y+18, ci.color, 14, 3, 32, 4);
+        sfx.harvest(); tut.harvested = true; harvestCount++;
+        gainExp(active(), 3);
+        updateEVA(`เก็บเกี่ยว ${ci.icon} ${ci.name}ได้ ${qty}! (ขายได้ ~🪙${sellPriceToday(cropType)}/ชิ้นวันนี้)`);
+      } else {
+        const secLeft = Math.ceil(p.timer/60);
+        updateEVA(`${cropInfo(p.crop).icon} กำลังเติบโต... ${p.watered?'💧 รดน้ำแล้ว':'⚠️ ยังไม่ได้รดน้ำ (ช่อง 3)'} เหลือ ~${secLeft} วิ`);
+      }
+    }
+
+    // ---------- ตัวจ่ายงานหลัก: SPACE ใช้เครื่องมือที่เลือก ----------
+    function useTool(){
+      const id = currentToolId();
+      if (id !== 'hand' && !hasTool(id)){
+        const t = TOOL_DB[id];
+        updateEVA(`🔒 ยังไม่มี ${t.icon} ${t.name} — ${id==='rod'?'คุยกับมายาที่ฟาร์มเพื่อรับเบ็ด':'หาได้จากชาวเมือง'}`);
+        return;
+      }
+      if (id === 'hand') return handAction();
+      if (id === 'hoe') return tillAction();
+      if (id === 'wateringCan') return waterAction();
+      if (id === 'axe') return chopTree();
+      if (id === 'pickaxe') return mineOre();
+      if (id === 'rod') return fish();
+    }
+
+    // ---------- วาด hotbar (เรียกจาก updateUI + selectSlot) ----------
+    function renderHotbar(){
+      const el = document.getElementById('hotbar');
+      if (!el) return;
+      el.innerHTML = HOTBAR.map((id,i)=>{
+        const info = id === 'hand' ? HAND_INFO : TOOL_DB[id];
+        const locked = id !== 'hand' && !hasTool(id);
+        const cls = 'hbSlot' + (i===hotbarSlot?' active':'') + (locked?' locked':'');
+        return `<div class="${cls}" title="${info.name}" onclick="selectSlot(${i})">
+          <span class="hbNum">${i+1}</span>${info.icon}${locked?'<span class="hbLock">🔒</span>':''}</div>`;
+      }).join('');
+    }
     // ---------- Breeding: IV / Trait / Mutation ----------
     const TRAITS = {
       hardy:  { icon:'💪', name:'Hardy',  desc:'HP สูงสุด +10%' },
@@ -3544,7 +3749,8 @@
     let fishCount = 0, mineCount = 0, woodCount = 0;
     let fishingUpgraded = false, miningUpgraded = false, woodcuttingUpgraded = false, fertilizerCharges = 0;
     function fish(){
-      if (Math.hypot(player.x-pond.x, player.y-pond.y) > 70){ updateEVA("ต้องยืนใกล้บ่อน้ำถึงจะตกปลาได้"); return; }
+      if (!hasTool('rod')){ updateEVA("🎣 ยังไม่มีเบ็ดตกปลา — ไปคุยกับมายาที่ฟาร์มเพื่อรับเบ็ด (กด T)"); return; }
+      if (Math.hypot(player.x-pond.x, player.y-pond.y) > 70){ updateEVA("ต้องยืนใกล้บ่อน้ำถึงจะตกปลาได้ (เลือกเบ็ดช่อง 6)"); return; }
       if (fishCooldown > 0){ updateEVA("รอเบ็ดพร้อมอีกครู่นะ"); return; }
       if (!spendEnergy(4)) return;
       fishCooldown = 90;
@@ -3558,9 +3764,10 @@
       updateEVA(`ตกปลาได้ ${qty} ตัว!`);
     }
     function chopTree(){
+      if (!hasTool('axe')){ updateEVA("🪓 ยังไม่มีขวานตัดไม้"); return; }
       let target = null;
       for (const t of trees){ if (t.chopped<=0 && Math.hypot(player.x-t.x, player.y-t.y) < 60){ target=t; break; } }
-      if (!target){ updateEVA("ต้องยืนใกล้ต้นไม้ที่ยังไม่ถูกตัดถึงจะตัดไม้ได้"); return; }
+      if (!target){ updateEVA("ต้องยืนใกล้ต้นไม้ที่ยังไม่ถูกตัด (เลือกขวานช่อง 4)"); return; }
       if (!spendEnergy(4)) return;
       const qty = woodcuttingUpgraded ? 2 : 1;
       inv.wood += qty; woodCount += qty;
@@ -3572,10 +3779,11 @@
       updateEVA(`ตัดไม้ได้ ${qty} ท่อน! ต้นไม้จะงอกใหม่หลังผ่านไปสักพัก`);
     }
     function mineOre(){
+      if (!hasTool('pickaxe')){ updateEVA("⛏️ ยังไม่มีอีเต้อขุดแร่"); return; }
       if (currentMap !== "Cave"){ updateEVA("ต้องอยู่ใน Crystal Cave ถึงจะขุดแร่ได้"); return; }
       let target = null;
       for (const o of oreNodes){ if (o.mined<=0 && Math.hypot(player.x-o.x, player.y-o.y) < 55){ target=o; break; } }
-      if (!target){ updateEVA("ต้องยืนใกล้ก้อนแร่ที่ยังไม่ถูกขุดถึงจะขุดได้"); return; }
+      if (!target){ updateEVA("ต้องยืนใกล้ก้อนแร่ที่ยังไม่ถูกขุด (เลือกอีเต้อช่อง 5)"); return; }
       if (!spendEnergy(5)) return;
       const qty = miningUpgraded ? 2 : 1;
       inv.ore += qty; mineCount += qty;
@@ -3708,7 +3916,7 @@
     // ---------- Save versioning ----------
     // ทุกครั้งที่เพิ่ม field ใหม่ลงเซฟ: เพิ่ม SAVE_VERSION แล้วเขียน migration step ใน migrateSave
     // ห้ามอ่าน field ใหม่ตรงๆ จาก data โดยไม่ผ่าน migration — ไม่งั้นเซฟเก่าพัง
-    const SAVE_VERSION = 10;
+    const SAVE_VERSION = 11;
 
     // ---------- เวลาเล่นสะสม (playtime) ----------
     // สะสมเป็นวินาทีใน update() (22-game-loop.js) เฉพาะตอน gameStarted — เก็บลงเซฟต่อ slot
@@ -3780,6 +3988,14 @@
       if (v === 9){
         // v9 → v10: พืชหน้าหนาวใหม่ (มิ้นต์น้ำแข็ง/โสมหิมะ) — inv keys ใหม่ default ผ่าน Object.assign ตอนโหลด ไม่ต้องแปลง
         v = 10;
+      }
+      if (v === 10){
+        // v10 → v11: ระบบเครื่องมือ + hotbar + แปลงขุดเอง
+        // เซฟเก่าเคยตกปลา/อัพเบ็ดได้ = เคยมีความสามารถตกปลา → ให้เบ็ดไปเลย ไม่ให้เสีย progress
+        const couldFish = data.fishingUpgraded || (data.quest && data.quest.counters && data.quest.counters.fishCount > 0);
+        data.tools = { hoe:true, wateringCan:true, axe:true, pickaxe:true, rod:!!couldFish };
+        data.hotbarSlot = 0;
+        v = 11;
       }
       data.version = v;
       return data;
@@ -3870,13 +4086,14 @@
           fishingUpgraded, miningUpgraded, woodcuttingUpgraded, fertilizerCharges, dayCount,
           sprinklerBuilt, greenhouseBuilt, autoFeederBuilt,
           npcState: Object.fromEntries(NPCS.map(n=>[n.id, { f:n.friendship, d:n.lastTalkDay, q:n.questDone }])),
-          chapterIndex, plotsPurchased,
+          chapterIndex,
+          tools: Object.assign({}, tools), hotbarSlot: hotbarSlot, // v11: เครื่องมือที่ได้รับ + ช่อง hotbar ที่เลือก
           discoveredSpecies: [...discoveredSpecies], dexRewarded,
           bossesDefeated: Object.assign({}, bossesDefeated),
           quest: { tutorialIndex, tut: Object.assign({}, tut),
             sideQuestsUnlocked, sideQuestsDone: sideQuests.filter(q=>q.done).map(q=>q.id),
             counters: { harvestCount, defeatCount, cookCount, fishCount, mineCount, woodCount, obsidianCount, relicCount } },
-          plots: plots.map(p=>({state:p.state, timer:p.timer, maxTimer:p.maxTimer, soil:p.soil, crop:p.crop})) };
+          plots: plots.map(p=>({x:p.x, y:p.y, state:p.state, timer:p.timer, maxTimer:p.maxTimer, soil:p.soil, crop:p.crop, watered:!!p.watered})) };
         const json = JSON.stringify(data);
         slotRawCache[currentSlot] = json; // อัพเดต cache ให้ตรงกับเซฟล่าสุด
         const ok = await storageSet(slotKey(currentSlot), json);
@@ -3918,10 +4135,17 @@
               if (s){ n.friendship = s.f||0; n.lastTalkDay = s.d||0; n.questDone = !!s.q; }
             }
           }
-          // สร้างแปลงเสริมที่ซื้อไว้ก่อน แล้วค่อยเทข้อมูลรายแปลงลงไป (v6)
-          while (plotsPurchased < (data.plotsPurchased||0)) addPlot();
+          // เครื่องมือ (v11) — เซฟเก่าไม่มี tools: migrate ให้ค่าเริ่มต้น (มีครบยกเว้นเบ็ด เว้นแต่เคยตกปลามาก่อน)
+          tools = Object.assign({ hoe:true, wateringCan:true, axe:true, pickaxe:true, rod:false }, data.tools || {});
+          hotbarSlot = data.hotbarSlot || 0;
+          // แปลงเป็น dynamic (v11): สร้างแปลงใหม่จากพิกัดที่เซฟไว้
+          plots.length = 0;
           if (data.plots && Array.isArray(data.plots)){
-            data.plots.forEach((sp,i)=>{ if (plots[i]) Object.assign(plots[i], { state:sp.state||0, timer:sp.timer||0, maxTimer:sp.maxTimer||180, soil:sp.soil||0, crop:sp.crop||null }); });
+            data.plots.forEach(sp=>{
+              const x = sp.x!=null ? sp.x : (FIELD_ORIGIN + (plots.length%FIELD_COLS)*FIELD_STEP); // เซฟเก่า (ไม่มี x,y) วางตามลำดับในเขตไร่
+              const y = sp.y!=null ? sp.y : (FIELD_ORIGIN + Math.floor(plots.length/FIELD_COLS)*FIELD_STEP);
+              plots.push({ x, y, size:36, state:sp.state||0, timer:sp.timer||0, maxTimer:sp.maxTimer||180, soil:sp.soil||0, crop:sp.crop||null, watered:!!sp.watered });
+            });
           }
           // ตั้งค่า Dex ก่อนสร้างสัตว์ (makeCreature จะ discover ตัวที่ถืออยู่ซ้ำให้เองอย่างปลอดภัย)
           discoveredSpecies = new Set(data.discoveredSpecies || []);
@@ -4016,6 +4240,7 @@
       dayTimer++;
       if (dayTimer >= DAY_LENGTH){
         dayTimer = 0; dayCount++;
+        plots.forEach(p=>{ p.watered = false; }); // เช้าใหม่ ดินแห้งหมด ต้องรดน้ำอีกครั้ง (สปริงเกอร์รดให้อัตโนมัติผ่าน naturallyWatered)
         updateEVA(`📈 ตลาดวันใหม่! ของฮอตวันนี้: ${sellLabels[todayHotItem()]} ขายได้ราคา x1.5 — รีบขายก่อนหมดวัน`);
         if (currentFestival) endFestival(currentFestival);
         currentFestival = activeFestival();
@@ -4056,79 +4281,32 @@
       player.moving = moved;
       if (moved) tut.moved = true;
 
-      if (currentMap === "Farm"){
-        if (player.x > canvas.width-30) switchMap("Dungeon");
-        else if (player.x < 10) switchMap("Cave");
-        else if (player.y < 10) switchMap("Snow");
-      } else if (currentMap === "Dungeon"){
-        if (player.x < 10) switchMap("Farm");
-        else if (player.x > canvas.width-30) switchMap("Ruins");
-      } else if (currentMap === "Cave"){
-        if (player.x < 10) switchMap("Farm");
-        else if (player.x > canvas.width-30) switchMap("Volcano");
-      } else if (currentMap === "Ruins"){
-        if (player.x < 10) switchMap("Dungeon");
-      } else if (currentMap === "Volcano"){
-        if (player.x < 10) switchMap("Cave");
-      } else if (currentMap === "Snow"){
-        if (player.y > canvas.height-player.size-5) switchMap("Farm");
-      }
+      checkGates(); // เปลี่ยนโซนเฉพาะเมื่อเดินเข้าประตู/ทางออก (GATES ใน 07) ไม่ใช่ชนขอบจอ
       updateNPCs(); // NPC ทุกคนเดินตาม schedule ของตัวเอง (ทุกโซน — จะได้อยู่ถูกที่ตอนผู้เล่นไปถึง)
 
       if (currentMap === "Farm"){
         for (let p of plots){
           if (p.state === 1){
-            let growRate = (weather==='rain'?2:1) * (isNight()?0.5:1);
-            if (sprinklerBuilt) growRate = Math.max(growRate, 2) * (isNight() && !greenhouseBuilt ? 0.5 : 1);
-            if (greenhouseBuilt) growRate = growRate * (isNight() ? 2 : 1); // greenhouse cancels the night penalty
-            growRate *= SOIL_SPEED[p.soil];
-            p.timer -= growRate;
-            if (p.timer<=0){ p.state=2; spawnBurst(p.x+18,p.y+18, p.crop==='chili' ? '#ff8a50' : '#ffe082',8,2,26,3);}
-          }
-          if (keys[' '] && interactCooldown<=0){
-            if (player.x<p.x+p.size && player.x+player.size>p.x && player.y<p.y+p.size && player.y+player.size>p.y){
-              if (p.state===0){
-                const crop = plantableCrop();
-                if (!crop){
-                  const anySeed = CROP_KEYS.some(k=>(inv[CROP_DB[k].seedKey]||0)>0);
-                  updateEVA(anySeed
-                    ? `${seasonIcon()} เมล็ดที่มีปลูกไม่ได้ในฤดู${seasonName()} — ซื้อเมล็ดตามฤดู (B) หรือสร้างโรงเรือนเพื่อปลูกได้ทุกฤดู`
-                    : "ไม่มีเมล็ดพันธุ์เหลือ ไปซื้อที่ร้านค้าก่อน (กด B) — มีเมล็ดหลายชนิดให้เลือกตามฤดู");
-                  continue;
-                }
-                if (!spendEnergy(3)) continue;
-                const ci = cropInfo(crop);
-                const useFert = fertilizerCharges > 0;
-                p.crop = crop;
-                p.state = 1;
-                p.maxTimer = useFert ? Math.round(ci.growTime/2) : ci.growTime;
-                p.timer = p.maxTimer; inv[ci.seedKey]--; interactCooldown=30;
-                if (useFert) fertilizerCharges--;
-                spawnBurst(p.x+18,p.y+18,'#8d6e63',6,1.5,18,3);
-                sfx.plant(); tut.planted = true;
-                updateEVA(useFert ? `ใช้ปุ๋ยเร่งโต! ${ci.icon} ${ci.name}จะโตเร็วขึ้นเท่าตัว` : `ปลูก ${ci.icon} ${ci.name}แล้ว (กด Z เพื่อสลับชนิดเมล็ดที่จะปลูก)`);
-              } else if (p.state===2){
-                if (!spendEnergy(2)) continue;
-                const cropType = p.crop || 'veggie';
-                const ci = cropInfo(cropType);
-                let qty = 1;
-                if (p.soil>=2) qty++;
-                else if (p.soil===1 && Math.random()<0.35) qty++;
-                if (seasonIdx()===2) qty++; // fall harvest bonus
-                inv[cropType] += qty; inv[ci.seedKey]++; // ได้เมล็ดชนิดเดิมคืนมาปลูกต่อ
-                p.state=0; p.crop=null; interactCooldown=30;
-                spawnBurst(p.x+18,p.y+18, ci.color,14,3,32,4);
-                sfx.harvest(); tut.harvested = true; harvestCount++;
-                gainExp(active(), 3);
-                updateEVA(`เก็บเกี่ยว ${ci.icon} ${ci.name}ได้ ${qty}! (ขายได้ ~🪙${sellPriceToday(cropType)}/ชิ้นวันนี้)`);
-              }
+            // พืชจะเติบโตเฉพาะเมื่อ "รดน้ำแล้ว" หรือมีฝน/พายุ/สปริงเกอร์รดให้ — ดินแห้งหยุดโต
+            const naturallyWatered = weather==='rain' || weather==='storm' || sprinklerBuilt;
+            if (p.watered || naturallyWatered){
+              let growRate = (weather==='rain'||weather==='storm' ? 2 : 1) * (isNight()?0.5:1);
+              if (sprinklerBuilt) growRate = Math.max(growRate, 2) * (isNight() && !greenhouseBuilt ? 0.5 : 1);
+              if (greenhouseBuilt) growRate = growRate * (isNight() ? 2 : 1);
+              growRate *= SOIL_SPEED[p.soil];
+              p.timer -= growRate;
+              if (p.timer<=0){ p.state=2; spawnBurst(p.x+18,p.y+18, cropInfo(p.crop).glow, 8,2,26,3); }
             }
           }
-          // compost: press X while standing on a plot to raise its soil quality using wood
-          if (pressedOnce.x && p.state===0 && player.x<p.x+p.size && player.x+player.size>p.x && player.y<p.y+p.size && player.y+player.size>p.y){
-            if (p.soil>=2){ updateEVA(`${SOIL_NAMES[p.soil]}อยู่แล้ว ไม่สามารถปรับปรุงเพิ่มได้อีก`); }
-            else if (inv.wood < 3){ updateEVA("ต้องใช้ไม้ 3 ท่อนในการหมักปุ๋ยปรับปรุงดิน"); }
-            else { inv.wood -= 3; p.soil++; spawnBurst(p.x+18,p.y+18,'#795548',10,2,28,3); sfx.plant(); updateEVA(`🌱 ปรับปรุงดินเป็น "${SOIL_NAMES[p.soil]}"! พืชจะโตเร็วขึ้นและให้ผลผลิตมากขึ้น`); }
+        }
+        // compost: ยืนบนแปลงว่างแล้วกด X ปรับปรุงดินด้วยไม้
+        if (pressedOnce.x){
+          const cell = playerFieldCell();
+          const p = cell && plotAt(cell.x, cell.y);
+          if (p && p.state===0){
+            if (p.soil>=2){ updateEVA(`${SOIL_NAMES[p.soil]}อยู่แล้ว ปรับปรุงเพิ่มไม่ได้`); }
+            else if (inv.wood < 3){ updateEVA("ต้องใช้ไม้ 3 ท่อนหมักปุ๋ยปรับปรุงดิน"); }
+            else { inv.wood-=3; p.soil++; spawnBurst(p.x+18,p.y+18,'#795548',10,2,28,3); sfx.plant(); updateEVA(`🌱 ปรับปรุงดินเป็น "${SOIL_NAMES[p.soil]}"! พืชจะโตเร็วขึ้นและให้ผลผลิตมากขึ้น`); }
           }
         }
         // nest breeding trigger
@@ -4139,6 +4317,10 @@
       } else if (pressedOnce.n){
         updateEVA("ผสมพันธุ์ได้เฉพาะที่รังในฟาร์มเท่านั้น");
       }
+      // SPACE = ใช้เครื่องมือที่เลือกใน hotbar (useTool ใน 07b) — ทำงานได้ทุกโซน
+      if (keys[' '] && interactCooldown<=0){ interactCooldown = 10; useTool(); }
+      // เลือก hotbar ด้วยเลข 1-6
+      for (let i=1;i<=6;i++){ if (pressedOnce[String(i)]) selectSlot(i-1); }
 
       if (interactCooldown>0) interactCooldown--;
       if (feedCooldown>0) feedCooldown--;
@@ -4166,18 +4348,18 @@
           }
         }
       }
-      if (keys['1'] && feedCooldown<=0 && inv.veggie>0 && energy>=1){
+      if (pressedOnce.f && feedCooldown<=0 && inv.veggie>0 && energy>=1){
         inv.veggie--; c.veggieEaten++; c.hp=Math.min(c.maxHp,c.hp+20); c.bond=Math.min(100,c.bond+3*traitBondMult(c.trait)*personalityBondMult(c.personality)); energy=Math.max(0,energy-1);
-        feedCooldown=30; spawnText(c.x,c.y-24,"+20 HP","#8BC34A"); spawnBurst(c.x,c.y,'#8BC34A',8,2,24,3);
+        feedCooldown=20; spawnText(c.x,c.y-24,"+20 HP","#8BC34A"); spawnBurst(c.x,c.y,'#8BC34A',8,2,24,3);
         sfx.feed(); tut.fedVeggie = true;
         checkEvolution(c);
-      }
-      if (keys['2'] && feedCooldown<=0 && inv.meat>0 && energy>=1){
+      } else if (pressedOnce.f && inv.veggie<=0){ updateEVA("ไม่มีผักป้อนสัตว์เลี้ยง — ปลูกผักหรือซื้อที่ร้านก่อน (F=ป้อนผัก)"); }
+      if (pressedOnce.g && feedCooldown<=0 && inv.meat>0 && energy>=1){
         inv.meat--; c.meatEaten++; c.atk+=2; c.bond=Math.min(100,c.bond+3*traitBondMult(c.trait)*personalityBondMult(c.personality)); energy=Math.max(0,energy-1);
-        feedCooldown=30; spawnText(c.x,c.y-24,"+2 ATK","#ff8a65"); spawnBurst(c.x,c.y,'#ff8a65',8,2,24,3);
+        feedCooldown=20; spawnText(c.x,c.y-24,"+2 ATK","#ff8a65"); spawnBurst(c.x,c.y,'#ff8a65',8,2,24,3);
         sfx.feed(); tut.fedMeat = true;
         checkEvolution(c);
-      }
+      } else if (pressedOnce.g && inv.meat<=0){ updateEVA("ไม่มีเนื้อป้อนสัตว์เลี้ยง — ล่าสัตว์ในดันเจี้ยนเพื่อเก็บเนื้อ (G=ป้อนเนื้อ)"); }
       if (pressedOnce.c) cook();
       if (pressedOnce.e) useSkill();
       if (pressedOnce.q && party.length>1){
@@ -4194,9 +4376,6 @@
         else updateEVA("ต้องเข้าไปใกล้ชาวเมืองก่อนถึงจะคุยได้ (สังเกตไอคอน 💬 เหนือหัว)");
       }
       if (pressedOnce.b) openShop();
-      if (pressedOnce.f) fish();
-      if (pressedOnce.g) chopTree();
-      if (pressedOnce.m) mineOre();
       if (pressedOnce.r) openCraft();
       if (pressedOnce.v){
         if (currentMap === "Farm" && currentFestival && currentFestival.key === 'tournament'){
@@ -4339,6 +4518,8 @@
     function updateUI(){
       const c = active();
       document.getElementById('ui-coin').innerText = inv.coin;
+      const goldEl = document.getElementById('hud-gold'); if (goldEl) goldEl.innerText = inv.coin;
+      renderHotbar();
       document.getElementById('ui-seeds').innerText = CROP_KEYS.reduce((s,k)=>s+(inv[CROP_DB[k].seedKey]||0),0);
       const selInfo = cropInfo(selectedCrop);
       const selEl = document.getElementById('ui-seedsel');
@@ -4827,6 +5008,78 @@
       ctx.fillStyle="#66bb6a"; ctx.fillRect(e.x-15,e.y-e.size-11,Math.max(0,(e.hp/maxHp)*30),4);
     }
 
+    // ---------- เขตไร่ (พรวนเอง) + แปลง dynamic + รดน้ำ ----------
+    function drawFarmField(){
+      const span = (FIELD_COLS-1)*FIELD_STEP + 36;
+      // พื้นเขตไร่ + เส้น grid บอกช่องที่พรวนได้
+      ctx.fillStyle = "rgba(120,85,45,0.18)";
+      ctx.beginPath(); ctx.roundRect(FIELD_ORIGIN-4, FIELD_ORIGIN-4, span+8, span+8, 8); ctx.fill();
+      ctx.strokeStyle = "rgba(90,60,32,0.35)"; ctx.lineWidth = 1;
+      for (let cx=0; cx<FIELD_COLS; cx++) for (let cy=0; cy<FIELD_ROWS; cy++){
+        if (plotAt(FIELD_ORIGIN+cx*FIELD_STEP, FIELD_ORIGIN+cy*FIELD_STEP)) continue;
+        ctx.strokeRect(FIELD_ORIGIN+cx*FIELD_STEP, FIELD_ORIGIN+cy*FIELD_STEP, 36, 36);
+      }
+      // ไฮไลต์ช่องที่ผู้เล่นยืน เมื่อถือเครื่องมือฟาร์ม (บอกเป้าหมายของ SPACE)
+      const toolId = currentToolId();
+      if (['hand','hoe','wateringCan'].includes(toolId)){
+        const cell = playerFieldCell();
+        if (cell){
+          ctx.strokeStyle = "#ffe066"; ctx.lineWidth = 2.5;
+          ctx.strokeRect(cell.x-1, cell.y-1, 38, 38);
+        }
+      }
+      // แปลงที่พรวนแล้ว
+      for (let p of plots){
+        ctx.fillStyle = p.soil>=2 ? "#4a2f14" : p.soil===1 ? "#523822" : "#5a3c20";
+        ctx.beginPath(); ctx.roundRect(p.x,p.y,p.size,p.size,4); ctx.fill();
+        // ดินที่รดน้ำแล้ว = สีเข้มชื้น + ขอบฟ้า
+        if (p.watered){ ctx.fillStyle = "rgba(40,90,140,0.35)"; ctx.beginPath(); ctx.roundRect(p.x,p.y,p.size,p.size,4); ctx.fill(); }
+        if (p.soil>0){ ctx.strokeStyle = p.soil>=2 ? "#ffcf4d" : "#a5d6a7"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.roundRect(p.x+2,p.y+2,p.size-4,p.size-4,3); ctx.stroke(); }
+        const ci = CROP_DB[p.crop] || CROP_DB.veggie;
+        if (p.state===1){
+          const grow=1-p.timer/p.maxTimer, sway=Math.sin(frameCount*0.1)*2;
+          ctx.strokeStyle = ci.stemColor; ctx.lineWidth=3;
+          ctx.beginPath(); ctx.moveTo(p.x+18,p.y+32); ctx.quadraticCurveTo(p.x+18+sway,p.y+32-13*grow,p.x+18+sway,p.y+32-18*grow); ctx.stroke();
+          ctx.fillStyle = ci.color; ctx.beginPath(); ctx.ellipse(p.x+18+sway,p.y+31-16*grow,5*grow+2,3*grow+1,0.6,0,Math.PI*2); ctx.fill();
+          // เตือนต้องรดน้ำ (หยดน้ำจางเหนือแปลงที่ยังไม่รด และไม่มีฝน)
+          if (!p.watered && weather!=='rain' && weather!=='storm' && !sprinklerBuilt){
+            ctx.globalAlpha = 0.5+Math.sin(frameCount*0.12)*0.3; ctx.font="12px sans-serif"; ctx.textAlign="center";
+            ctx.fillText("💧", p.x+18, p.y-2); ctx.globalAlpha=1; ctx.textAlign="left";
+          }
+        } else if (p.state===2){
+          const bounce=Math.sin(frameCount*0.12)*3;
+          ctx.save(); ctx.shadowColor = ci.glow; ctx.shadowBlur=12;
+          ctx.fillStyle = ci.color; ctx.beginPath(); ctx.arc(p.x+18,p.y+18+bounce,12,0,Math.PI*2); ctx.fill();
+          ctx.restore();
+          ctx.font="11px sans-serif"; ctx.textAlign="center"; ctx.fillText("✨", p.x+30, p.y+6); ctx.textAlign="left";
+        }
+      }
+    }
+
+    // ---------- ป้ายประตู/ทางออก (ตำแหน่งจริงตาม GATES ใน 07) ----------
+    function drawGateMarkers(){
+      for (const g of (GATES[currentMap] || [])){
+        const cx = g.x + g.w/2, cy = g.y + g.h/2;
+        const near = Math.hypot((player.x+player.size/2)-cx, (player.y+player.size/2)-cy) < 90;
+        // เรืองแสงบอกทางออก
+        ctx.save();
+        ctx.globalAlpha = near ? 0.9 : 0.5;
+        ctx.fillStyle = near ? "rgba(255,224,102,0.28)" : "rgba(255,255,255,0.12)";
+        ctx.beginPath(); ctx.roundRect(g.x, g.y, g.w, g.h, 6); ctx.fill();
+        ctx.strokeStyle = near ? "#ffe066" : "rgba(255,255,255,0.4)"; ctx.lineWidth = near?2.5:1.5;
+        ctx.beginPath(); ctx.roundRect(g.x, g.y, g.w, g.h, 6); ctx.stroke();
+        ctx.restore();
+        // ป้ายชื่อปลายทาง
+        ctx.font = "bold 10px Kanit, sans-serif"; ctx.textAlign = "center";
+        const lx = Math.min(Math.max(cx, 40), canvas.width-40);
+        const ly = g.y < 20 ? g.y+g.h+14 : (g.y+g.h > canvas.height-20 ? g.y-8 : cy-g.h/2-6);
+        ctx.fillStyle = "rgba(20,14,9,0.7)";
+        ctx.fillRect(lx-38, ly-11, 76, 15);
+        ctx.fillStyle = "#fff2cf"; ctx.fillText("→ "+g.label, lx, ly);
+        ctx.textAlign = "left";
+      }
+    }
+
     function drawNest(){
       drawShadow(nest.x, nest.y+10, 30, 10);
       ctx.fillStyle = "#8a5a30";
@@ -5125,29 +5378,11 @@
         ctx.strokeStyle="rgba(0,0,0,0.15)"; ctx.lineWidth=3; ctx.strokeRect(280,0,80,26);
         ctx.fillStyle="#fff8"; ctx.fillText("↑ Snow Mtn", 288,18);
 
-        ctx.strokeStyle="#7a5230"; ctx.lineWidth=5; ctx.strokeRect(178,178,104,104);
-
-        for (let p of plots){
-          ctx.fillStyle = p.soil>=2 ? "#4a2f14" : p.soil===1 ? "#523822" : "#5a3c20";
-          ctx.beginPath(); ctx.roundRect(p.x,p.y,p.size,p.size,4); ctx.fill();
-          if (p.soil>0){ ctx.strokeStyle = p.soil>=2 ? "#ffcf4d" : "#a5d6a7"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.roundRect(p.x+2,p.y+2,p.size-4,p.size-4,3); ctx.stroke(); }
-          const ci = CROP_DB[p.crop] || CROP_DB.veggie; // สี/รูปทรงตามชนิดพืช (data-driven)
-          if (p.state===1){
-            const grow=1-p.timer/p.maxTimer, sway=Math.sin(frameCount*0.1)*2;
-            ctx.strokeStyle = ci.stemColor; ctx.lineWidth=3;
-            ctx.beginPath(); ctx.moveTo(p.x+18,p.y+32); ctx.quadraticCurveTo(p.x+18+sway,p.y+32-13*grow,p.x+18+sway,p.y+32-18*grow); ctx.stroke();
-            ctx.fillStyle = ci.color; ctx.beginPath(); ctx.ellipse(p.x+18+sway,p.y+31-16*grow,5*grow+2,3*grow+1,0.6,0,Math.PI*2); ctx.fill();
-          } else if (p.state===2){
-            const bounce=Math.sin(frameCount*0.12)*3;
-            ctx.save(); ctx.shadowColor = ci.glow; ctx.shadowBlur=12;
-            ctx.fillStyle = ci.color; ctx.beginPath(); ctx.arc(p.x+18,p.y+18+bounce,12,0,Math.PI*2); ctx.fill();
-            ctx.restore();
-          }
-        }
+        drawFarmField();
         drawNest();
         drawArena();
         drawTrees();
-        drawHint(pond.x,pond.y,70,"กด F ตกปลา");
+        drawHint(pond.x,pond.y,70, hasTool('rod') ? "เลือกเบ็ด (6) แล้วกด SPACE" : "คุยกับมายาเพื่อรับเบ็ด");
         if (phase==='night' || phase==='dusk') drawFireflies();
         if (weather !== 'clear') drawRain();
       } else if (currentMap === "Dungeon") {
@@ -5236,6 +5471,7 @@
         ctx.beginPath(); ctx.roundRect(item.x-item.size/2,item.y-item.size/2+bobY,item.size,item.size,4); ctx.stroke();
       }
 
+      drawGateMarkers(); // ป้าย/ทางออกจริงตาม GATES — เดินเข้าถึงจะเปลี่ยนโซน
       drawNPCs();
       for (const e of enemies) drawEnemy(e);
       drawPlayer();
