@@ -1449,37 +1449,37 @@
     // zones สะสมจาก chapter ก่อนหน้า (ปลดแล้วไม่ล็อกกลับ)
     const CHAPTERS = [
       { id:'awakening', title:"ผู้ตื่นไร้ความทรงจำ",
-        desc:"ตั้งหลักที่ฟาร์ม ทำความรู้จัก Eden และสิ่งที่เกิดขึ้นกับมัน",
-        zones:["Farm","Dungeon","Cave"],
+        desc:"ตั้งหลักที่ฟาร์ม สำรวจป่ากระซิบและทะเลสาบกระจก ทำความรู้จัก Eden",
+        zones:["Farm","Dungeon","Snow"],
         intro:"เริ่มจากสิ่งเล็กๆ ก่อน — ฟื้นฟาร์มนี้ แล้วความทรงจำอาจตามกลับมา",
-        outro:"📡 EVA กู้บันทึกชิ้นแรกคืนมาได้: เจ้าไม่ได้ 'ตกลงมา' ที่ Eden... เจ้าถูก 'ส่งมา' และสัญญาณพลังงานประหลาดกำลังแผ่มาจากใต้ภูเขาไฟ",
+        outro:"📡 EVA กู้บันทึกชิ้นแรกคืนมาได้: เจ้าไม่ได้ 'ตกลงมา' ที่ Eden... เจ้าถูก 'ส่งมา' และสัญญาณพลังงานประหลาดกำลังแผ่มาจากภูเขาซินเดอร์",
         goals:[
           { desc:"คุยกับผู้เฒ่าโรวัน (กด T)", check:()=> tut.talkedToRowan },
           { desc:"เก็บเกี่ยวผลผลิต 3 ครั้ง", check:()=> harvestCount>=3 },
-          { desc:"ชนะศัตรู 2 ตัว", check:()=> defeatCount>=2 },
-          { desc:"👑 ปราบ ราชันเขี้ยวเงา ใน Forest Dungeon", check:()=> !!bossesDefeated.shadowFang }
+          { desc:"ลงวิหารกระซิบแล้วชนะศัตรู 2 ตัว", check:()=> defeatCount>=2 },
+          { desc:"👑 ปราบ ราชันเขี้ยวเงา ในวิหารกระซิบ (ประตูดันเจี้ยนในป่ากระซิบ)", check:()=> !!bossesDefeated.shadowFang }
         ] },
       { id:'emberDepths', title:"เปลวไฟใต้พิภพ",
-        desc:"ตามสัญญาณพลังงานสู่ภูเขาไฟและทุ่งหิมะ หาสาเหตุที่สัตว์ป่ากลายเป็นศัตรู",
-        zones:["Volcano","Snow"],
-        intro:"เส้นทางสู่ Volcano และ Snowfield เปิดแล้ว — แกนพลังงานของ Eden อยู่ลึกลงไป",
-        outro:"🌋 แกนพลังงานใต้ภูเขาไฟถูกดึงพลังจนเสียสมดุล — นี่คือเหตุที่สัตว์คลุ้มคลั่ง และพิกัดของ 'ผู้ดึงพลัง' ชี้ไปยังซากปรักหักพังโบราณ",
+        desc:"ตามสัญญาณสู่ภูเขาซินเดอร์และเหวประกาย หาสาเหตุที่สัตว์ป่ากลายเป็นศัตรู",
+        zones:["Volcano","Cave"],
+        intro:"เส้นทางสู่ภูเขาซินเดอร์และเหวประกายเปิดแล้ว — แกนพลังงานของ Eden อยู่ลึกลงไป",
+        outro:"🌋 แกนพลังงานใต้ภูเขาซินเดอร์ถูกดึงพลังจนเสียสมดุล — นี่คือเหตุที่สัตว์คลุ้มคลั่ง และพิกัดของ 'ผู้ดึงพลัง' ชี้ไปยังที่ราบสายฟ้า",
         goals:[
-          { desc:"ขุดแร่ให้ได้ 5 ก้อน", check:()=> mineCount>=5 },
+          { desc:"ขุดแร่ในเหวประกายให้ได้ 5 ก้อน", check:()=> mineCount>=5 },
           { desc:"มีสัตว์เลี้ยงในครอบครอง 2 ตัวขึ้นไป", check:()=> party.length + storageBox.length >= 2 },
           { desc:"ความสนิทสนมกับโรวัน ≥ 30", check:()=> npcById('rowan').friendship>=30 },
-          { desc:"👑 ปราบ มหาไททันหินหลอม ใน Volcano", check:()=> !!bossesDefeated.magmaTitan }
+          { desc:"👑 ปราบ มหาไททันหินหลอม ในเหวหลอมถ่าน (ประตูดันเจี้ยนในภูเขาซินเดอร์)", check:()=> !!bossesDefeated.magmaTitan }
         ] },
       { id:'ruinsOfTruth', title:"ซากปรักแห่งความจริง",
-        desc:"เจาะลึก Ancient Ruins — ความจริงว่า Eden คืออะไร และเจ้าคือใคร",
+        desc:"เจาะลึกหอสกายโฮลด์บนที่ราบสายฟ้า — ความจริงว่า Eden คืออะไร และเจ้าคือใคร",
         zones:["Ruins"],
-        intro:"Ancient Ruins เปิดแล้ว — คำตอบเรื่องตัวตนของเจ้ารออยู่ที่นั่น",
+        intro:"ที่ราบสายฟ้าเปิดแล้ว — คำตอบเรื่องตัวตนของเจ้ารออยู่ในหอสกายโฮลด์",
         outro:"🏺 ห้องแล็บโบราณเผยความจริง: Eden คือโครงการฟื้นฟูระบบนิเวศ และเจ้าคือผู้ดูแลที่ถูกปลุกขึ้น... ช้าเกินกำหนดหลายร้อยปี หัวใจของ Eden ยังรอการฟื้นฟู",
         goals:[
           { desc:"เก็บออบซิเดียน 3 ชิ้น", check:()=> obsidianCount>=3 },
           { desc:"ชนะศัตรูรวม 10 ตัว", check:()=> defeatCount>=10 },
           { desc:"ผสมพันธุ์สัตว์เลี้ยงสำเร็จ 1 ครั้ง", check:()=> tut.bred },
-          { desc:"👑 ปราบ ผู้คุมกฎโบราณ ใน Ancient Ruins", check:()=> !!bossesDefeated.ancientWarden }
+          { desc:"👑 ปราบ ผู้คุมกฎโบราณ ในหอสกายโฮลด์", check:()=> !!bossesDefeated.ancientWarden }
         ] },
       { id:'heartOfEden', title:"หัวใจของเอเดน",
         desc:"รวบรวมทุกอย่างที่เรียนรู้มา ฟื้นฟูหัวใจของ Eden ให้กลับมาเต้นอีกครั้ง",
@@ -1490,13 +1490,16 @@
           { desc:"เก็บโบราณวัตถุ 3 ชิ้น", check:()=> relicCount>=3 },
           { desc:"มีสัตว์เลี้ยง Bond ครบ 100 อย่างน้อย 1 ตัว", check:()=> party.some(c=>c.bond>=100) },
           { desc:"ทำ Main Quest ให้ครบทุกขั้น", check:()=> tutorialIndex >= tutorialSteps.length },
-          { desc:"👑 ปราบ หัวใจที่แปดเปื้อน ใน Ancient Ruins", check:()=> !!bossesDefeated.corruptedHeart }
+          { desc:"👑 ปราบ หัวใจที่แปดเปื้อน ในหอสกายโฮลด์", check:()=> !!bossesDefeated.corruptedHeart }
         ] }
     ];
     let chapterIndex = 0; // 0-based; >= CHAPTERS.length = เนื้อเรื่องจบ (endgame)
     let chapterPanelSig = null;
     function zoneUnlocked(map){
-      if (map === "Farm" || map === "Home" || map === "Village") return true; // โซนบ้าน/หมู่บ้าน ไม่ล็อกตาม chapter
+      if (map === "Farm" || map === "Home" || map === "Village") return true; // ฟาร์ม/บ้าน/เมือง ไม่ล็อก
+      // ดันเจี้ยน (Sanctum/Cinderforge/Skyhold) ปลดตาม overworld แม่ของมัน
+      const meta = (typeof ZONE_META!=='undefined') ? ZONE_META[map] : null;
+      if (meta && meta.parent) return zoneUnlocked(meta.parent);
       const upTo = Math.min(chapterIndex, CHAPTERS.length-1);
       for (let i=0;i<=upTo;i++) if (CHAPTERS[i].zones.includes(map)) return true;
       return false;
@@ -1704,7 +1707,7 @@
         consume:()=>{ inv.chili-=2; inv.veggie-=2; },
         reward:()=>{ inv.fireBerry+=1; inv.leafBerry+=1; updateEVA("🔖 เควสของมายาสำเร็จ! ได้รับ Fire Berry และ Leaf Berry"); } } });
 
-    defineNPC({ id:'fay', name:"เฟย์ ช่างตีเหล็ก", size:21, range:55, map:"Cave",
+    defineNPC({ id:'fay', name:"เฟย์ ช่างตีเหล็ก", size:21, range:55, map:"Volcano",
       robeColor:"#7a4a3a", hoodColor:"#caa472",
       loves:['ore','obsidian'], likes:['crystal','wood'], dislikes:['veggie'],
       schedule:[ {phase:'dawn',x:520,y:400}, {phase:'day',x:480,y:360}, {phase:'dusk',x:520,y:400}, {phase:'night',x:560,y:420} ],
@@ -1806,6 +1809,40 @@
         doneLines:[ "ว้าววว มีตั้ง 2 ตัว! สุดยอดเลยพี่! นี่ๆ ผลไม้ที่ทาโร่เก็บสะสมไว้ ให้พี่หมดเลย (ได้ 🍏 Leaf Berry + 🌰 Earth Berry)" ],
         check:()=> party.length + storageBox.length >= 2,
         reward:()=>{ inv.leafBerry+=1; inv.earthBerry+=1; updateEVA("🔖 เควสของทาโร่สำเร็จ! ได้รับ Leaf Berry + Earth Berry"); } } });
+
+    // ---------- ชาวถิ่นตามดินแดนในแผนที่โลก (World Map residents) ----------
+    defineNPC({ id:'anya', name:"ดรูอิดอันยา", size:20, range:55, map:"Dungeon",
+      robeColor:"#3a7a4a", hoodColor:"#cfe8b0",
+      loves:['leafBerry','veggie'], likes:['wood'], dislikes:['obsidian'],
+      schedule:[ {phase:'dawn',x:360,y:300}, {phase:'day',x:420,y:360}, {phase:'dusk',x:360,y:300}, {phase:'night',x:320,y:260} ],
+      baseLines:[
+        "ป่ากระซิบยินดีต้อนรับเจ้า...ฟังดีๆ สิ ต้นไม้กำลังกระซิบชื่อเจ้าอยู่",
+        "ข้าคือดรูอิดอันยา ผู้พิทักษ์ป่าแห่งนี้ มอสส์เรืองแสงกับสมุนไพรที่นี่หายากนัก",
+        "ประตูวิหารกระซิบกลางป่านั่น...ข้างในมีบางอย่างที่ถูกพันธนาการไว้ ระวังตัวถ้าจะลงไป" ],
+      seasonLines:{ 0:"🌸 ยอดอ่อนแตกใบเต็มป่า พลังชีวิตล้นเหลือ", 1:"☀️ ร่มไม้หนาทึบช่วยกันร้อนได้ดี",
+        2:"🍂 ใบไม้ร่วงคือช่วงที่ป่าเงียบที่สุด", 3:"❄️ แม้หนาว ป่ากระซิบก็ไม่เคยหลับใหล" } });
+
+    defineNPC({ id:'borin', name:"บอริน นักขุดแร่", size:21, range:55, map:"Cave",
+      robeColor:"#6a5a7a", hoodColor:"#d0c0e0",
+      loves:['crystal','ore'], likes:['obsidian'], dislikes:['fish'],
+      schedule:[ {phase:'dawn',x:300,y:420}, {phase:'day',x:420,y:380}, {phase:'dusk',x:300,y:420}, {phase:'night',x:260,y:440} ],
+      baseLines:[
+        "เหวประกายนี่แหละขุมทรัพย์ตัวจริง! คริสตัลกับปริซึมออร์เต็มผนังไปหมด",
+        "ข้าบอริน ขุดแร่มาทั้งชีวิต เลือกอีเต้อ (ช่อง 5) แล้วเข้าไปเคาะผลึกดูสิ",
+        "ระวังค้างคาวประกายด้วยล่ะ มันชอบบินโฉบเวลาเราเผลอ" ],
+      seasonLines:{ 0:"🌸 ข้างนอกใบไม้ผลิเหรอ? ในเหวนี่แสงคริสตัลสวยกว่าเยอะ", 1:"☀️ ในเหวเย็นสบาย ขุดได้ทั้งวัน",
+        2:"🍂 ช่วงนี้ผลึกหลุดง่าย ขุดคุ้มมาก", 3:"❄️ หนาวข้างนอกไม่เกี่ยวกับข้า ข้าอยู่ใต้ดิน" } });
+
+    defineNPC({ id:'elara', name:"อีลาร่า ผู้ทอสายฟ้า", size:20, range:55, map:"Ruins",
+      robeColor:"#4a5a8a", hoodColor:"#cfe0ff",
+      loves:['crystal','relic'], likes:['ore'], dislikes:['veggie'],
+      schedule:[ {phase:'dawn',x:340,y:300}, {phase:'day',x:440,y:360}, {phase:'dusk',x:340,y:300}, {phase:'night',x:300,y:260} ],
+      baseLines:[
+        "รู้สึกถึงประจุในอากาศมั้ย? ที่ราบสายฟ้าแห่งนี้มีชีวิตของมันเอง",
+        "ข้าอีลาร่า ผู้ทอสายฟ้าแห่งเผ่าเร่ร่อน เฝ้าดูหอสกายโฮลด์มาชั่วชีวิต",
+        "ในหอสกายโฮลด์นั่นมีระบบโบราณที่ยังไม่ยอมดับ...คำตอบหลายอย่างรออยู่ข้างใน" ],
+      seasonLines:{ 0:"🌸 ลมใบไม้ผลิพัดพาประจุอ่อนๆ มาทั้งวัน", 1:"☀️ พายุฤดูร้อนที่นี่งดงามและอันตราย",
+        2:"🍂 ท้องฟ้าครึ้มขึ้นทุกวัน สายฟ้าใกล้เข้ามา", 3:"❄️ สายฟ้าฤดูหนาวเย็นจนแทบเป็นน้ำแข็ง" } });
     // ---------- Input ----------
     const keys = { w:false, a:false, s:false, d:false, ' ':false };
     const actionKeys = ['q','c','e','n','p','t','b','f','g','r','w','a','s','d','x','v','z','1','2','3','4','5','6',' '];
@@ -2016,35 +2053,87 @@
       return true;
     }
 
+    // ---------- โลกของ Project Eden (ตาม World Map) ----------
+    // แต่ละโซนเป็น "พื้นที่เปิดให้สำรวจ" (overworld) กว้างกว่าจอ กล้องเลื่อนตามแบบ Stardew
+    // โซน overworld = เดินเก็บของ/คุย NPC ไม่มีศัตรู · มี "ประตูดันเจี้ยน" ให้ลงไปสู้ในดันเจี้ยนแยกต่างหาก
+    // ZONE_META คุมชื่อ/ไบโอม/ขนาด/ประตูดันเจี้ยน — เพิ่มโซน = เพิ่ม entry เดียว
+    //   type: 'town' | 'wild' | 'dungeon' | 'home' | 'farm'
+    //   biome: forest | lake | volcano | storm | crystal | dungeon-forest | dungeon-lava | dungeon-ruin
+    const ZONE_META = {
+      Farm:       { name:"ฟาร์มเอเดน",              en:"Eden Farm",          type:'farm',  biome:'farm',    mini:"#2c3a18" },
+      Home:       { name:"บ้านของเรา",               en:"Home",               type:'home',  biome:'home',    mini:"#3a2a1a" },
+      Village:    { name:"หุบเขาเอเดน",              en:"Eden Valley",        type:'town',  biome:'town',    mini:"#243a18" },
+      Dungeon:    { name:"ป่ากระซิบ",                en:"Whispering Woods",   type:'wild',  biome:'forest',  mini:"#15321c", dungeon:'Sanctum' },
+      Snow:       { name:"ทะเลสาบกระจก",            en:"Mirror Lake",        type:'wild',  biome:'lake',    mini:"#1c3550" },
+      Cave:       { name:"เหวประกาย",                en:"Glimmering Abyss",   type:'wild',  biome:'crystal', mini:"#2a1c40" },
+      Volcano:    { name:"ภูเขาซินเดอร์",            en:"Mount Cinder",       type:'wild',  biome:'volcano', mini:"#3a1408", dungeon:'Cinderforge' },
+      Ruins:      { name:"ที่ราบสายฟ้า",            en:"Thunder Plains",     type:'wild',  biome:'storm',   mini:"#20283f", dungeon:'Skyhold' },
+      Sanctum:    { name:"วิหารกระซิบ",             en:"Whispering Sanctum", type:'dungeon', biome:'dungeon-forest', mini:"#0a140c", parent:'Dungeon' },
+      Cinderforge:{ name:"เหวหลอมถ่าน",             en:"Cinderforge Depths", type:'dungeon', biome:'dungeon-lava',   mini:"#1a0505", parent:'Volcano' },
+      Skyhold:    { name:"หอสังเกตการณ์สกายโฮลด์",  en:"Skyhold Observatory",type:'dungeon', biome:'dungeon-ruin',   mini:"#0f0a1c", parent:'Ruins' },
+    };
+    function zoneMeta(m){ return ZONE_META[m] || { name:m, en:m, type:'wild', biome:'forest', mini:"#2c2013" }; }
+    function isDungeonZone(m){ return zoneMeta(m).type === 'dungeon'; }
+
     // ---------- ประตูเชื่อมโซน (แทนการเดินชนขอบจอ) ----------
-    // เดินเข้าบริเวณป้าย/ทางออกเท่านั้นถึงจะเปลี่ยนโซน — มีป้ายบอกทางวาดใน 25-render
+    // เดินเข้าบริเวณทางออกเรืองแสงถึงจะเปลี่ยนโซน · dungeon:true = ประตูลงดันเจี้ยน (วาดเป็นปากถ้ำกลางโซน)
+    // เชื่อมตาม World Map: Eden Valley = ศูนย์กลาง → ป่ากระซิบ/ทะเลสาบ → ภูเขาไฟ/สายฟ้า/เหวคริสตัล
     const GATES = {
       Farm: [
-        { x:996, y:320, w:28, h:130, to:'Dungeon', label:'ป่าตะวันออก' },       // ขอบขวาของโลก 1024
-        { x:0,   y:320, w:28, h:130, to:'Cave',    label:'ถ้ำคริสตัล' },          // ขอบซ้าย
-        { x:464, y:0,   w:96, h:26,  to:'Snow',    label:'ทุ่งหิมะเหนือ' },       // ขอบบน
-        { x:56,  y:46,  w:58, h:26,  to:'Home',    label:'บ้านของเรา', door:true }, // ประตูบ้าน (อาคารมุมซ้ายบน)
-        { x:462, y:742, w:100,h:26,  to:'Village', label:'หมู่บ้านเอเดน' },        // ขอบล่างของโลก 768
+        { x:56,  y:46,  w:58, h:26,  to:'Home',    label:'บ้านของเรา', door:true },
+        { x:462, y:742, w:100,h:26,  to:'Village', label:'หุบเขาเอเดน' },        // ขอบล่าง → เมือง
+        { x:464, y:0,   w:96, h:26,  to:'Dungeon', label:'ป่ากระซิบ' },          // ขอบบน → ป่า
+        { x:0,   y:320, w:28, h:130, to:'Snow',    label:'ทะเลสาบกระจก' },       // ขอบซ้าย → ทะเลสาบ
       ],
       Home:    [ { x:270, y:454, w:100, h:26, to:'Farm', label:'ออกไปฟาร์ม' } ],
-      Village: [ { x:270, y:0,   w:100, h:26, to:'Farm', label:'กลับฟาร์ม' } ],
+      Village: [
+        { x:430, y:0,   w:100, h:26,  to:'Farm', label:'กลับฟาร์ม' },
+        { x:0,   y:280, w:28,  h:120, to:'Dungeon', label:'ป่ากระซิบ' },        // ขอบซ้าย → ป่า
+        { x:932, y:280, w:28,  h:120, to:'Snow',    label:'ทะเลสาบกระจก' },     // ขอบขวา → ทะเลสาบ
+      ],
+      // ป่ากระซิบ (Whispering Woods) — overworld + ประตูลงวิหารกระซิบ
       Dungeon: [
-        { x:0,   y:180, w:28, h:120, to:'Farm',  label:'กลับฟาร์ม' },
-        { x:612, y:180, w:28, h:120, to:'Ruins', label:'ซากโบราณ' },
+        { x:500, y:734, w:96, h:26,  to:'Farm',    label:'กลับฟาร์ม' },
+        { x:1072,y:320, w:28, h:120, to:'Village', label:'หุบเขาเอเดน' },
+        { x:540, y:330, w:52, h:44,  to:'Sanctum', label:'วิหารกระซิบ', dungeon:true },
       ],
+      // ทะเลสาบกระจก (Mirror Lake) — ชุมทางไปโซนลึก
+      Snow: [
+        { x:0,   y:300, w:28, h:120, to:'Village', label:'หุบเขาเอเดน' },
+        { x:972, y:300, w:28, h:120, to:'Farm',    label:'ฟาร์มเอเดน' },
+        { x:452, y:0,   w:96, h:26,  to:'Volcano', label:'ภูเขาซินเดอร์' },      // ขอบบน → ภูเขาไฟ
+        { x:620, y:694, w:96, h:26,  to:'Cave',    label:'เหวประกาย' },          // ขอบล่างขวา → เหวคริสตัล
+        { x:300, y:694, w:96, h:26,  to:'Ruins',   label:'ที่ราบสายฟ้า' },       // ขอบล่างซ้าย → ที่ราบสายฟ้า
+      ],
+      // ภูเขาซินเดอร์ (Mount Cinder) — overworld + ประตูลงเหวหลอมถ่าน
+      Volcano: [
+        { x:452, y:734, w:96, h:26,  to:'Snow',        label:'ทะเลสาบกระจก' },
+        { x:474, y:340, w:52, h:44,  to:'Cinderforge', label:'เหวหลอมถ่าน', dungeon:true },
+      ],
+      // ที่ราบสายฟ้า (Thunder Plains) — overworld + ประตูลงหอสกายโฮลด์
+      Ruins: [
+        { x:300, y:0,   w:96, h:26,  to:'Snow',    label:'ทะเลสาบกระจก' },
+        { x:494, y:320, w:52, h:44,  to:'Skyhold', label:'หอสกายโฮลด์', dungeon:true },
+      ],
+      // เหวประกาย (Glimmering Abyss) — เหมืองคริสตัล (เก็บแร่)
       Cave: [
-        { x:612, y:180, w:28, h:120, to:'Farm',    label:'กลับฟาร์ม' },
-        { x:0,   y:180, w:28, h:120, to:'Volcano', label:'ปล่องภูเขาไฟ' },
+        { x:480, y:0,   w:96, h:26,  to:'Snow', label:'ทะเลสาบกระจก' },
       ],
-      Ruins:   [ { x:0,   y:180, w:28, h:120, to:'Dungeon', label:'กลับป่า' } ],
-      Volcano: [ { x:612, y:180, w:28, h:120, to:'Cave',    label:'กลับถ้ำ' } ],
-      Snow:    [ { x:276, y:454, w:96, h:26,  to:'Farm',    label:'กลับฟาร์ม' } ],
+      // ดันเจี้ยน (สู้บอส) — ขอบซ้ายกลับสู่ overworld ต้นทาง
+      Sanctum:     [ { x:0, y:180, w:28, h:120, to:'Dungeon', label:'กลับป่ากระซิบ' } ],
+      Cinderforge: [ { x:0, y:180, w:28, h:120, to:'Volcano', label:'กลับภูเขาซินเดอร์' } ],
+      Skyhold:     [ { x:0, y:180, w:28, h:120, to:'Ruins',   label:'กลับที่ราบสายฟ้า' } ],
     };
     // ---------- ขนาดโลกต่อโซน + กล้องเลื่อนตาม (Stardew-style) ----------
-    // โซนที่ใหญ่กว่าจอ (640x480) จะมีกล้องเลื่อนตามผู้เล่น · โซนที่ไม่ระบุ = จอเดียว (กล้องนิ่ง เหมือนเดิม)
-    // ขยายโซนไหน = เพิ่ม entry ที่นี่ + ย้าย GATES ไปขอบโลกใหม่ + (ถ้าอยากให้ของกระจาย) ย้ายพิกัด POI
+    // โซน overworld ใหญ่กว่าจอ (640x480) → กล้องเลื่อนตามผู้เล่น · ดันเจี้ยนคงจอเดียว (สู้ในกรอบ)
     const WORLD_SIZES = {
-      Farm: { w: 1024, h: 768 },
+      Farm:    { w: 1024, h: 768 },
+      Village: { w: 960,  h: 640 },
+      Dungeon: { w: 1100, h: 760 },
+      Snow:    { w: 1000, h: 720 },
+      Volcano: { w: 1000, h: 760 },
+      Ruins:   { w: 1040, h: 720 },
+      Cave:    { w: 960,  h: 720 },
     };
     function worldW(){ const s = WORLD_SIZES[currentMap]; return s ? s.w : canvas.width; }
     function worldH(){ const s = WORLD_SIZES[currentMap]; return s ? s.h : canvas.height; }
@@ -3569,7 +3658,7 @@
       relicWisp: { name:"วิญญาณโบราณ", color:"#9575cd", element:"Earth", hp:40,  atk:8,  spd:15, role:"CC",  size:16 },
     };
     const BOSS_DB = {
-      shadowFang: { id:'shadowFang', chapter:0, map:"Dungeon",
+      shadowFang: { id:'shadowFang', chapter:0, map:"Sanctum",
         name:"ราชันเขี้ยวเงา", title:"ผู้นำฝูงแห่งพงไพร",
         color:"#4a2a5a", element:"Leaf", role:"DPS", size:34, overworldSize:36,
         hp:150, atk:13, spd:12, moveRange:3, atkRange:1, stunResist:0.5, phase2At:0.5,
@@ -3579,7 +3668,7 @@
         introEVA:"⚠️ ราชันเขี้ยวเงาปรากฏตัว! มันจะเรียกฝูงมาช่วย — กำจัดลูกฝูงก่อน อย่าให้ล้อมเรา",
         defeatEVA:"🏆 ราชันเขี้ยวเงาสยบแล้ว! ฝูงหมาป่าในป่าสงบลง... EVA ตรวจพบว่าสัญญาณที่ควบคุมพวกมันมาจากใต้ดิน",
         reward:()=>{ inv.coin+=40; } },
-      magmaTitan: { id:'magmaTitan', chapter:1, map:"Volcano",
+      magmaTitan: { id:'magmaTitan', chapter:1, map:"Cinderforge",
         name:"มหาไททันหินหลอม", title:"ผู้เฝ้าแกนพลังงาน",
         color:"#bf360c", element:"Fire", role:"Tank", size:38, overworldSize:42,
         hp:280, atk:19, spd:6, moveRange:2, atkRange:1, stunResist:0.7, phase2At:0.5,
@@ -3589,7 +3678,7 @@
         introEVA:"⚠️ มหาไททันหินหลอมตื่นแล้ว! มันจะชาร์จระเบิดลาวา — เห็นช่องแดงเมื่อไหร่ให้เดินหลบทันที!",
         defeatEVA:"🏆 ไททันล้มลง แกนพลังงานใต้ภูเขาไฟเริ่มเต้นเป็นจังหวะปกติ... แต่พิกัดของ 'ผู้ดึงพลัง' ยังชี้ไปที่ Ruins",
         reward:()=>{ inv.coin+=60; inv.crystal+=3; } },
-      ancientWarden: { id:'ancientWarden', chapter:2, map:"Ruins",
+      ancientWarden: { id:'ancientWarden', chapter:2, map:"Skyhold",
         name:"ผู้คุมกฎโบราณ", title:"ระบบป้องกันของห้องแล็บ",
         color:"#5e35b1", element:"Earth", role:"CC", size:36, overworldSize:40,
         hp:340, atk:23, spd:11, moveRange:3, atkRange:2, stunResist:0.7, phase2At:0.45,
@@ -3599,7 +3688,7 @@
         introEVA:"⚠️ ผู้คุมกฎโบราณเปิดระบบโจมตี! ลำแสงจะกวาดทั้งแถว — อย่ายืนแถวเดียวกันหลายตัว!",
         defeatEVA:"🏆 ผู้คุมกฎหยุดทำงาน ประตูสู่ห้องแล็บชั้นในเปิดออก... ความจริงเรื่องตัวตนของเจ้าอยู่ข้างหน้าแล้ว",
         reward:()=>{ inv.coin+=80; inv.relic+=1; relicCount++; } },
-      corruptedHeart: { id:'corruptedHeart', chapter:3, map:"Ruins",
+      corruptedHeart: { id:'corruptedHeart', chapter:3, map:"Skyhold",
         name:"หัวใจที่แปดเปื้อน", title:"แกนกลางของเอเดนที่ถูกกลืน",
         color:"#880e4f", element:"Chimera", role:"Tank", size:42, overworldSize:46,
         hp:480, atk:25, spd:10, moveRange:2, atkRange:1, stunResist:0.85, phase2At:0.5,
@@ -3866,54 +3955,50 @@
       const fromMap = currentMap;
       currentMap = newMap; enemies = []; items = []; transitionAlpha = 1;
       sfx.zone();
-      if (newMap !== "Farm") tut.enteredDungeon = true;
+      const meta = zoneMeta(newMap);
+      if (isDungeonZone(newMap)) tut.enteredDungeon = true;
       const c = active();
+      document.getElementById('ui-map').innerText = meta.name;
+      // ---- โซนเปิดให้สำรวจ (overworld) — ไม่มีศัตรู เดินเก็บของ/คุย NPC ----
       if (newMap === "Dungeon"){
-        document.getElementById('ui-map').innerText = "Forest Dungeon";
-        mapBanner = { text:"FOREST DUNGEON", sub:"ระวังสัตว์ป่าดุร้าย!", timer:120 };
-        updateEVA("ระวังด้วย! คุณเข้าสู่ Forest Dungeon แล้ว สัตว์เลี้ยงจะคอยปกป้องคุณ");
-        enemies.push({ x:300,y:150,size:24,hp:50,maxHp:50,color:"#ff4f4f",speed:1,squish:0 });
-        enemies.push({ x:450,y:300,size:24,hp:50,maxHp:50,color:"#ff4f4f",speed:1,squish:0 });
-        enemies.push({ x:500,y:100,size:30,hp:80,maxHp:80,color:"#8b0000",speed:0.8,squish:0,boss:true });
+        mapBanner = { text:"🌲 ป่ากระซิบ", sub:"Whispering Woods — เก็บสมุนไพร/ไม้/แร่เหล็ก · ประตูวิหารกระซิบอยู่กลางป่า", timer:130 };
+        updateEVA("เข้าสู่ป่ากระซิบ! ที่นี่สงบ เดินเก็บของและคุยกับ Druid Anya ได้ — ถ้าพร้อมสู้ ให้เดินเข้า 'ประตูวิหารกระซิบ' (เรืองแสงกลางป่า) เพื่อลงดันเจี้ยน");
       } else if (newMap === "Cave"){
-        document.getElementById('ui-map').innerText = "Crystal Cave";
-        mapBanner = { text:"CRYSTAL CAVE", sub:"ธาตุไฟปกคลุมทุกหนแห่ง", timer:120 };
-        updateEVA("เข้าสู่ Crystal Cave! ระวังธาตุไฟ ที่นี่มีพริกไฟและคริสตัลให้เก็บ");
-        enemies.push({ x:300,y:140,size:22,hp:40,maxHp:40,color:"#ff9800",speed:1.2,squish:0 });
-        enemies.push({ x:460,y:280,size:22,hp:40,maxHp:40,color:"#ff9800",speed:1.2,squish:0 });
-        enemies.push({ x:520,y:120,size:32,hp:120,maxHp:120,color:"#b71c1c",speed:0.9,squish:0,boss:true });
+        mapBanner = { text:"💎 เหวประกาย", sub:"Glimmering Abyss — เหมืองคริสตัล เลือกอีเต้อ (5) แล้วขุดแร่", timer:130 };
+        updateEVA("เข้าสู่เหวประกาย! ผลึกเรืองแสงเต็มผนัง — เลือกอีเต้อขุดแร่คริสตัลและปริซึม คุยกับ Miner Borin ได้");
       } else if (newMap === "Ruins"){
-        document.getElementById('ui-map').innerText = "ซากอารยธรรม";
-        mapBanner = { text:"ANCIENT RUINS", sub:"พลังเวทมนตร์โบราณยังหลงเหลืออยู่...", timer:120 };
-        updateEVA("เข้าสู่ซากอารยธรรมโบราณ! สิ่งมีชีวิตพิทักษ์ที่นี่ชอบทำให้มึนงง ระวังตัวด้วย");
-        enemies.push({ x:310,y:160,size:24,hp:60,maxHp:60,color:"#9575cd",speed:0.9,squish:0 });
-        enemies.push({ x:470,y:290,size:24,hp:60,maxHp:60,color:"#9575cd",speed:0.9,squish:0 });
-        enemies.push({ x:520,y:110,size:33,hp:150,maxHp:150,color:"#5e35b1",speed:0.7,squish:0,boss:true });
+        mapBanner = { text:"⚡ ที่ราบสายฟ้า", sub:"Thunder Plains — ประตูหอสกายโฮลด์อยู่กลางที่ราบ", timer:130 };
+        updateEVA("เข้าสู่ที่ราบสายฟ้า! สายฟ้าฟาดไม่ขาด — เดินเข้า 'ประตูหอสกายโฮลด์' กลางที่ราบเพื่อลงดันเจี้ยนโบราณ");
       } else if (newMap === "Volcano"){
-        document.getElementById('ui-map').innerText = "ภูเขาไฟ";
-        mapBanner = { text:"VOLCANO", sub:"ลาวาร้อนระอุ ระวังทุกฝีก้าว!", timer:120 };
-        updateEVA("เข้าสู่ภูเขาไฟ! สัตว์ที่นี่ดุร้ายและโจมตีแรงมาก เก็บออบซิเดียนจากศัตรูที่ปราบได้");
+        mapBanner = { text:"🌋 ภูเขาซินเดอร์", sub:"Mount Cinder — เก็บออบซิเดียน/กำมะถัน · ประตูเหวหลอมถ่านอยู่บนไหล่เขา", timer:130 };
+        updateEVA("เข้าสู่ภูเขาซินเดอร์! ลาวาไหลเป็นสาย — เดินเข้า 'ประตูเหวหลอมถ่าน' เพื่อลงไปเผชิญหน้ากับสิ่งที่เฝ้าแกนพลังงาน");
+      } else if (newMap === "Snow"){
+        mapBanner = { text:"🪞 ทะเลสาบกระจก", sub:"Mirror Lake — ตกปลา/เก็บไข่มุก คุยกับ Fisherman Jaren", timer:130 };
+        updateEVA("เข้าสู่ทะเลสาบกระจก! น้ำใสราวกระจก — จุดชุมทางสู่ภูเขาซินเดอร์ ที่ราบสายฟ้า และเหวประกาย");
+      // ---- ดันเจี้ยน (สู้บอส) — ศัตรูอยู่ที่นี่ ไม่ใช่ overworld ----
+      } else if (newMap === "Sanctum"){
+        mapBanner = { text:"🗡️ วิหารกระซิบ", sub:"Whispering Sanctum — ระวังฝูงหมาป่าและเจ้าป่า!", timer:130 };
+        updateEVA("ลงสู่วิหารกระซิบแล้ว! สัตว์ป่าที่ถูกควบคุมซ่อนอยู่ในเงามืด สัตว์เลี้ยงจะคอยปกป้องเจ้า");
+        enemies.push({ x:300,y:150,size:24,hp:50,maxHp:50,color:"#6a8a4a",speed:1,squish:0 });
+        enemies.push({ x:460,y:300,size:24,hp:50,maxHp:50,color:"#6a8a4a",speed:1,squish:0 });
+      } else if (newMap === "Cinderforge"){
+        mapBanner = { text:"🔥 เหวหลอมถ่าน", sub:"Cinderforge Depths — ลาวาและไททันหินหลอม!", timer:130 };
+        updateEVA("ลงสู่เหวหลอมถ่าน! ความร้อนแผดเผา ระวังศัตรูธาตุไฟที่โจมตีแรง");
         enemies.push({ x:300,y:150,size:24,hp:55,maxHp:55,color:"#ff5722",speed:1.3,squish:0 });
         enemies.push({ x:460,y:300,size:24,hp:55,maxHp:55,color:"#ff5722",speed:1.3,squish:0 });
-        enemies.push({ x:520,y:110,size:34,hp:170,maxHp:170,color:"#bf360c",speed:1,squish:0,boss:true });
-      } else if (newMap === "Snow"){
-        document.getElementById('ui-map').innerText = "ภูเขาหิมะ";
-        mapBanner = { text:"SNOW MOUNTAIN", sub:"อากาศหนาวเหน็บ ทัศนวิสัยต่ำ", timer:120 };
-        updateEVA("เข้าสู่ภูเขาหิมะ! สัตว์ที่นี่ชอบทำให้มึนงงเหมือนกัน แต่ให้ขนสัตว์อันอบอุ่น");
-        enemies.push({ x:300,y:150,size:23,hp:50,maxHp:50,color:"#81d4fa",speed:1,squish:0 });
-        enemies.push({ x:460,y:280,size:23,hp:50,maxHp:50,color:"#81d4fa",speed:1,squish:0 });
-        enemies.push({ x:520,y:120,size:32,hp:140,maxHp:140,color:"#0288d1",speed:0.8,squish:0,boss:true });
+      } else if (newMap === "Skyhold"){
+        mapBanner = { text:"🏛️ หอสกายโฮลด์", sub:"Skyhold Observatory — ระบบป้องกันโบราณยังทำงาน", timer:130 };
+        updateEVA("ลงสู่หอสกายโฮลด์! รูนโบราณเรืองแสง สิ่งพิทักษ์ที่นี่ชอบทำให้มึนงง ระวังตัว");
+        enemies.push({ x:310,y:160,size:24,hp:60,maxHp:60,color:"#9575cd",speed:0.9,squish:0 });
+        enemies.push({ x:470,y:290,size:24,hp:60,maxHp:60,color:"#9575cd",speed:0.9,squish:0 });
       } else if (newMap === "Home"){
-        document.getElementById('ui-map').innerText = "บ้านของเรา";
         mapBanner = { text:"บ้านของเรา", sub:"เตียงนอน 😴 · กล่องขายของ 📦", timer:110 };
         updateEVA("เข้าบ้านแล้ว! เดินไปที่เตียงกด SPACE เพื่อนอนจบวัน · ใส่ของในกล่องขายทางขวา");
       } else if (newMap === "Village"){
-        document.getElementById('ui-map').innerText = "หมู่บ้านเอเดน";
-        mapBanner = { text:"หมู่บ้านเอเดน", sub:"บ้านของชาวเมือง — คุยเพื่อซื้อของ/ตีของ (T)", timer:120 };
-        updateEVA("ยินดีต้อนรับสู่หมู่บ้าน! คุยกับนิลส์เพื่อซื้อของ คุยกับชาวบ้านคนอื่นเพื่อทำเควส (กด T)");
+        mapBanner = { text:"🏘️ หุบเขาเอเดน", sub:"Eden Valley — ศูนย์กลางของโลก คุยเพื่อซื้อของ/ทำเควส (T)", timer:130 };
+        updateEVA("ยินดีต้อนรับสู่หุบเขาเอเดน! ศูนย์กลางที่เชื่อมไปทุกดินแดน คุยกับนิลส์เพื่อซื้อของ คุยชาวบ้านทำเควส (กด T)");
       } else {
-        document.getElementById('ui-map').innerText = "Farm Zone";
-        mapBanner = { text:"FARM ZONE", sub:"ไร่ของเรา — ปลูก/เก็บ/เลี้ยงสัตว์", timer:120 };
+        mapBanner = { text:"🌾 ฟาร์มเอเดน", sub:"ไร่ของเรา — ปลูก/เก็บ/เลี้ยงสัตว์", timer:120 };
         updateEVA("กลับมาที่ไร่แล้ว นำผลผลิตที่ได้ไปดูแลสัตว์เลี้ยงกันเถอะ!");
       }
       spawnAtReturnGate(newMap, fromMap); // วางผู้เล่นข้างประตูย้อนกลับ (reciprocal)
@@ -4267,7 +4352,7 @@
     // ---------- Save versioning ----------
     // ทุกครั้งที่เพิ่ม field ใหม่ลงเซฟ: เพิ่ม SAVE_VERSION แล้วเขียน migration step ใน migrateSave
     // ห้ามอ่าน field ใหม่ตรงๆ จาก data โดยไม่ผ่าน migration — ไม่งั้นเซฟเก่าพัง
-    const SAVE_VERSION = 12;
+    const SAVE_VERSION = 13;
 
     // ---------- เวลาเล่นสะสม (playtime) ----------
     // สะสมเป็นวินาทีใน update() (22-game-loop.js) เฉพาะตอน gameStarted — เก็บลงเซฟต่อ slot
@@ -4352,6 +4437,14 @@
         // v11 → v12: กล่องขายของ — เซฟเก่าเริ่มด้วยกล่องว่าง
         data.shipItems = {};
         v = 12;
+      }
+      if (v === 12){
+        // v12 → v13: รื้อโลกใหม่ตาม World Map (ป่ากระซิบ/ทะเลสาบ/ภูเขาซินเดอร์/สายฟ้า/เหวประกาย + ประตูดันเจี้ยน)
+        // คีย์โซนเดิมยังใช้ได้ (Dungeon/Cave/Volcano/Ruins/Snow/Village) แต่ดันเจี้ยนแยกเป็นโซนใหม่
+        // ถ้าเซฟเก่าค้างอยู่ในโซนที่ไม่รู้จัก/ดันเจี้ยน (ไม่เคยมีมาก่อน) → ดีดกลับฟาร์มให้ปลอดภัย
+        const known = ['Farm','Home','Village','Dungeon','Snow','Cave','Volcano','Ruins'];
+        if (!known.includes(data.currentMap)) data.currentMap = 'Farm';
+        v = 13;
       }
       data.version = v;
       return data;
@@ -5416,15 +5509,154 @@
 
     // ---------- ประตู/ทางออก: ทางเดิน + ซุ้ม + ป้าย (ตำแหน่งจริงตาม GATES ใน 07) ----------
     // สีทาง/ซุ้ม ต่างกันตามชนิดโซนปลายทาง (ถ้ำ=หิน, หิมะ=น้ำแข็ง, ป่า=ดิน)
+    // ---------- ไบโอมโซนเปิด (overworld) — วาดเต็มขนาดโลก เดินสำรวจได้ ----------
+    function _rnd2(a,b){ return Math.sin(a*127.1+b*311.7)*0.5+0.5; }
+    function drawWildBiome(meta){
+      const WW=worldW(), WH=worldH(), b=meta.biome, phase=dayPhase();
+      const pal = ({
+        forest:["#4c8a3a","#2f5a24"], lake:["#5aa8be","#2c6480"], crystal:["#2c1e44","#130b20"],
+        volcano:["#5a1a10","#230706"], storm:["#3b4665","#1b2236"],
+      })[b] || ["#4c8a3a","#2f5a24"];
+      const g=ctx.createLinearGradient(0,0,0,WH); g.addColorStop(0,pal[0]); g.addColorStop(1,pal[1]);
+      ctx.fillStyle=g; ctx.fillRect(0,0,WW,WH);
+
+      if (b==='forest'){
+        // พุ่มไม้ + ต้นไม้กระจายทั่วป่า
+        for (let x=40;x<WW;x+=96) for (let y=70;y<WH;y+=104){
+          const jx=_rnd2(x,y), jy=_rnd2(y,x); const tx=x+jx*60, ty=y+jy*50;
+          drawShadow(tx, ty+22, 18, 6);
+          ctx.fillStyle=shade("#2f5a24",-10+jx*20);
+          ctx.beginPath(); ctx.moveTo(tx-18,ty+20); ctx.lineTo(tx,ty-26-jy*14); ctx.lineTo(tx+18,ty+20); ctx.closePath(); ctx.fill();
+          ctx.fillStyle="#5a3a1c"; ctx.fillRect(tx-3,ty+16,6,10);
+        }
+        ctx.fillStyle="rgba(30,60,20,0.5)";
+        for (let x=20;x<WW;x+=54) for (let y=110;y<WH;y+=60){ const s=0.6+_rnd2(x,y)*0.7; ctx.beginPath(); ctx.ellipse(x+_rnd2(y,x)*24,y,3*s,6*s,0,0,Math.PI*2); ctx.fill(); }
+        if (phase==='night'||phase==='dusk') drawFireflies();
+      } else if (b==='lake'){
+        // ทะเลสาบใหญ่กลางโซน + แสงสะท้อน
+        const cx=WW*0.5, cy=WH*0.5, rw=WW*0.34, rh=WH*0.3;
+        ctx.fillStyle="#2f6f8c"; ctx.beginPath(); ctx.ellipse(cx,cy,rw,rh,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle="rgba(180,230,245,0.25)"; ctx.beginPath(); ctx.ellipse(cx,cy-rh*0.3,rw*0.7,rh*0.4,0,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle="rgba(220,245,255,0.4)"; ctx.lineWidth=2;
+        for (let i=0;i<4;i++){ const yy=cy-rh*0.4+i*rh*0.28+Math.sin(frameCount*0.03+i)*3; ctx.beginPath(); ctx.moveTo(cx-rw*0.5,yy); ctx.lineTo(cx+rw*0.5,yy); ctx.stroke(); }
+        // กก/ต้นอ้อริมน้ำ
+        ctx.strokeStyle="#3a6a3a"; ctx.lineWidth=3;
+        for (let a=0;a<Math.PI*2;a+=0.5){ const rx=cx+Math.cos(a)*rw*1.05, ry=cy+Math.sin(a)*rh*1.05; ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(rx+Math.sin(a*3)*4,ry-14); ctx.stroke(); }
+      } else if (b==='crystal'){
+        // ผลึกเรืองแสงกระจายทั่วเหว + เก็บแร่ได้
+        for (let x=60;x<WW;x+=120) for (let y=90;y<WH;y+=120){
+          const jx=_rnd2(x,y), jy=_rnd2(y,x); const cx=x+jx*70, cy=y+jy*60;
+          const col=["#7e57c2","#4fc3f7","#26c6da","#ba68c8"][Math.floor(jx*4)%4];
+          ctx.save(); ctx.shadowColor=col; ctx.shadowBlur=14; ctx.fillStyle=col;
+          ctx.beginPath(); ctx.moveTo(cx,cy-24-jy*16); ctx.lineTo(cx-8,cy); ctx.lineTo(cx+8,cy); ctx.closePath(); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(cx+10,cy-14); ctx.lineTo(cx+4,cy); ctx.lineTo(cx+16,cy); ctx.closePath(); ctx.fill();
+          ctx.restore();
+        }
+        drawOreNodes();
+        drawEmbers();
+      } else if (b==='volcano'){
+        // ลาวาเรืองแสง + ก้อนหินภูเขาไฟ
+        for (let x=0;x<WW;x+=140){ const yy=WH-60+Math.sin(x*0.02)*20;
+          const lg=ctx.createLinearGradient(0,yy,0,WH); lg.addColorStop(0,"rgba(255,110,30,0)"); lg.addColorStop(1,"rgba(255,110,30,0.4)");
+          ctx.fillStyle=lg; ctx.fillRect(x,yy,140,WH-yy); }
+        ctx.strokeStyle="rgba(255,90,20,0.5)"; ctx.lineWidth=3;
+        for (let i=0;i<10;i++){ const x=_rnd2(i,3)*WW, y=_rnd2(i,7)*WH; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+30,y+10); ctx.lineTo(x+50,y-6); ctx.stroke(); }
+        ctx.fillStyle="rgba(20,8,6,0.6)";
+        for (let x=60;x<WW;x+=150) for (let y=90;y<WH;y+=150){ const s=10+_rnd2(x,y)*16; ctx.beginPath(); ctx.arc(x+_rnd2(y,x)*40,y,s,0,Math.PI*2); ctx.fill(); }
+        drawEmbers();
+      } else if (b==='storm'){
+        // ที่ราบหญ้า + หินตั้งโบราณ + ฟ้าแลบ
+        ctx.fillStyle="rgba(40,60,40,0.35)";
+        for (let x=20;x<WW;x+=40) for (let y=120;y<WH;y+=48){ ctx.fillRect(x+_rnd2(x,y)*10, y, 2, 8+_rnd2(y,x)*6); }
+        ctx.fillStyle="rgba(20,20,30,0.5)";
+        for (let i=0;i<7;i++){ const x=80+i*((WW-120)/6), y=WH*0.4+_rnd2(i,2)*WH*0.4; ctx.fillRect(x,y,18,60); ctx.fillRect(x-5,y-8,28,12); }
+        if ((frameCount % 150) < 4){ ctx.fillStyle="rgba(200,220,255,0.35)"; ctx.fillRect(0,0,WW,WH); }
+      }
+      if (b!=='crystal' && b!=='volcano'){
+        if (phase==='night'){ ctx.fillStyle='rgba(10,20,55,0.42)'; ctx.fillRect(0,0,WW,WH); }
+        else if (phase==='dusk'){ ctx.fillStyle='rgba(255,110,60,0.16)'; ctx.fillRect(0,0,WW,WH); }
+      }
+      if (weather!=='clear' && (b==='forest'||b==='lake'||b==='storm')) drawRain();
+    }
+    // ---------- ดันเจี้ยน (สู้บอส) — จอเดียว มืด มีคบเพลิง ----------
+    function drawDungeonBiome(meta){
+      const b=meta.biome;
+      const pal = ({ 'dungeon-forest':["#122015","#0a140c"], 'dungeon-lava':["#4a0e0e","#1a0505"], 'dungeon-ruin':["#241a3d","#0f0a1c"] })[b] || ["#141018","#0a0710"];
+      const sky=ctx.createLinearGradient(0,0,0,canvas.height); sky.addColorStop(0,pal[0]); sky.addColorStop(1,pal[1]);
+      ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
+      if (b==='dungeon-forest'){
+        ctx.fillStyle="rgba(0,0,0,0.4)";
+        for (let i=0;i<8;i++){ const tx=(i*90+40)%canvas.width; ctx.beginPath(); ctx.moveTo(tx,320); ctx.lineTo(tx+18,240); ctx.lineTo(tx+36,320); ctx.closePath(); ctx.fill(); }
+      } else if (b==='dungeon-lava'){
+        const lg=ctx.createLinearGradient(0,canvas.height-70,0,canvas.height); lg.addColorStop(0,"rgba(255,110,30,0)"); lg.addColorStop(1,"rgba(255,110,30,0.4)");
+        ctx.fillStyle=lg; ctx.fillRect(0,canvas.height-70,canvas.width,70);
+        ctx.fillStyle="rgba(0,0,0,0.4)";
+        for (let i=0;i<7;i++){ const tx=(i*95+20); ctx.beginPath(); ctx.moveTo(tx,70); ctx.lineTo(tx+16,-10); ctx.lineTo(tx+32,70); ctx.fill(); }
+      } else if (b==='dungeon-ruin'){
+        ctx.fillStyle="rgba(0,0,0,0.35)";
+        for (let i=0;i<6;i++){ const tx=i*115+30; ctx.fillRect(tx,80,20,280); ctx.fillRect(tx-6,70,32,14); }
+        ctx.strokeStyle="rgba(149,117,205,0.5)"; ctx.lineWidth=1.5;
+        for (let i=0;i<5;i++){ const rx=90+i*110; ctx.beginPath(); ctx.arc(rx,400,16,0,Math.PI*2); ctx.stroke(); }
+      }
+      for (const t of torches){
+        const flick=8+Math.sin(frameCount*0.4+t.x)*3;
+        const g=ctx.createRadialGradient(t.x,t.y,2,t.x,t.y,flick*3);
+        g.addColorStop(0,"rgba(255,180,60,0.55)"); g.addColorStop(1,"rgba(255,180,60,0)");
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(t.x,t.y,flick*3,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle="#5a3a1c"; ctx.fillRect(t.x-3,t.y,6,26);
+        ctx.fillStyle="#ffb74d"; ctx.beginPath(); ctx.arc(t.x,t.y-2,flick*0.5,0,Math.PI*2); ctx.fill();
+      }
+      if (b==='dungeon-forest') drawFog();
+      else if (b==='dungeon-lava') drawEmbers();
+      else if (b==='dungeon-ruin') drawRunes();
+    }
     const GATE_STYLE = {
       Farm:{path:"#c9a76b", post:"#8a6a3a"}, Dungeon:{path:"#6a5a3a", post:"#4a3a24"},
       Cave:{path:"#7a5a4a", post:"#3a2a1a"}, Volcano:{path:"#6a3020", post:"#3a1810"},
       Ruins:{path:"#5a4a6a", post:"#3a2a4a"}, Snow:{path:"#cfe4f0", post:"#9fb8cc"},
+      Village:{path:"#c9a76b", post:"#7a8a4a"},
     };
+    // ประตูลงดันเจี้ยน — วาดเป็นปากถ้ำ/ซุ้มโบราณเรืองแสงกลางโซน (ไม่ใช่ทางออกขอบจอ)
+    function drawDungeonDoorMarker(g, cx, cy, near){
+      ctx.save();
+      const glow = 0.45 + Math.sin(frameCount*0.09)*0.2;
+      // แสงเรือง
+      const rg = ctx.createRadialGradient(cx, cy, 4, cx, cy, g.w*1.3);
+      rg.addColorStop(0, `rgba(120,200,255,${glow})`); rg.addColorStop(1, "rgba(120,200,255,0)");
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(cx, cy, g.w*1.3, 0, Math.PI*2); ctx.fill();
+      // ซุ้มหิน
+      ctx.fillStyle = "#3a3040"; ctx.beginPath();
+      ctx.roundRect(g.x-6, g.y-6, g.w+12, g.h+12, 8); ctx.fill();
+      ctx.strokeStyle = "#20182c"; ctx.lineWidth=3; ctx.stroke();
+      // ปากถ้ำมืด
+      ctx.fillStyle = "#0a0710"; ctx.beginPath();
+      ctx.moveTo(g.x, g.y+g.h);
+      ctx.quadraticCurveTo(g.x, g.y+4, g.x+g.w/2, g.y+4);
+      ctx.quadraticCurveTo(g.x+g.w, g.y+4, g.x+g.w, g.y+g.h);
+      ctx.closePath(); ctx.fill();
+      // ประกายในปากถ้ำ
+      ctx.fillStyle = `rgba(150,210,255,${glow*0.9})`;
+      for (let i=0;i<3;i++){ const sx=g.x+10+i*((g.w-20)/2), sy=g.y+g.h-8-((frameCount*0.4+i*20)%22);
+        ctx.fillRect(sx, sy, 2, 4); }
+      ctx.restore();
+      // ป้าย
+      ctx.font = "bold 10px Kanit, sans-serif"; ctx.textAlign="center";
+      const ly = g.y - 12;
+      ctx.fillStyle = near ? "rgba(40,90,140,0.95)" : "rgba(15,25,40,0.8)";
+      ctx.beginPath(); ctx.roundRect(cx-52, ly-11, 104, 16, 5); ctx.fill();
+      ctx.fillStyle = "#dff0ff"; ctx.fillText(`⬇ ${g.label}`, cx, ly+1);
+      if (near){ ctx.fillStyle="#fff2cf"; ctx.fillText("เดินเข้าเพื่อลงดันเจี้ยน", cx, g.y+g.h+16); }
+      ctx.textAlign="left";
+    }
     function drawGateMarkers(){
       const pcx = player.x+player.size/2, pcy = player.y+player.size/2;
       for (const g of (GATES[currentMap] || [])){
         if (g.door) continue; // ประตูบ้าน (Home) วาดเป็นอาคารใน drawFarmBuildings แล้ว
+        {
+          const _cx=g.x+g.w/2, _cy=g.y+g.h/2;
+          const _near = Math.hypot(pcx-_cx, pcy-_cy) < 100;
+          if (g.dungeon){ drawDungeonDoorMarker(g, _cx, _cy, _near); continue; }
+        }
         const cx = g.x + g.w/2, cy = g.y + g.h/2;
         const near = Math.hypot(pcx-cx, pcy-cy) < 100;
         const st = GATE_STYLE[g.to] || GATE_STYLE.Farm;
@@ -5812,69 +6044,14 @@
         drawHint(pond.x,pond.y,70, hasTool('rod') ? "เลือกเบ็ด (6) แล้วกด SPACE" : "คุยกับมายาเพื่อรับเบ็ด");
         if (phase==='night' || phase==='dusk') drawFireflies();
         if (weather !== 'clear') drawRain();
-      } else if (currentMap === "Dungeon") {
-        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
-        sky.addColorStop(0,"#122015"); sky.addColorStop(1,"#0a140c");
-        ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle="rgba(0,0,0,0.4)";
-        for (let i=0;i<8;i++){ const tx=(i*90+40)%canvas.width; ctx.beginPath(); ctx.moveTo(tx,320); ctx.lineTo(tx+18,240); ctx.lineTo(tx+36,320); ctx.closePath(); ctx.fill(); }
-        for (const t of torches){
-          const flick=8+Math.sin(frameCount*0.4+t.x)*3;
-          const g=ctx.createRadialGradient(t.x,t.y,2,t.x,t.y,flick*3);
-          g.addColorStop(0,"rgba(255,180,60,0.55)"); g.addColorStop(1,"rgba(255,180,60,0)");
-          ctx.fillStyle=g; ctx.beginPath(); ctx.arc(t.x,t.y,flick*3,0,Math.PI*2); ctx.fill();
-          ctx.fillStyle="#5a3a1c"; ctx.fillRect(t.x-3,t.y,6,26);
-          ctx.fillStyle="#ffb74d"; ctx.beginPath(); ctx.arc(t.x,t.y-2,flick*0.5,0,Math.PI*2); ctx.fill();
-        }
-        ctx.fillStyle="#fff8"; ctx.fillText("Ruins →", canvas.width-92,172);
-        drawFog();
-      } else if (currentMap === "Cave"){
-        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
-        sky.addColorStop(0,"#3a1f14"); sky.addColorStop(1,"#1a0d08");
-        ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle="rgba(255,120,40,0.08)";
-        for (let i=0;i<10;i++){ ctx.beginPath(); ctx.arc((i*63+frameCount*0.3)%canvas.width, 60+((i*47)%360), 30,0,Math.PI*2); ctx.fill(); }
-        ctx.fillStyle="rgba(0,0,0,0.5)";
-        for (let i=0;i<6;i++){ const tx=(i*110+20); ctx.beginPath(); ctx.moveTo(tx,60); ctx.lineTo(tx+14,0); ctx.lineTo(tx+28,60); ctx.fill(); }
-        ctx.fillStyle="#fff8"; ctx.fillText("Volcano →", canvas.width-96,172);
-        drawOreNodes();
-        drawEmbers();
-      } else if (currentMap === "Ruins"){
-        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
-        sky.addColorStop(0,"#241a3d"); sky.addColorStop(1,"#0f0a1c");
-        ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
-        // ancient pillar silhouettes
-        ctx.fillStyle="rgba(0,0,0,0.35)";
-        for (let i=0;i<6;i++){ const tx=i*115+30; ctx.fillRect(tx,80,20,280); ctx.fillRect(tx-6,70,32,14); }
-        // glowing floor runes
-        ctx.strokeStyle="rgba(149,117,205,0.5)"; ctx.lineWidth=1.5;
-        for (let i=0;i<5;i++){ const rx=90+i*110, ry=400; ctx.beginPath(); ctx.arc(rx,ry,16,0,Math.PI*2); ctx.stroke(); }
-        drawRunes();
-      } else if (currentMap === "Volcano"){
-        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
-        sky.addColorStop(0,"#4a0e0e"); sky.addColorStop(1,"#1a0505");
-        ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
-        // lava glow pools near the bottom
-        const lavaGrad = ctx.createLinearGradient(0,canvas.height-70,0,canvas.height);
-        lavaGrad.addColorStop(0,"rgba(255,110,30,0)"); lavaGrad.addColorStop(1,"rgba(255,110,30,0.35)");
-        ctx.fillStyle=lavaGrad; ctx.fillRect(0,canvas.height-70,canvas.width,70);
-        ctx.fillStyle="rgba(0,0,0,0.4)";
-        for (let i=0;i<7;i++){ const tx=(i*95+20); ctx.beginPath(); ctx.moveTo(tx,70); ctx.lineTo(tx+16,-10); ctx.lineTo(tx+32,70); ctx.fill(); }
-        drawEmbers();
-      } else if (currentMap === "Snow"){
-        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
-        sky.addColorStop(0,"#7fb3d5"); sky.addColorStop(1,"#c9e6f5");
-        ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
-        // snowy mountain silhouettes
-        ctx.fillStyle="rgba(255,255,255,0.55)";
-        for (let i=0;i<5;i++){ const tx=i*140-20; ctx.beginPath(); ctx.moveTo(tx,220); ctx.lineTo(tx+70,90); ctx.lineTo(tx+140,220); ctx.closePath(); ctx.fill(); }
-        ctx.fillStyle="rgba(255,255,255,0.85)";
-        ctx.fillRect(0,canvas.height-40,canvas.width,40);
-        drawSnow();
       } else if (currentMap === "Home"){
         drawHomeInterior();
       } else if (currentMap === "Village"){
         drawVillage();
+      } else if (isDungeonZone(currentMap)){
+        drawDungeonBiome(zoneMeta(currentMap));
+      } else {
+        drawWildBiome(zoneMeta(currentMap));
       }
 
       for (const item of items){
@@ -5959,17 +6136,20 @@
       { owner:'taro',  x:540, y:110, w:78,  h:70, wall:"#e0a070", roof:"#c05a3a", label:"ทาโร่", icon:"🧸" },
     ];
     function drawVillage(){
-      // พื้นหญ้าหมู่บ้าน + ทางเดินหิน
-      const sky = ctx.createLinearGradient(0,0,0,canvas.height);
+      const WW=worldW(), WH=worldH();
+      // พื้นหญ้าหมู่บ้าน + ทางเดินหิน (เต็มขนาดโลก)
+      const sky = ctx.createLinearGradient(0,0,0,WH);
       sky.addColorStop(0,"#6aa050"); sky.addColorStop(1,"#4c7a34");
-      ctx.fillStyle=sky; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle=sky; ctx.fillRect(0,0,WW,WH);
       const phase = dayPhase();
-      if (phase==='night'){ ctx.fillStyle='rgba(10,20,55,0.42)'; ctx.fillRect(0,0,canvas.width,canvas.height); }
-      else if (phase==='dusk'){ ctx.fillStyle='rgba(255,110,60,0.2)'; ctx.fillRect(0,0,canvas.width,canvas.height); }
-      // ถนนหมู่บ้าน (แนวนอนกลางจอ)
-      ctx.fillStyle = "#c9a86a"; ctx.fillRect(0, 250, canvas.width, 60);
+      if (phase==='night'){ ctx.fillStyle='rgba(10,20,55,0.42)'; ctx.fillRect(0,0,WW,WH); }
+      else if (phase==='dusk'){ ctx.fillStyle='rgba(255,110,60,0.2)'; ctx.fillRect(0,0,WW,WH); }
+      // ถนนหมู่บ้าน (แนวนอนกลาง)
+      ctx.fillStyle = "#c9a86a"; ctx.fillRect(0, 250, WW, 60);
       ctx.fillStyle = "rgba(0,0,0,0.1)";
-      for (let x=10; x<canvas.width; x+=40){ ctx.fillRect(x, 258, 22, 44); }
+      for (let x=10; x<WW; x+=40){ ctx.fillRect(x, 258, 22, 44); }
+      // ถนนแยกลงใต้ (ไปทางออกต่างๆ)
+      ctx.fillStyle = "#c9a86a"; ctx.fillRect(WW*0.5-24, 300, 48, WH-300);
       // บ้าน NPC
       for (const h of VILLAGE_HOUSES){
         drawShadow(h.x+h.w/2, h.y+h.h+2, h.w*0.5, 8);
@@ -5989,18 +6169,19 @@
     }
 
     // ---------- Minimap (มุมซ้ายบน — สไตล์ Moonstone) ----------
-    const ZONE_LABELS = { Farm:"ฟาร์ม", Home:"บ้านของเรา", Village:"หมู่บ้าน", Dungeon:"ป่าตะวันออก", Cave:"ถ้ำคริสตัล", Volcano:"ปล่องภูเขาไฟ", Ruins:"ซากโบราณ", Snow:"ทุ่งหิมะ" };
-    const ZONE_MINI_BG = { Farm:"#3f6a34", Home:"#6a4a2a", Village:"#4c7a34", Dungeon:"#1b3320", Cave:"#3a2114", Volcano:"#3a0f0f", Ruins:"#241a3d", Snow:"#8fb8d8" };
+    // ป้ายชื่อโซน + สีพื้น minimap — ดึงจาก ZONE_META (ครอบคลุมทุกโซนอัตโนมัติ)
+    function zoneLabel(m){ return zoneMeta(m).name; }
+    function zoneMiniBg(m){ return zoneMeta(m).mini || "#2c2013"; }
     let _miniCanvas = null, _mctx = null;
     function drawMinimap(){
       if (!gameStarted) return;
       if (!_mctx){ _miniCanvas = document.getElementById('minimap'); if (!_miniCanvas) return; _mctx = _miniCanvas.getContext('2d'); }
-      const zEl = document.getElementById('minimap-zone'); if (zEl) zEl.innerText = ZONE_LABELS[currentMap] || currentMap;
+      const zEl = document.getElementById('minimap-zone'); if (zEl) zEl.innerText = zoneLabel(currentMap);
       const W = _miniCanvas.width, H = _miniCanvas.height;
       const sx = W/worldW(), sy = H/worldH(); // minimap สเกลตามขนาดโลก (รองรับโซนใหญ่)
       const m = _mctx;
       m.clearRect(0,0,W,H);
-      m.fillStyle = ZONE_MINI_BG[currentMap] || "#2c2013"; m.fillRect(0,0,W,H);
+      m.fillStyle = zoneMiniBg(currentMap); m.fillRect(0,0,W,H);
       const dot = (x,y,color,r=2)=>{ m.fillStyle=color; m.beginPath(); m.arc(x*sx, y*sy, r, 0, Math.PI*2); m.fill(); };
       // เขตไร่ (ฟาร์ม)
       if (currentMap === "Farm"){
