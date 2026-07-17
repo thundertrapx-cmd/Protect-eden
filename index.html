@@ -3592,6 +3592,19 @@
       updateEVA(def.defeatEVA);
     }
     // ---------- Map switching ----------
+    // วางผู้เล่นข้าง "ประตูที่ย้อนกลับไปโซนเดิม" — เข้าจากทางไหน โผล่ตรงนั้น เดินย้อนกลับได้ทันที
+    function spawnAtReturnGate(newMap, fromMap){
+      const back = (GATES[newMap] || []).find(g => g.to === fromMap);
+      if (!back){ player.x = 60; player.y = 240; return; }
+      const cx = back.x + back.w/2, cy = back.y + back.h/2;
+      let px = cx - player.size/2, py = cy - player.size/2;
+      if (back.x <= 2) px = back.x + back.w + 26;                              // ประตูขอบซ้าย → โผล่เยื้องขวา
+      else if (back.x + back.w >= canvas.width-2) px = back.x - 26 - player.size; // ขอบขวา → เยื้องซ้าย
+      if (back.y <= 2) py = back.y + back.h + 26;                              // ขอบบน → เยื้องลง
+      else if (back.y + back.h >= canvas.height-2) py = back.y - 26 - player.size; // ขอบล่าง → เยื้องขึ้น
+      player.x = Math.min(Math.max(px, 10), canvas.width-10-player.size);
+      player.y = Math.min(Math.max(py, 10), canvas.height-10-player.size);
+    }
     function switchMap(newMap){
       // Chapter gating: โซนที่ยังไม่ถึง chapter จะเข้าไม่ได้ (ดู CHAPTERS ใน 02-economy-quests.js)
       if (!zoneUnlocked(newMap)){
@@ -3609,7 +3622,6 @@
       if (newMap !== "Farm") tut.enteredDungeon = true;
       const c = active();
       if (newMap === "Dungeon"){
-        player.x = 50; c.x = 30;
         document.getElementById('ui-map').innerText = "Forest Dungeon";
         mapBanner = { text:"FOREST DUNGEON", sub:"ระวังสัตว์ป่าดุร้าย!", timer:120 };
         updateEVA("ระวังด้วย! คุณเข้าสู่ Forest Dungeon แล้ว สัตว์เลี้ยงจะคอยปกป้องคุณ");
@@ -3617,7 +3629,6 @@
         enemies.push({ x:450,y:300,size:24,hp:50,maxHp:50,color:"#ff4f4f",speed:1,squish:0 });
         enemies.push({ x:500,y:100,size:30,hp:80,maxHp:80,color:"#8b0000",speed:0.8,squish:0,boss:true });
       } else if (newMap === "Cave"){
-        player.x = 50; c.x = 30;
         document.getElementById('ui-map').innerText = "Crystal Cave";
         mapBanner = { text:"CRYSTAL CAVE", sub:"ธาตุไฟปกคลุมทุกหนแห่ง", timer:120 };
         updateEVA("เข้าสู่ Crystal Cave! ระวังธาตุไฟ ที่นี่มีพริกไฟและคริสตัลให้เก็บ");
@@ -3625,7 +3636,6 @@
         enemies.push({ x:460,y:280,size:22,hp:40,maxHp:40,color:"#ff9800",speed:1.2,squish:0 });
         enemies.push({ x:520,y:120,size:32,hp:120,maxHp:120,color:"#b71c1c",speed:0.9,squish:0,boss:true });
       } else if (newMap === "Ruins"){
-        player.x = 50; c.x = 30;
         document.getElementById('ui-map').innerText = "ซากอารยธรรม";
         mapBanner = { text:"ANCIENT RUINS", sub:"พลังเวทมนตร์โบราณยังหลงเหลืออยู่...", timer:120 };
         updateEVA("เข้าสู่ซากอารยธรรมโบราณ! สิ่งมีชีวิตพิทักษ์ที่นี่ชอบทำให้มึนงง ระวังตัวด้วย");
@@ -3633,7 +3643,6 @@
         enemies.push({ x:470,y:290,size:24,hp:60,maxHp:60,color:"#9575cd",speed:0.9,squish:0 });
         enemies.push({ x:520,y:110,size:33,hp:150,maxHp:150,color:"#5e35b1",speed:0.7,squish:0,boss:true });
       } else if (newMap === "Volcano"){
-        player.x = 50; c.x = 30;
         document.getElementById('ui-map').innerText = "ภูเขาไฟ";
         mapBanner = { text:"VOLCANO", sub:"ลาวาร้อนระอุ ระวังทุกฝีก้าว!", timer:120 };
         updateEVA("เข้าสู่ภูเขาไฟ! สัตว์ที่นี่ดุร้ายและโจมตีแรงมาก เก็บออบซิเดียนจากศัตรูที่ปราบได้");
@@ -3641,7 +3650,6 @@
         enemies.push({ x:460,y:300,size:24,hp:55,maxHp:55,color:"#ff5722",speed:1.3,squish:0 });
         enemies.push({ x:520,y:110,size:34,hp:170,maxHp:170,color:"#bf360c",speed:1,squish:0,boss:true });
       } else if (newMap === "Snow"){
-        player.y = canvas.height-60; c.y = canvas.height-40;
         document.getElementById('ui-map').innerText = "ภูเขาหิมะ";
         mapBanner = { text:"SNOW MOUNTAIN", sub:"อากาศหนาวเหน็บ ทัศนวิสัยต่ำ", timer:120 };
         updateEVA("เข้าสู่ภูเขาหิมะ! สัตว์ที่นี่ชอบทำให้มึนงงเหมือนกัน แต่ให้ขนสัตว์อันอบอุ่น");
@@ -3649,12 +3657,12 @@
         enemies.push({ x:460,y:280,size:23,hp:50,maxHp:50,color:"#81d4fa",speed:1,squish:0 });
         enemies.push({ x:520,y:120,size:32,hp:140,maxHp:140,color:"#0288d1",speed:0.8,squish:0,boss:true });
       } else {
-        if (fromMap === "Snow"){ player.x = 300; c.x = 280; player.y = 20; c.y = 40; }
-        else { player.x = 580; c.x = 600; player.y = 240; c.y = 240; }
         document.getElementById('ui-map').innerText = "Farm Zone";
         mapBanner = { text:"FARM ZONE", sub:"กลับสู่บ้านอันอบอุ่น", timer:120 };
         updateEVA("กลับมาที่ฟาร์มแล้ว นำผลผลิตที่ได้ไปดูแลสัตว์เลี้ยงกันเถอะ!");
       }
+      spawnAtReturnGate(newMap, fromMap); // วางผู้เล่นข้างประตูย้อนกลับ (reciprocal)
+      c.x = player.x - 24; c.y = player.y + 4;
       maybeSpawnChapterBoss(newMap); // chapter boss โผล่ในโซนของมันช่วง chapter ที่ยังไม่ปราบ (05b-bosses.js)
     }
 
@@ -5077,26 +5085,59 @@
       }
     }
 
-    // ---------- ป้ายประตู/ทางออก (ตำแหน่งจริงตาม GATES ใน 07) ----------
+    // ---------- ประตู/ทางออก: ทางเดิน + ซุ้ม + ป้าย (ตำแหน่งจริงตาม GATES ใน 07) ----------
+    // สีทาง/ซุ้ม ต่างกันตามชนิดโซนปลายทาง (ถ้ำ=หิน, หิมะ=น้ำแข็ง, ป่า=ดิน)
+    const GATE_STYLE = {
+      Farm:{path:"#c9a76b", post:"#8a6a3a"}, Dungeon:{path:"#6a5a3a", post:"#4a3a24"},
+      Cave:{path:"#7a5a4a", post:"#3a2a1a"}, Volcano:{path:"#6a3020", post:"#3a1810"},
+      Ruins:{path:"#5a4a6a", post:"#3a2a4a"}, Snow:{path:"#cfe4f0", post:"#9fb8cc"},
+    };
     function drawGateMarkers(){
+      const pcx = player.x+player.size/2, pcy = player.y+player.size/2;
       for (const g of (GATES[currentMap] || [])){
         const cx = g.x + g.w/2, cy = g.y + g.h/2;
-        const near = Math.hypot((player.x+player.size/2)-cx, (player.y+player.size/2)-cy) < 90;
-        // เรืองแสงบอกทางออก
+        const near = Math.hypot(pcx-cx, pcy-cy) < 100;
+        const st = GATE_STYLE[g.to] || GATE_STYLE.Farm;
+        const horiz = g.h > g.w; // ประตูแนวตั้ง (ขอบซ้าย/ขวา) = ทางเดินแนวนอน
+        const fromLeft = g.x <= 2, fromRight = g.x+g.w >= canvas.width-2;
+        const fromTop = g.y <= 2, fromBottom = g.y+g.h >= canvas.height-2;
         ctx.save();
-        ctx.globalAlpha = near ? 0.9 : 0.5;
-        ctx.fillStyle = near ? "rgba(255,224,102,0.28)" : "rgba(255,255,255,0.12)";
-        ctx.beginPath(); ctx.roundRect(g.x, g.y, g.w, g.h, 6); ctx.fill();
-        ctx.strokeStyle = near ? "#ffe066" : "rgba(255,255,255,0.4)"; ctx.lineWidth = near?2.5:1.5;
-        ctx.beginPath(); ctx.roundRect(g.x, g.y, g.w, g.h, 6); ctx.stroke();
+        // ทางเดินยื่นเข้าจอ ~46px บอกทิศ
+        const L = 46;
+        ctx.fillStyle = st.path; ctx.globalAlpha = 0.85;
+        if (horiz){
+          const px = fromLeft ? g.x : g.x - L + g.w;
+          ctx.beginPath(); ctx.roundRect(px, cy-16, g.w+L, 32, 6); ctx.fill();
+          // ก้อนหินปูทางเป็นจังหวะ
+          ctx.fillStyle = "rgba(0,0,0,0.12)";
+          for (let i=0;i<4;i++){ const sx = (fromLeft? g.x+g.w+i*11 : g.x-8-i*11); ctx.fillRect(sx, cy-12, 6, 24); }
+        } else {
+          const py = fromTop ? g.y : g.y - L + g.h;
+          ctx.beginPath(); ctx.roundRect(cx-16, py, 32, g.h+L, 6); ctx.fill();
+          ctx.fillStyle = "rgba(0,0,0,0.12)";
+          for (let i=0;i<4;i++){ const sy = (fromTop? g.y+g.h+i*11 : g.y-8-i*11); ctx.fillRect(cx-12, sy, 24, 6); }
+        }
+        // เสา/ซุ้มประตูขนาบช่องทาง
+        ctx.globalAlpha = 1; ctx.fillStyle = st.post;
+        if (horiz){
+          ctx.fillRect(g.x, cy-22, g.w, 7); ctx.fillRect(g.x, cy+15, g.w, 7); // คานบน-ล่าง
+        } else {
+          ctx.fillRect(cx-22, g.y, 7, g.h); ctx.fillRect(cx+15, g.y, 7, g.h); // เสาซ้าย-ขวา
+        }
+        // แสงบอกทางเมื่อเข้าใกล้
+        if (near){
+          ctx.globalAlpha = 0.35+Math.sin(frameCount*0.12)*0.15; ctx.fillStyle = "#ffe066";
+          ctx.beginPath(); ctx.roundRect(g.x-2, g.y-2, g.w+4, g.h+4, 6); ctx.fill();
+        }
         ctx.restore();
-        // ป้ายชื่อปลายทาง
+        // ป้ายชื่อ + ลูกศรทิศ
+        const arrow = fromLeft?"◀":fromRight?"▶":fromTop?"▲":"▼";
         ctx.font = "bold 10px Kanit, sans-serif"; ctx.textAlign = "center";
-        const lx = Math.min(Math.max(cx, 40), canvas.width-40);
-        const ly = g.y < 20 ? g.y+g.h+14 : (g.y+g.h > canvas.height-20 ? g.y-8 : cy-g.h/2-6);
-        ctx.fillStyle = "rgba(20,14,9,0.7)";
-        ctx.fillRect(lx-38, ly-11, 76, 15);
-        ctx.fillStyle = "#fff2cf"; ctx.fillText("→ "+g.label, lx, ly);
+        const lx = Math.min(Math.max(cx, 42), canvas.width-42);
+        const ly = fromTop ? g.y+g.h+16 : fromBottom ? g.y-9 : cy-24;
+        ctx.fillStyle = near ? "rgba(120,80,20,0.92)" : "rgba(20,14,9,0.72)";
+        ctx.beginPath(); ctx.roundRect(lx-42, ly-11, 84, 16, 5); ctx.fill();
+        ctx.fillStyle = "#fff2cf"; ctx.fillText(`${arrow} ${g.label}`, lx, ly+1);
         ctx.textAlign = "left";
       }
     }
@@ -5387,17 +5428,9 @@
         drawFlowers();
         drawPond();
 
-        ctx.fillStyle="#9c7a4e"; ctx.fillRect(canvas.width-50,180,50,120);
-        ctx.strokeStyle="rgba(0,0,0,0.15)"; ctx.lineWidth=3; ctx.strokeRect(canvas.width-50,180,50,120);
         ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#fff8"; ctx.fillText("Forest →", canvas.width-95,172);
 
-        ctx.fillStyle="#9c7a4e"; ctx.fillRect(0,180,50,120);
-        ctx.strokeRect(0,180,50,120);
-        ctx.fillText("← Cave", 8,172);
 
-        ctx.fillStyle="#7fa9c9"; ctx.fillRect(280,0,80,26);
-        ctx.strokeStyle="rgba(0,0,0,0.15)"; ctx.lineWidth=3; ctx.strokeRect(280,0,80,26);
-        ctx.fillStyle="#fff8"; ctx.fillText("↑ Snow Mtn", 288,18);
 
         drawFarmField();
         drawNest();
@@ -5420,10 +5453,6 @@
           ctx.fillStyle="#5a3a1c"; ctx.fillRect(t.x-3,t.y,6,26);
           ctx.fillStyle="#ffb74d"; ctx.beginPath(); ctx.arc(t.x,t.y-2,flick*0.5,0,Math.PI*2); ctx.fill();
         }
-        ctx.fillStyle="#4a3a2a"; ctx.fillRect(0,180,50,120);
-        ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#fff8"; ctx.fillText("← Farm",8,172);
-        ctx.fillStyle="#4a3a2a"; ctx.fillRect(canvas.width-50,180,50,120);
-        ctx.strokeStyle="rgba(0,0,0,0.15)"; ctx.lineWidth=3; ctx.strokeRect(canvas.width-50,180,50,120);
         ctx.fillStyle="#fff8"; ctx.fillText("Ruins →", canvas.width-92,172);
         drawFog();
       } else if (currentMap === "Cave"){
@@ -5434,10 +5463,6 @@
         for (let i=0;i<10;i++){ ctx.beginPath(); ctx.arc((i*63+frameCount*0.3)%canvas.width, 60+((i*47)%360), 30,0,Math.PI*2); ctx.fill(); }
         ctx.fillStyle="rgba(0,0,0,0.5)";
         for (let i=0;i<6;i++){ const tx=(i*110+20); ctx.beginPath(); ctx.moveTo(tx,60); ctx.lineTo(tx+14,0); ctx.lineTo(tx+28,60); ctx.fill(); }
-        ctx.fillStyle="#3a2a1a"; ctx.fillRect(0,180,50,120);
-        ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#fff8"; ctx.fillText("← Farm",8,172);
-        ctx.fillStyle="#3a2a1a"; ctx.fillRect(canvas.width-50,180,50,120);
-        ctx.strokeStyle="rgba(0,0,0,0.15)"; ctx.lineWidth=3; ctx.strokeRect(canvas.width-50,180,50,120);
         ctx.fillStyle="#fff8"; ctx.fillText("Volcano →", canvas.width-96,172);
         drawOreNodes();
         drawEmbers();
@@ -5451,8 +5476,6 @@
         // glowing floor runes
         ctx.strokeStyle="rgba(149,117,205,0.5)"; ctx.lineWidth=1.5;
         for (let i=0;i<5;i++){ const rx=90+i*110, ry=400; ctx.beginPath(); ctx.arc(rx,ry,16,0,Math.PI*2); ctx.stroke(); }
-        ctx.fillStyle="#2a2040"; ctx.fillRect(0,180,50,120);
-        ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#fff8"; ctx.fillText("← Forest",8,172);
         drawRunes();
       } else if (currentMap === "Volcano"){
         const sky = ctx.createLinearGradient(0,0,0,canvas.height);
@@ -5464,8 +5487,6 @@
         ctx.fillStyle=lavaGrad; ctx.fillRect(0,canvas.height-70,canvas.width,70);
         ctx.fillStyle="rgba(0,0,0,0.4)";
         for (let i=0;i<7;i++){ const tx=(i*95+20); ctx.beginPath(); ctx.moveTo(tx,70); ctx.lineTo(tx+16,-10); ctx.lineTo(tx+32,70); ctx.fill(); }
-        ctx.fillStyle="#3a1a10"; ctx.fillRect(0,180,50,120);
-        ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#fff8"; ctx.fillText("← Cave",8,172);
         drawEmbers();
       } else if (currentMap === "Snow"){
         const sky = ctx.createLinearGradient(0,0,0,canvas.height);
@@ -5476,9 +5497,6 @@
         for (let i=0;i<5;i++){ const tx=i*140-20; ctx.beginPath(); ctx.moveTo(tx,220); ctx.lineTo(tx+70,90); ctx.lineTo(tx+140,220); ctx.closePath(); ctx.fill(); }
         ctx.fillStyle="rgba(255,255,255,0.85)";
         ctx.fillRect(0,canvas.height-40,canvas.width,40);
-        ctx.fillStyle="#e0f2f7"; ctx.fillRect(280,canvas.height-26,80,26);
-        ctx.strokeStyle="rgba(0,0,0,0.12)"; ctx.lineWidth=3; ctx.strokeRect(280,canvas.height-26,80,26);
-        ctx.font="bold 12px Kanit, sans-serif"; ctx.fillStyle="#333"; ctx.fillText("↓ Farm", 292,canvas.height-8);
         drawSnow();
       }
 
