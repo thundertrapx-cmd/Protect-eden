@@ -476,6 +476,18 @@
   .hbSlot.locked{ filter:grayscale(1) brightness(0.7); opacity:0.65; }
   .hbSlot .hbNum{ position:absolute; top:1px; left:3px; font-size:9px; font-weight:700; color:#5d4025; }
   .hbSlot .hbLock{ position:absolute; bottom:0; right:2px; font-size:11px; }
+  /* ---------- นาฬิกาใน status panel ---------- */
+  #dayWeatherHUD .hudClock{ margin-left:auto; font-weight:700; font-size:12px; color:var(--wood-dark);
+    background:rgba(93,64,37,0.12); border-radius:6px; padding:1px 7px; }
+  /* ---------- หน้าสรุปตอนจบวัน ---------- */
+  #dayEndOverlay{ position:fixed; inset:0; background:rgba(14,10,20,0.85); display:none; align-items:center; justify-content:center; z-index:72; padding:20px;}
+  #dayEndOverlay.open{ display:flex; }
+  #dayEndCard{ width:min(400px,92vw); background:linear-gradient(180deg,#f6ead2,#e8d3ab); color:var(--ink); border:2px solid var(--wood-dark); border-radius:14px; padding:18px 22px 20px; box-shadow:0 8px 0 var(--wood-dark), 0 20px 40px rgba(0,0,0,0.5); text-align:center;}
+  #dayEndDay{ font-family:'Press Start 2P','Kanit',monospace; font-size:13px; color:var(--gold-dark); margin-bottom:4px; }
+  #dayEndCard h2{ font-size:17px; color:var(--wood-dark); margin:0 0 12px; }
+  #dayEndBody{ text-align:left; margin-bottom:10px; }
+  #dayEndBody .deRow{ display:flex; justify-content:space-between; padding:5px 2px; border-bottom:1px solid rgba(93,64,37,0.18); font-size:var(--fs-body); }
+  #dayEndBody .deRow span:last-child{ font-weight:700; color:var(--wood-dark); }
 </style>
 
 </head>
@@ -505,6 +517,7 @@
       <div class="hudTop">
         <span id="hud-daynight">☀️</span>
         <span class="hudDay" id="hud-day">Day 1 · กลางวัน</span>
+        <span class="hudClock" id="hud-clock">6:00 AM</span>
       </div>
       <div class="hudRow"><span class="seg"><span id="hud-season">🌸</span> <span id="hud-seasontext">ใบไม้ผลิ</span></span><span class="seg"><span id="hud-weather">🌤️</span> <span id="hud-weathertext">แจ่มใส</span></span></div>
       <div class="hudGold"><span>🪙</span> <span id="hud-gold">20</span></div>
@@ -687,6 +700,7 @@
       <div class="ctrlRow"><kbd>3</kbd><span>🚿 บัวรดน้ำ — รดแปลง</span></div>
       <div class="ctrlRow"><kbd>4</kbd><span>🪓 ขวาน · <kbd>5</kbd> ⛏️ อีเต้อ · <kbd>6</kbd> 🎣 เบ็ด</span></div>
       <div class="ctrlRow"><kbd>Z</kbd><span>สลับชนิดเมล็ด · <kbd>X</kbd> ปรับปรุงดิน</span></div>
+      <div class="ctrlRow"><kbd>SPACE</kbd><span>ที่เตียง (มุมซ้ายบนฟาร์ม) = นอนจบวัน</span></div>
     </div>
     <div class="ctrlGroup">
       <div class="ctrlGroupTitle">🐾 ดูแลสัตว์เลี้ยง / ศึก</div>
@@ -777,6 +791,16 @@
       <h2>📦 คลังสัตว์เลี้ยง</h2>
       <div class="storageHint">ฝากสัตว์เลี้ยงไว้ในคลังเพื่อสลับไปเลี้ยง/ลองตัวอื่นในปาร์ตี้ (สูงสุด 3 ตัว) — สถิติ Bond, EXP, Level ของตัวที่ฝากไว้จะไม่หายไป รับกลับมาเมื่อไหร่ก็ได้</div>
       <div id="storageContent"></div>
+    </div>
+  </div>
+
+  <div id="dayEndOverlay">
+    <div id="dayEndCard">
+      <div id="dayEndDay">🌅 Day 2</div>
+      <h2 id="dayEndTitle">😴 นอนหลับฝันดี</h2>
+      <div id="dayEndBody"></div>
+      <div id="dayEndNote" class="skillLearnHint"></div>
+      <button class="btn" id="dayEndBtn" style="width:100%; margin-top:6px;">เริ่มวันใหม่ ▶</button>
     </div>
   </div>
 
@@ -1638,18 +1662,33 @@
       energy -= amount; return true;
     }
 
-    // ---------- Day/Night cycle ----------
+    // ---------- Day/Night cycle + นาฬิกาในเกม (แบบ Stardew) ----------
+    // 1 วัน = 6:00 น. → 2:00 น. (20 ชั่วโมงเกม) · ต้อง "นอน" ถึงจะขึ้นวันใหม่ · ถึงตี 2 = ล้มหมดสติ
     let dayCount = 1;
-    const DAY_LENGTH = 7200; // frames per full day/night cycle (slowed to ~2x for a calmer pace)
+    const START_HOUR = 6, DAY_HOURS = 20; // 6:00 → 26:00 (=2:00 น. ของวันถัดไป)
+    const DAY_LENGTH = 10800; // frames ต่อวัน (~3 นาทีจริง/วัน — ช้าลงให้เหมือนใช้ชีวิต)
     let dayTimer = 0;
+    let dayEndActive = false; // true = กำลังโชว์หน้าสรุปวัน (หยุดเกม)
+    function gameHour(){ return START_HOUR + (dayTimer/DAY_LENGTH)*DAY_HOURS; } // 6.0 .. 26.0
+    function formatClock(){
+      const h = gameHour();
+      let hh = Math.floor(h) % 24;
+      const mm = Math.floor((h - Math.floor(h)) * 60 / 10) * 10; // ปัดลง 10 นาที
+      const ampm = hh < 12 ? "AM" : "PM";
+      let disp = hh % 12; if (disp === 0) disp = 12;
+      return `${disp}:${String(mm).padStart(2,'0')} ${ampm}`;
+    }
     function dayPhase(){
-      const t = dayTimer/DAY_LENGTH;
-      if (t < 0.05) return 'dawn';
-      if (t < 0.45) return 'day';
-      if (t < 0.55) return 'dusk';
+      const h = gameHour();
+      if (h < 8) return 'dawn';
+      if (h < 17) return 'day';
+      if (h < 19) return 'dusk';
       return 'night';
     }
     function isNight(){ return dayPhase() === 'night'; }
+    // เตียงนอน (ตอนนี้อยู่มุมฟาร์ม — เฟสบ้านจะย้ายเข้าบ้าน) เดินไปใกล้แล้วกด SPACE เพื่อจบวัน
+    const bed = { x: 70, y: 60, w: 52, h: 34 };
+    function nearBed(){ return currentMap === "Farm" && Math.hypot((player.x+player.size/2)-(bed.x+bed.w/2), (player.y+player.size/2)-(bed.y+bed.h/2)) < 46; }
 
     // ---------- Seasons ----------
     const SEASON_NAMES = ["ใบไม้ผลิ","ร้อน","ใบไม้ร่วง","หนาว"];
@@ -3936,7 +3975,61 @@
     document.getElementById('closeStorageBtn').addEventListener('click', closeStorage);
     storageOverlayEl.addEventListener('click', e=>{ if (e.target===storageOverlayEl) closeStorage(); });
 
-    // ---------- Save / Load ----------
+    // ---------- Day cycle: นอน / หมดสติ / สรุปวัน (Stardew-style) ----------
+    // เอฟเฟกต์ขึ้นวันใหม่ — ทำงานตอน endDay (ย้ายมาจาก game loop เดิม)
+    function applyNewDay(){
+      plots.forEach(p=>{ p.watered = false; }); // ดินแห้งทุกเช้า ต้องรดใหม่ (สปริงเกอร์รดให้ผ่าน naturallyWatered)
+      if (currentFestival) endFestival(currentFestival);
+      currentFestival = activeFestival();
+      if (currentFestival) startFestival(currentFestival);
+      const si = seasonIdx();
+      if (si !== lastSeasonIdx){
+        lastSeasonIdx = si;
+        mapBanner = { text: `${seasonIcon()} ฤดู${seasonName()}มาถึงแล้ว`,
+          sub: si===1?"อากาศร้อน เหมาะกับการปลูกพริกไฟ":si===3?"หนาวแล้ว! ปลูกได้: เบอร์รี่น้ำแข็ง มิ้นต์ โสมหิมะ (กด Z สลับเมล็ด)":"พืชผลเติบโตได้ตามปกติ", timer:150 };
+      }
+    }
+    let _dayEndData = null;
+    function endDay(slept){
+      if (dayEndActive) return;
+      const prevDay = dayCount;
+      dayCount++;
+      // ตื่น: นอนทัน = 6:00 (dayTimer 0) + energy เต็ม · หมดสติ = 8:00 + energy ครึ่งเดียว (ตื่นสาย)
+      dayTimer = slept ? 0 : Math.round(((8-START_HOUR)/DAY_HOURS)*DAY_LENGTH);
+      energy = slept ? maxEnergy : Math.round(maxEnergy*0.5);
+      applyNewDay();
+      _dayEndData = { slept, prevDay, newDay:dayCount, season:seasonName(), seasonIcon:seasonIcon(),
+        gold:inv.coin, hot: sellLabels[todayHotItem()], playtime: (typeof formatPlayTime==='function'? formatPlayTime(playTimeSec):'') };
+      showDayEndOverlay();
+      saveGame(); // เซฟอัตโนมัติทุกเช้า (เหมือน Stardew)
+    }
+    function sleepInBed(){ sfx.chime(); endDay(true); }
+    function passOut(){ shake(6,20); sfx.hit(); endDay(false); }
+
+    function showDayEndOverlay(){
+      dayEndActive = true;
+      const d = _dayEndData;
+      document.getElementById('dayEndTitle').innerText = d.slept ? "😴 นอนหลับฝันดี" : "😵 ดึกเกินไป — หมดสติ!";
+      const rows = [
+        `<div class="deRow"><span>📅 วันที่ผ่านไป</span><span>Day ${d.prevDay}</span></div>`,
+        `<div class="deRow"><span>${d.seasonIcon} ฤดู</span><span>${d.season}</span></div>`,
+        `<div class="deRow"><span>🪙 เงินที่มี</span><span>${d.gold}</span></div>`,
+        d.playtime ? `<div class="deRow"><span>⏱ เวลาเล่นสะสม</span><span>${d.playtime}</span></div>` : '',
+        `<div class="deRow"><span>📈 ของฮอตพรุ่งนี้</span><span>${d.hot}</span></div>`,
+      ].join('');
+      document.getElementById('dayEndBody').innerHTML = rows;
+      document.getElementById('dayEndNote').innerText = d.slept
+        ? "พลังงานฟื้นเต็ม พร้อมลุยวันใหม่!"
+        : "นอนไม่ทันตี 2 — พลังงานฟื้นแค่ครึ่งเดียว และตื่นสายถึง 8 โมง คราวหน้ารีบนอนก่อนดึกนะ";
+      document.getElementById('dayEndDay').innerText = "🌅 Day " + d.newDay;
+      document.getElementById('dayEndOverlay').classList.add('open');
+    }
+    function closeDayEnd(){
+      dayEndActive = false;
+      document.getElementById('dayEndOverlay').classList.remove('open');
+      updateEVA(`🌅 เช้าวันใหม่! (Day ${dayCount}) ของฮอตวันนี้: ${sellLabels[todayHotItem()]} ขายได้ราคา x1.5`);
+    }
+    document.getElementById('dayEndBtn').addEventListener('click', closeDayEnd);    // ---------- Save / Load ----------
     // Prefer the Artifact storage API when available (claude.ai), but fall back to
     // localStorage so the game can still save/load when opened as a plain HTML file
     // in a normal browser — this is what fixes "ระบบบันทึกไม่พร้อมใช้งาน".
@@ -4262,25 +4355,12 @@
       frameCount++;
       // จับเวลาเล่นสะสม (นับเฉพาะหลังเริ่มเกม รวมตอนเปิดเมนู/ต่อสู้ด้วย — ถือว่ากำลังเล่นอยู่)
       if (gameStarted) tickPlayTime(); else lastPlayTick = 0;
-      if (storyActive || starterActive || dialogueOpen || shopOpen || craftOpen || storageOpen || skillLearnOpen || pathChooseOpen || dexOpen){ pressedOnce = {}; updateUI(); return; }
+      if (storyActive || starterActive || dialogueOpen || shopOpen || craftOpen || storageOpen || skillLearnOpen || pathChooseOpen || dexOpen || dayEndActive){ pressedOnce = {}; updateUI(); return; }
       if (battleActive){ updateBattle(); pressedOnce = {}; updateUI(); return; }
       const c = active();
 
       dayTimer++;
-      if (dayTimer >= DAY_LENGTH){
-        dayTimer = 0; dayCount++;
-        plots.forEach(p=>{ p.watered = false; }); // เช้าใหม่ ดินแห้งหมด ต้องรดน้ำอีกครั้ง (สปริงเกอร์รดให้อัตโนมัติผ่าน naturallyWatered)
-        updateEVA(`📈 ตลาดวันใหม่! ของฮอตวันนี้: ${sellLabels[todayHotItem()]} ขายได้ราคา x1.5 — รีบขายก่อนหมดวัน`);
-        if (currentFestival) endFestival(currentFestival);
-        currentFestival = activeFestival();
-        if (currentFestival) startFestival(currentFestival);
-        const si = seasonIdx();
-        if (si !== lastSeasonIdx){
-          lastSeasonIdx = si;
-          mapBanner = { text: `${seasonIcon()} ฤดู${seasonName()}มาถึงแล้ว`, sub: si===1?"อากาศร้อน เหมาะกับการปลูกพริกไฟ":si===3?"หนาวแล้ว! ปลูกได้: เบอร์รี่น้ำแข็ง มิ้นต์ โสมหิมะ (กด Z สลับเมล็ด)":"พืชผลเติบโตได้ตามปกติ", timer:150 };
-          updateEVA(`${seasonIcon()} ฤดูกาลเปลี่ยนเป็น "${seasonName()}" แล้ว! การปลูกพืชและสภาพอากาศจะเปลี่ยนไปตามฤดูนี้`);
-        }
-      }
+      if (dayTimer >= DAY_LENGTH && !dayEndActive){ passOut(); } // ถึงตี 2 = ล้มหมดสติ จบวันอัตโนมัติ (20b-daycycle)
       weatherTimer++;
       if (weatherTimer >= WEATHER_INTERVAL){
         weatherTimer = 0;
@@ -4346,8 +4426,12 @@
       } else if (pressedOnce.n){
         updateEVA("ผสมพันธุ์ได้เฉพาะที่รังในฟาร์มเท่านั้น");
       }
-      // SPACE = ใช้เครื่องมือที่เลือกใน hotbar (useTool ใน 07b) — ทำงานได้ทุกโซน
-      if (keys[' '] && interactCooldown<=0){ interactCooldown = 10; useTool(); }
+      // SPACE ที่เตียง = นอนจบวัน · ที่อื่น = ใช้เครื่องมือที่เลือกใน hotbar (useTool ใน 07b)
+      if (keys[' '] && interactCooldown<=0){
+        interactCooldown = 10;
+        if (nearBed()) sleepInBed();
+        else useTool();
+      }
       // เลือก hotbar ด้วยเลข 1-6
       for (let i=1;i<=6;i++){ if (pressedOnce[String(i)]) selectSlot(i-1); }
 
@@ -4358,7 +4442,7 @@
       if (c.skillCooldown>0) c.skillCooldown--;
 
       energyRegenTimer++;
-      if (energyRegenTimer >= 240){
+      if (energyRegenTimer >= 540){ // regen ช้าลง (เดิม 240) — พลังงานมีค่ามากขึ้น ต้องพึ่งอาหาร/การนอน
         energyRegenTimer = 0;
         if (energy < maxEnergy) energy = Math.min(maxEnergy, energy+1);
       }
@@ -4612,6 +4696,12 @@
       const phaseLabel = phase==='night' ? 'กลางคืน' : phase==='dusk' ? 'พลบค่ำ' : phase==='dawn' ? 'รุ่งอรุณ' : 'กลางวัน';
       document.getElementById('hud-daynight').innerText = phaseIcon;
       document.getElementById('hud-day').innerText = 'Day '+dayCount+' · '+phaseLabel;
+      const clockEl = document.getElementById('hud-clock');
+      if (clockEl){
+        clockEl.innerText = formatClock();
+        // ใกล้ตี 2 (หลัง 5 ทุ่มครึ่ง) = เตือนสีแดง
+        clockEl.style.color = gameHour() >= 23.5 ? '#c0392b' : '';
+      }
       const weatherIcon = weather==='rain' ? '🌧️' : weather==='storm' ? '⛈️' : '🌤️';
       const weatherLabel = weather==='rain' ? 'ฝนตก' : weather==='storm' ? 'พายุ' : 'แจ่มใส';
       document.getElementById('hud-weather').innerText = weatherIcon;
@@ -5142,6 +5232,24 @@
       }
     }
 
+    // ---------- เตียงนอน (มุมฟาร์ม) — เดินไปใกล้แล้วกด SPACE เพื่อจบวัน ----------
+    function drawBed(){
+      const b = bed;
+      drawShadow(b.x+b.w/2, b.y+b.h+2, b.w*0.55, 7);
+      // โครงเตียงไม้
+      ctx.fillStyle = "#8a5a30"; ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 5); ctx.fill();
+      ctx.strokeStyle = "#5a3a1c"; ctx.lineWidth = 2; ctx.stroke();
+      // ที่นอน + ผ้าห่ม
+      ctx.fillStyle = "#e8e0d0"; ctx.beginPath(); ctx.roundRect(b.x+3, b.y+3, b.w-6, b.h*0.5, 3); ctx.fill(); // หมอน+ผ้าปู
+      ctx.fillStyle = "#7a9cc0"; ctx.beginPath(); ctx.roundRect(b.x+3, b.y+b.h*0.42, b.w-6, b.h*0.52, 3); ctx.fill(); // ผ้าห่ม
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.roundRect(b.x+5, b.y+4, b.w*0.32, b.h*0.32, 3); ctx.fill(); // หมอน
+      if (nearBed()){
+        const bob = Math.sin(frameCount*0.15)*2;
+        ctx.font = "13px sans-serif"; ctx.textAlign = "center"; ctx.fillStyle = "#fff2cf";
+        ctx.fillText("💤 กด SPACE เพื่อนอน", b.x+b.w/2, b.y-8+bob);
+        ctx.textAlign = "left";
+      }
+    }
     function drawNest(){
       drawShadow(nest.x, nest.y+10, 30, 10);
       ctx.fillStyle = "#8a5a30";
@@ -5432,6 +5540,7 @@
 
 
 
+        drawBed();
         drawFarmField();
         drawNest();
         drawArena();
