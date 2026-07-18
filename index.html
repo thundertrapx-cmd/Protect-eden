@@ -2507,7 +2507,7 @@
         p.state = 0; p.crop = null; p.watered = false; interactCooldown = 20;
         spawnBurst(p.x+18, p.y+18, ci.color, 14, 3, 32, 4);
         sfx.harvest(); tut.harvested = true; harvestCount++;
-        gainExp(active(), 3);
+        // (ตัดเก็บเกี่ยวไม่ให้ EXP แล้ว — EXP มาจากการต่อสู้/ให้อาหารเท่านั้น)
         updateEVA(`เก็บเกี่ยว ${ci.icon} ${ci.name}ได้ ${qty}! (ขายได้ ~🪙${sellPriceToday(cropType)}/ชิ้นวันนี้)`);
       } else {
         const secLeft = Math.ceil(p.timer/60);
@@ -4418,7 +4418,7 @@
       if (Math.random() < 0.15){ updateEVA("🎣 ปลาหลุดไปซะแล้ว... ลองใหม่อีกครั้ง"); return; }
       const qty = fishingUpgraded ? 2 : 1;
       inv.fish += qty; fishCount += qty;
-      gainExp(active(), 4);
+      // (ตัดปลาไม่ให้ EXP แล้ว — EXP มาจากการต่อสู้/ให้อาหารเท่านั้น)
       spawnBurst(pond.x,pond.y,'#4fc3f7',10,2,26,3);
       spawnText(player.x,player.y-24, "+"+qty+" Fish", "#4fc3f7");
       updateEVA(`ตกปลาได้ ${qty} ตัว!`);
@@ -4432,7 +4432,6 @@
       const qty = woodcuttingUpgraded ? 2 : 1;
       inv.wood += qty; woodCount += qty;
       target.chopped = target.maxCooldown;
-      gainExp(active(), 3);
       spawnBurst(target.x,target.y,'#8d6e63',12,2.5,28,4);
       spawnText(target.x,target.y-30,"+"+qty+" Wood","#a1887f");
       sfx.harvest();
@@ -4448,7 +4447,6 @@
       const qty = miningUpgraded ? 2 : 1;
       inv.ore += qty; mineCount += qty;
       target.mined = target.maxCooldown;
-      gainExp(active(), 4);
       spawnBurst(target.x,target.y,'#90a4ae',12,2.5,28,4);
       spawnText(target.x,target.y-30,"+"+qty+" Ore","#cfd8dc");
       sfx.hit();
@@ -5087,12 +5085,14 @@
         inv.veggie--; c.veggieEaten++; c.hp=Math.min(c.maxHp,c.hp+20); c.bond=Math.min(100,c.bond+3*traitBondMult(c.trait)*personalityBondMult(c.personality)); energy=Math.max(0,energy-1);
         feedCooldown=20; spawnText(c.x,c.y-24,"+20 HP","#8BC34A"); spawnBurst(c.x,c.y,'#8BC34A',8,2,24,3);
         sfx.feed(); tut.fedVeggie = true;
+        gainExp(c, 2); // ให้อาหารธรรมดา = EXP น้อย
         checkEvolution(c);
       } else if (pressedOnce.f && inv.veggie<=0){ updateEVA("ไม่มีผักป้อนสัตว์เลี้ยง — ปลูกผักหรือซื้อที่ร้านก่อน (F=ป้อนผัก)"); }
       if (pressedOnce.g && feedCooldown<=0 && inv.meat>0 && energy>=1){
         inv.meat--; c.meatEaten++; c.atk+=2; c.bond=Math.min(100,c.bond+3*traitBondMult(c.trait)*personalityBondMult(c.personality)); energy=Math.max(0,energy-1);
         feedCooldown=20; spawnText(c.x,c.y-24,"+2 ATK","#ff8a65"); spawnBurst(c.x,c.y,'#ff8a65',8,2,24,3);
         sfx.feed(); tut.fedMeat = true;
+        gainExp(c, 2); // ให้อาหารธรรมดา = EXP น้อย
         checkEvolution(c);
       } else if (pressedOnce.g && inv.meat<=0){ updateEVA("ไม่มีเนื้อป้อนสัตว์เลี้ยง — ล่าสัตว์ในดันเจี้ยนเพื่อเก็บเนื้อ (G=ป้อนเนื้อ)"); }
       if (pressedOnce.c) cook();
