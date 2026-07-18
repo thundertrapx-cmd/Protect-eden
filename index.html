@@ -2175,7 +2175,7 @@
     let rainDrops = [];
     for (let i=0;i<60;i++) rainDrops.push({x:Math.random()*640, y:Math.random()*480, len:10+Math.random()*8});
 
-    const player = { x: 100, y: 240, size: 24, speed: 2.7, color: "#4fa3ff", facing:{x:0,y:1}, moving:false };
+    const player = { x: 100, y: 240, size: 28, speed: 2.7, color: "#4fa3ff", facing:{x:0,y:1}, moving:false };
 
     // ---------- แปลงเพาะปลูกแบบขุดเอง (v11) ----------
     // ผู้เล่นใช้ "จอบ" พรวนดินสร้างแปลงเองในเขตไร่ (สูงสุด 5x5 = 25 แปลง) — ไม่มีแปลงสำเร็จรูปอีกต่อไป
@@ -5628,12 +5628,14 @@
       const img = CREATURE_IMG[key] || CREATURE_IMG[sheets.walk] || CREATURE_IMG[sheets.stand];
       if (!img) return false;
       const frame = moving ? (Math.floor(frameCount/5) % SPRITE_FRAMES) : (Math.floor(frameCount/14) % SPRITE_FRAMES);
-      const s = cr.size * 2.9;
+      // ขนาดพอดีตัว + โตตาม stage อัตโนมัติ (cr.size โตตอนวิวัฒนาการ) · stage แรกตัวเล็ก
+      const s = cr.size * 1.55;
+      const footY = cr.size * 0.9;                       // ให้ "เท้า" อยู่ระดับเงา = ยืนติดพื้น ไม่ลอย
       const flip = !!(cr.facing && cr.facing.x > 0);     // ชีทหันซ้าย → พลิกเมื่อหันขวา
       ctx.save();
       ctx.imageSmoothingEnabled = false;
       if (flip) ctx.scale(-1, 1);
-      ctx.drawImage(img, frame*SPRITE_FW, 0, SPRITE_FW, SPRITE_FH, -s/2, -s*0.6, s, s);
+      ctx.drawImage(img, frame*SPRITE_FW, 0, SPRITE_FW, SPRITE_FH, -s/2, footY - s, s, s);
       ctx.restore();
       return true;
     }
@@ -5641,8 +5643,9 @@
       const bob = Math.sin(frameCount*0.15 + cr.x*0.01) * bobAmp;
       const sh = shadowSize(cr);
       drawShadow(cr.x, cr.y+cr.size*0.8, sh.w, sh.h);
-      ctx.save(); ctx.translate(cr.x, cr.y+bob);
-      if (drawPngCreatureSprite(cr)){ ctx.restore(); return; }   // ใช้ PNG sprite ถ้ามี (วัยเด็ก 5 สายพันธุ์)
+      ctx.save(); ctx.translate(cr.x, cr.y);
+      if (drawPngCreatureSprite(cr)){ ctx.restore(); return; }   // PNG sprite ยืนติดพื้น (ไม่ลอย)
+      ctx.translate(0, bob);                                     // เฉพาะ vector ที่ขยับขึ้นลงเล็กน้อย
       const isWolfSprite = (cr.species === "Wolf" && drawWolfSprite(cr)) || (cr.species === "TRex" && drawTRexSprite(cr));
       if (!isWolfSprite){
       drawSpeciesBehind(cr);
@@ -5714,7 +5717,7 @@
     }
 
     function drawPlayer(){
-      const bob = player.moving ? Math.abs(Math.sin(frameCount*0.3))*3 : Math.sin(frameCount*0.08)*1;
+      const bob = player.moving ? Math.abs(Math.sin(frameCount*0.3))*1.5 : 0; // ยืนติดพื้น (idle ไม่ลอย) เดินเด้งเบาๆ
       drawShadow(player.x+player.size/2, player.y+player.size*0.95, player.size*0.6, player.size*0.22);
       ctx.save(); ctx.translate(player.x+player.size/2, player.y+player.size/2-bob);
       if (drawPlayerSprite()){ ctx.restore(); return; }
@@ -6531,7 +6534,7 @@
       drawNPCs();
       for (const e of enemies) drawEnemy(e);
       drawPlayer();
-      drawCreature(active(), 3);
+      drawCreature(active(), 1.5);
 
       const c = active();
       if (c.attackCooldown>45 && c.target){
