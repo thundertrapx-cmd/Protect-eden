@@ -1505,8 +1505,9 @@
     let chapterPanelSig = null;
     function zoneUnlocked(map){
       if (map === "Farm" || map === "Home" || map === "Village") return true; // ฟาร์ม/บ้าน/เมือง ไม่ล็อก
-      // ดันเจี้ยน (Sanctum/Cinderforge/Skyhold) ปลดตาม overworld แม่ของมัน
       const meta = (typeof ZONE_META!=='undefined') ? ZONE_META[map] : null;
+      if (meta && meta.interior) return true; // ภายในบ้าน/ร้านในหมู่บ้าน เข้าได้เสมอ
+      // ดันเจี้ยน (Sanctum/Cinderforge/Skyhold) ปลดตาม overworld แม่ของมัน
       if (meta && meta.parent) return zoneUnlocked(meta.parent);
       const upTo = Math.min(chapterIndex, CHAPTERS.length-1);
       for (let i=0;i<=upTo;i++) if (CHAPTERS[i].zones.includes(map)) return true;
@@ -1593,11 +1594,25 @@
         nObj.y += (target.y - nObj.y) * 0.01;
       }
     }
+    // โซนที่ NPC อยู่ "ตอนนี้" — กลางวันอยู่นอกบ้าน (n.map) · กลางคืนเข้าบ้าน (n.home ถ้ามี)
+    function npcZone(n){ return (n.home && isNight()) ? n.home : n.map; }
+    // ตำแหน่งวาด/คุย — อยู่ในบ้าน = จุดกลางห้อง (n.hx,n.hy) · อยู่นอกบ้าน = ตามตาราง (n.x,n.y)
+    function npcPos(n){ return (npcZone(n)===n.home) ? { x:n.hx||320, y:n.hy||300 } : { x:n.x, y:n.y }; }
+    // ไอคอนกิจกรรมเหนือหัว — ต่างกันตามอาชีพและเวลา (เพิ่มชีวิตชีวา)
+    function npcActivityIcon(n){
+      if (isNight() && n.home) return '😴';
+      const ph = dayPhase();
+      const A = n.act || {};
+      if (ph==='night') return A.night || '🌙';
+      if (ph==='dusk')  return A.dusk  || A.day || '';
+      return A.day || '';
+    }
     function nearestNPC(){
       let best=null, bd=Infinity;
       for (const n of NPCS){
-        if (n.map !== currentMap) continue;
-        const d = Math.hypot(player.x-n.x, player.y-n.y);
+        if (npcZone(n) !== currentMap) continue;
+        const p = npcPos(n);
+        const d = Math.hypot(player.x-p.x, player.y-p.y);
         if (d < n.range && d < bd){ bd=d; best=n; }
       }
       return best;
@@ -1634,6 +1649,7 @@
 
     // ---------- ข้อมูล NPC ทั้งหมด ----------
     defineNPC({ id:'rowan', name:"ผู้เฒ่าโรวัน", size:22, range:58, map:"Village",
+      home:'HomeRowan', hx:330, hy:300, act:{ day:'📖', dusk:'🍵' },
       robeColor:"#5a7a4a", hoodColor:"#e8e8e8",
       loves:['crystal'], likes:['veggie','wood'], dislikes:['fish'],
       schedule:[ {phase:'dawn',x:110,y:215}, {phase:'day',x:130,y:230}, {phase:'dusk',x:110,y:215}, {phase:'night',x:105,y:160} ],
@@ -1679,6 +1695,7 @@
       } });
 
     defineNPC({ id:'maya', name:"มายา นักสมุนไพร", size:20, range:55, map:"Village",
+      home:'HomeMaya', hx:330, hy:300, act:{ day:'🌿', dusk:'🧪' },
       robeColor:"#4a6a8a", hoodColor:"#ffca9e",
       loves:['fish'], likes:['chili','veggie'], dislikes:['ore'],
       schedule:[ {phase:'dawn',x:270,y:215}, {phase:'day',x:250,y:235}, {phase:'dusk',x:280,y:230}, {phase:'night',x:265,y:160} ],
@@ -1716,6 +1733,7 @@
         reward:()=>{ inv.fireBerry+=1; inv.leafBerry+=1; updateEVA("🔖 เควสของมายาสำเร็จ! ได้รับ Fire Berry และ Leaf Berry"); } } });
 
     defineNPC({ id:'fay', name:"เฟย์ ช่างตีเหล็ก", size:21, range:55, map:"Volcano",
+      act:{ day:'🔨', dusk:'🔥', night:'🔨' },
       robeColor:"#7a4a3a", hoodColor:"#caa472",
       loves:['ore','obsidian'], likes:['crystal','wood'], dislikes:['veggie'],
       schedule:[ {phase:'dawn',x:520,y:400}, {phase:'day',x:480,y:360}, {phase:'dusk',x:520,y:400}, {phase:'night',x:560,y:420} ],
@@ -1746,6 +1764,7 @@
         reward:()=>{ inv.coin+=30; inv.crystal+=2; updateEVA("🔖 เควสของเฟย์สำเร็จ! ได้รับ 30 เหรียญ + คริสตัล 2"); } } });
 
     defineNPC({ id:'nils', name:"นิลส์ พ่อค้า", size:20, range:58, map:"Village",
+      home:'ShopNils', hx:330, hy:300, act:{ day:'🛒', dusk:'🪙' },
       robeColor:"#8a6a2a", hoodColor:"#e8d8b8",
       loves:['relic'], likes:['fish','fur'], dislikes:['wood'],
       schedule:[ {phase:'dawn',x:435,y:220}, {phase:'day',x:435,y:230}, {phase:'dusk',x:435,y:220}, {phase:'night',x:430,y:165} ],
@@ -1774,6 +1793,7 @@
         reward:()=>{ inv.coin+=25; inv.seeds+=3; updateEVA("🔖 เควสของนิลส์สำเร็จ! ได้รับ 25 เหรียญ + เมล็ด 3"); } } });
 
     defineNPC({ id:'luna', name:"ลูน่า นักวิจัยธารน้ำแข็ง", size:20, range:55, map:"Snow",
+      act:{ day:'🔭', dusk:'📊', night:'🌌' },
       robeColor:"#4a7a8a", hoodColor:"#dceefc",
       loves:['fur'], likes:['fish','crystal'], dislikes:['chili'],
       schedule:[ {phase:'dawn',x:320,y:120}, {phase:'day',x:420,y:180}, {phase:'dusk',x:320,y:120}, {phase:'night',x:280,y:100} ],
@@ -1797,6 +1817,7 @@
         reward:()=>{ inv.waterBerry+=2; inv.coin+=15; updateEVA("🔖 เควสของลูน่าสำเร็จ! ได้รับ Water Berry 2 + 15 เหรียญ"); } } });
 
     defineNPC({ id:'taro', name:"ทาโร่ เด็กชายรักสัตว์", size:16, range:50, map:"Village",
+      home:'HomeTaro', hx:330, hy:300, act:{ day:'⚽', dusk:'🪁' },
       robeColor:"#c05a3a", hoodColor:"#ffdca8",
       loves:['veggie'], likes:['fish'], dislikes:['obsidian'],
       schedule:[ {phase:'dawn',x:575,y:220}, {phase:'day',x:520,y:300}, {phase:'dusk',x:575,y:220}, {phase:'night',x:575,y:170} ],
@@ -1820,6 +1841,7 @@
 
     // ---------- ชาวถิ่นตามดินแดนในแผนที่โลก (World Map residents) ----------
     defineNPC({ id:'anya', name:"ดรูอิดอันยา", size:20, range:55, map:"Dungeon",
+      act:{ day:'🍃', dusk:'🌙', night:'✨' },
       robeColor:"#3a7a4a", hoodColor:"#cfe8b0",
       loves:['leafBerry','veggie'], likes:['wood'], dislikes:['obsidian'],
       schedule:[ {phase:'dawn',x:360,y:300}, {phase:'day',x:420,y:360}, {phase:'dusk',x:360,y:300}, {phase:'night',x:320,y:260} ],
@@ -1831,6 +1853,7 @@
         2:"🍂 ใบไม้ร่วงคือช่วงที่ป่าเงียบที่สุด", 3:"❄️ แม้หนาว ป่ากระซิบก็ไม่เคยหลับใหล" } });
 
     defineNPC({ id:'borin', name:"บอริน นักขุดแร่", size:21, range:55, map:"Cave",
+      act:{ day:'⛏️', dusk:'💎', night:'⛏️' },
       robeColor:"#6a5a7a", hoodColor:"#d0c0e0",
       loves:['crystal','ore'], likes:['obsidian'], dislikes:['fish'],
       schedule:[ {phase:'dawn',x:300,y:420}, {phase:'day',x:420,y:380}, {phase:'dusk',x:300,y:420}, {phase:'night',x:260,y:440} ],
@@ -1842,6 +1865,7 @@
         2:"🍂 ช่วงนี้ผลึกหลุดง่าย ขุดคุ้มมาก", 3:"❄️ หนาวข้างนอกไม่เกี่ยวกับข้า ข้าอยู่ใต้ดิน" } });
 
     defineNPC({ id:'elara', name:"อีลาร่า ผู้ทอสายฟ้า", size:20, range:55, map:"Ruins",
+      act:{ day:'⚡', dusk:'🌩️', night:'⚡' },
       robeColor:"#4a5a8a", hoodColor:"#cfe0ff",
       loves:['crystal','relic'], likes:['ore'], dislikes:['veggie'],
       schedule:[ {phase:'dawn',x:340,y:300}, {phase:'day',x:440,y:360}, {phase:'dusk',x:340,y:300}, {phase:'night',x:300,y:260} ],
@@ -2079,6 +2103,11 @@
       Sanctum:    { name:"วิหารกระซิบ",             en:"Whispering Sanctum", type:'dungeon', biome:'dungeon-forest', mini:"#0a140c", parent:'Dungeon', floors:3 },
       Cinderforge:{ name:"เหวหลอมถ่าน",             en:"Cinderforge Depths", type:'dungeon', biome:'dungeon-lava',   mini:"#1a0505", parent:'Volcano', floors:3 },
       Skyhold:    { name:"หอสังเกตการณ์สกายโฮลด์",  en:"Skyhold Observatory",type:'dungeon', biome:'dungeon-ruin',   mini:"#0f0a1c", parent:'Ruins', floors:4 },
+      // ภายในอาคารหมู่บ้าน (เข้าได้จริง ตกแต่งตามอาชีพ)
+      ShopNils:   { name:"ร้านนิลส์",               en:"Nils' Shop",         type:'inside', biome:'interior', mini:"#3a2c16", interior:'shop' },
+      HomeRowan:  { name:"บ้านผู้เฒ่าโรวัน",        en:"Rowan's Home",       type:'inside', biome:'interior', mini:"#2c3a1e", interior:'elder' },
+      HomeMaya:   { name:"บ้านมายา",                en:"Maya's Home",        type:'inside', biome:'interior', mini:"#243247", interior:'herb' },
+      HomeTaro:   { name:"บ้านทาโร่",               en:"Taro's Home",        type:'inside', biome:'interior', mini:"#3a2a1e", interior:'kid' },
     };
     function zoneMeta(m){ return ZONE_META[m] || { name:m, en:m, type:'wild', biome:'forest', mini:"#2c2013" }; }
     function isDungeonZone(m){ return zoneMeta(m).type === 'dungeon'; }
@@ -2098,7 +2127,17 @@
         { x:430, y:0,   w:100, h:26,  to:'Farm', label:'กลับฟาร์ม' },
         { x:0,   y:280, w:28,  h:120, to:'Dungeon', label:'ป่ากระซิบ' },        // ขอบซ้าย → ป่า
         { x:932, y:280, w:28,  h:120, to:'Snow',    label:'ทะเลสาบกระจก' },     // ขอบขวา → ทะเลสาบ
+        // ประตูเข้าอาคารในหมู่บ้าน (ตรงกับบ้านใน VILLAGE_HOUSES) — เข้าไปดู interior ได้จริง
+        { x:98,  y:168, w:28, h:16, to:'HomeRowan', door:true, label:'บ้านโรวัน' },
+        { x:256, y:168, w:28, h:16, to:'HomeMaya',  door:true, label:'บ้านมายา' },
+        { x:422, y:168, w:28, h:16, to:'ShopNils',  door:true, label:'ร้านนิลส์' },
+        { x:565, y:168, w:28, h:16, to:'HomeTaro',  door:true, label:'บ้านทาโร่' },
       ],
+      // ทางออกจาก interior กลับหมู่บ้าน (ขอบล่างกลางห้อง)
+      ShopNils:  [ { x:270, y:454, w:100, h:26, to:'Village', label:'ออกไปหมู่บ้าน' } ],
+      HomeRowan: [ { x:270, y:454, w:100, h:26, to:'Village', label:'ออกไปหมู่บ้าน' } ],
+      HomeMaya:  [ { x:270, y:454, w:100, h:26, to:'Village', label:'ออกไปหมู่บ้าน' } ],
+      HomeTaro:  [ { x:270, y:454, w:100, h:26, to:'Village', label:'ออกไปหมู่บ้าน' } ],
       // ป่ากระซิบ (Whispering Woods) — overworld + ประตูลงวิหารกระซิบ
       Dungeon: [
         { x:500, y:734, w:96, h:26,  to:'Farm',    label:'กลับฟาร์ม' },
@@ -2133,6 +2172,29 @@
       Skyhold:     [ { x:0, y:180, w:28, h:120, to:'Ruins',   label:'ออกจากหอ' },     { x:600, y:190, w:40, h:100, to:'Skyhold',     stairs:true, label:'บันไดลงชั้นถัดไป' } ],
     };
     let dungeonFloor = 1; // ชั้นปัจจุบันของดันเจี้ยน (บอสอยู่ชั้นสุดท้าย)
+
+    // ---------- ผลไม้ธาตุประจำโซน (เดินเก็บได้ · ออกผลใหม่ทุกเช้า) ----------
+    // แต่ละดินแดนมีพุ่มผลไม้ธาตุของตัวเอง — เก็บไปป้อนสัตว์เลี้ยงเพื่อกำหนดธาตุก่อนวิวัฒนาการ
+    const ZONE_FORAGE = { Dungeon:'leafBerry', Snow:'waterBerry', Volcano:'fireBerry', Ruins:'electricBerry', Cave:'earthBerry' };
+    const BERRY_INFO = {
+      leafBerry:    { icon:'🍏', name:'Leaf Berry',     color:'#8bc34a' },
+      waterBerry:   { icon:'🫐', name:'Water Berry',    color:'#4fc3f7' },
+      fireBerry:    { icon:'🍓', name:'Fire Berry',     color:'#ff5252' },
+      electricBerry:{ icon:'🍋', name:'Electric Berry', color:'#ffee58' },
+      earthBerry:   { icon:'🌰', name:'Earth Berry',    color:'#a1887f' },
+    };
+    const _forageStore = {}; // zone → [{x,y,picked}]  (สุ่มตำแหน่งครั้งเดียวต่อ session)
+    function forageNodesFor(zone){
+      if (!ZONE_FORAGE[zone]) return null;
+      if (!_forageStore[zone]){
+        const s = WORLD_SIZES[zone] || { w:canvas.width, h:canvas.height };
+        const arr = [];
+        for (let i=0;i<3;i++) arr.push({ x:130+Math.random()*(s.w-260), y:130+Math.random()*(s.h-260), picked:false });
+        _forageStore[zone] = arr;
+      }
+      return _forageStore[zone];
+    }
+    function resetForage(){ for (const z in _forageStore) for (const n of _forageStore[z]) n.picked = false; } // ขึ้นวันใหม่ = ออกผลใหม่
     // ---------- ขนาดโลกต่อโซน + กล้องเลื่อนตาม (Stardew-style) ----------
     // โซน overworld ใหญ่กว่าจอ (640x480) → กล้องเลื่อนตามผู้เล่น · ดันเจี้ยนคงจอเดียว (สู้ในกรอบ)
     const WORLD_SIZES = {
@@ -4076,6 +4138,11 @@
       } else if (newMap === "Skyhold"){
         mapBanner = { text:"🏛️ หอสกายโฮลด์", sub:"Skyhold Observatory — 4 ชั้น บอสอยู่ยอด/ก้นหอ", timer:130 };
         updateEVA("ลงสู่หอสกายโฮลด์! หอนี้ลึก 4 ชั้น สิ่งพิทักษ์แข็งขึ้นทุกชั้น — ลงบันไดทางขวาไปจนถึงชั้นสุดท้ายเพื่อเจอบอส");
+      } else if (meta.interior){
+        mapBanner = { text:`🚪 ${meta.name}`, sub:"เดินออกทางประตูล่างเพื่อกลับหมู่บ้าน", timer:110 };
+        updateEVA(meta.interior==='shop'
+          ? `เข้ามาใน${meta.name}! กลางวันนิลส์อยู่หน้าร้าน (คุยเพื่อซื้อของ) กลางคืนเขาเข้ามาในนี้ — ออกทางประตูล่าง`
+          : `เข้ามาใน${meta.name} เดินดูของตกแต่งได้เลย · กลางคืนเจ้าของบ้านจะกลับมานอนที่นี่ — ออกทางประตูล่าง`);
       } else if (newMap === "Home"){
         mapBanner = { text:"บ้านของเรา", sub:"เตียงนอน 😴 · กล่องขายของ 📦", timer:110 };
         updateEVA("เข้าบ้านแล้ว! เดินไปที่เตียงกด SPACE เพื่อนอนจบวัน · ใส่ของในกล่องขายทางขวา");
@@ -4373,6 +4440,7 @@
     // เอฟเฟกต์ขึ้นวันใหม่ — ทำงานตอน endDay (ย้ายมาจาก game loop เดิม)
     function applyNewDay(){
       plots.forEach(p=>{ p.watered = false; }); // ดินแห้งทุกเช้า ต้องรดใหม่ (สปริงเกอร์รดให้ผ่าน naturallyWatered)
+      if (typeof resetForage==='function') resetForage(); // พุ่มผลไม้ธาตุออกผลใหม่ทุกเช้า
       if (currentFestival) endFestival(currentFestival);
       currentFestival = activeFestival();
       if (currentFestival) startFestival(currentFestival);
@@ -4964,6 +5032,21 @@
           if (e.squish>0) e.squish--;
           // ต้องกำลังเดิน + ตัวชนกันจริง ถึงเริ่มต่อสู้ (ยืนเฉยข้างๆ ไม่โดนลากเข้าสู้)
           if (player.moving && Math.hypot(pcx-e.x, pcy-e.y) < 28) startBattle(e);
+        }
+      }
+
+      // เก็บผลไม้ธาตุจากพุ่ม (เดินไปทับ) — ประจำแต่ละดินแดน ออกผลใหม่ทุกเช้า
+      const _fnodes = forageNodesFor(currentMap);
+      if (_fnodes){
+        const berry = ZONE_FORAGE[currentMap], bi = BERRY_INFO[berry];
+        const pcx=player.x+player.size/2, pcy=player.y+player.size/2;
+        for (const n of _fnodes){
+          if (n.picked) continue;
+          if (Math.hypot(pcx-n.x, pcy-n.y) < 28){
+            n.picked = true; inv[berry] = (inv[berry]||0) + 1;
+            spawnText(n.x, n.y-18, `+1 ${bi.icon}`, bi.color); sfx.pickup();
+            updateEVA(`${bi.icon} เก็บ ${bi.name} จาก${zoneMeta(currentMap).name}! ป้อนสัตว์เลี้ยงก่อนวิวัฒนาการเพื่อกำหนดธาตุ · พุ่มจะออกผลใหม่พรุ่งนี้`);
+          }
         }
       }
 
@@ -5667,11 +5750,87 @@
         for (let i=0;i<7;i++){ const x=80+i*((WW-120)/6), y=WH*0.4+_rnd2(i,2)*WH*0.4; ctx.fillRect(x,y,18,60); ctx.fillRect(x-5,y-8,28,12); }
         if ((frameCount % 150) < 4){ ctx.fillStyle="rgba(200,220,255,0.35)"; ctx.fillRect(0,0,WW,WH); }
       }
+      drawCritters(b, WW, WH); // สิ่งมีชีวิตเคลื่อนไหว (ผีเสื้อ/แมลงปอ/ค้างคาว ฯลฯ)
       if (b!=='crystal' && b!=='volcano'){
         if (phase==='night'){ ctx.fillStyle='rgba(10,20,55,0.42)'; ctx.fillRect(0,0,WW,WH); }
         else if (phase==='dusk'){ ctx.fillStyle='rgba(255,110,60,0.16)'; ctx.fillRect(0,0,WW,WH); }
       }
       if (weather!=='clear' && (b==='forest'||b==='lake'||b==='storm')) drawRain();
+      drawForage(); // พุ่มผลไม้ธาตุ (วาดหลัง tint ให้เรืองแสงเด่น)
+    }
+    // ---------- สิ่งมีชีวิต/บรรยากาศเคลื่อนไหวต่อไบโอม (เติมชีวิตชีวา) ----------
+    function drawCritters(b, WW, WH){
+      const t = frameCount;
+      if (b==='forest'){
+        // ผีเสื้อบินวนเป็นเลขแปด
+        const cols=['#ffb3c1','#fff176','#b39ddb','#ff8a65'];
+        for (let i=0;i<7;i++){
+          const bx=(i*160+80)%WW + Math.sin(t*0.02+i)*40;
+          const by=(i*97+120)%(WH-120)+90 + Math.cos(t*0.03+i*2)*26;
+          const flap=Math.sin(t*0.4+i)>0?1:0.4;
+          ctx.fillStyle=cols[i%cols.length];
+          ctx.beginPath(); ctx.ellipse(bx-3, by, 3, 4*flap, 0,0,Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.ellipse(bx+3, by, 3, 4*flap, 0,0,Math.PI*2); ctx.fill();
+        }
+      } else if (b==='lake'){
+        // แมลงปอเหนือน้ำ + วงกระเพื่อม/ปลากระโดด
+        ctx.strokeStyle="rgba(220,245,255,0.5)"; ctx.lineWidth=1.5;
+        for (let i=0;i<5;i++){
+          const rt=(t*0.9+i*80)% 200; const rr=rt*0.4;
+          const rx=(i*190+120)%WW, ry=(i*130+180)%(WH-160)+120;
+          if (rt<160){ ctx.globalAlpha=1-rt/160; ctx.beginPath(); ctx.ellipse(rx,ry,rr,rr*0.5,0,0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1; }
+        }
+        for (let i=0;i<5;i++){
+          const dx=(i*150+60)%WW + Math.sin(t*0.05+i)*50, dy=(i*88+90)%(WH-140)+70 + Math.cos(t*0.06+i)*18;
+          ctx.fillStyle="rgba(120,200,180,0.9)"; ctx.fillRect(dx-1, dy-4, 2, 8);
+          const fl=Math.sin(t*0.5+i)>0?1:0.3; ctx.fillStyle="rgba(180,230,255,0.6)";
+          ctx.beginPath(); ctx.ellipse(dx-3,dy-3,4,1.5*fl,0.5,0,Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.ellipse(dx+3,dy-3,4,1.5*fl,-0.5,0,Math.PI*2); ctx.fill();
+        }
+      } else if (b==='crystal'){
+        // ค้างคาวประกาย + ประกายลอย
+        for (let i=0;i<6;i++){
+          const bx=(i*170+t*0.6)%WW, by=90+Math.abs(Math.sin(t*0.04+i))*180;
+          ctx.fillStyle="#2a2038";
+          const wf=Math.sin(t*0.5+i)*4;
+          ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx-7,by-3-wf); ctx.lineTo(bx,by-1); ctx.lineTo(bx+7,by-3-wf); ctx.closePath(); ctx.fill();
+        }
+        for (let i=0;i<16;i++){ const sx=(i*67+t*0.3)%WW, sy=(i*90+Math.sin(t*0.03+i)*20)%(WH); ctx.fillStyle=`rgba(150,210,255,${0.3+Math.sin(t*0.06+i)*0.3})`; ctx.fillRect(sx,sy,2,2); }
+      } else if (b==='volcano'){
+        // ฟองลาวาผุด
+        for (let i=0;i<8;i++){
+          const bx=(i*130+40)%WW, base=WH-30-((t*0.7+i*40)%120);
+          const r=2+Math.sin(t*0.1+i)*1.5;
+          ctx.fillStyle=`rgba(255,${120+i*10},40,0.8)`; ctx.beginPath(); ctx.arc(bx, base, r, 0, Math.PI*2); ctx.fill();
+        }
+      } else if (b==='storm'){
+        // ประกายไฟฟ้าลอย + สายฟ้าเส้นเล็กเป็นครั้งคราว
+        for (let i=0;i<14;i++){ const sx=(i*80+t*0.4)%WW, sy=(i*70+Math.sin(t*0.05+i)*30)%(WH-100)+60; ctx.fillStyle=`rgba(180,210,255,${0.3+Math.sin(t*0.1+i)*0.3})`; ctx.fillRect(sx,sy,2,2); }
+        if ((t%90)<3){ ctx.strokeStyle="rgba(200,225,255,0.7)"; ctx.lineWidth=2; const lx=(t*7)%WW; ctx.beginPath(); ctx.moveTo(lx,40); ctx.lineTo(lx+12,90); ctx.lineTo(lx-6,120); ctx.lineTo(lx+8,170); ctx.stroke(); }
+      }
+    }
+    // ---------- พุ่มผลไม้ธาตุ (เดินเก็บได้) ----------
+    function drawForage(){
+      const fnodes = (typeof forageNodesFor==='function') ? forageNodesFor(currentMap) : null;
+      if (!fnodes) return;
+      const bi = BERRY_INFO[ZONE_FORAGE[currentMap]];
+      const pcx=player.x+player.size/2, pcy=player.y+player.size/2;
+      for (const n of fnodes){
+        drawShadow(n.x, n.y+11, 14, 5);
+        ctx.fillStyle="#356a26"; ctx.beginPath(); ctx.arc(n.x, n.y, 13, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle="#4a8a3a"; ctx.beginPath(); ctx.arc(n.x-4, n.y-4, 8, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle="#3a7030"; ctx.beginPath(); ctx.arc(n.x+5, n.y-1, 7, 0, Math.PI*2); ctx.fill();
+        if (!n.picked){
+          ctx.save(); ctx.shadowColor=bi.color; ctx.shadowBlur=9; ctx.fillStyle=bi.color;
+          for (const o of [[-5,2],[5,3],[0,-4]]){ ctx.beginPath(); ctx.arc(n.x+o[0], n.y+o[1], 3.4, 0, Math.PI*2); ctx.fill(); }
+          ctx.restore();
+          if (Math.hypot(pcx-n.x, pcy-n.y) < 46){
+            const bob=Math.sin(frameCount*0.15)*2;
+            ctx.font="11px sans-serif"; ctx.textAlign="center"; ctx.fillStyle="#fff2cf";
+            ctx.fillText(`${bi.icon} เดินเก็บ`, n.x, n.y-20+bob); ctx.textAlign="left";
+          }
+        }
+      }
     }
     // ---------- ดันเจี้ยน (สู้บอส) — จอเดียว มืด มีคบเพลิง ----------
     function drawDungeonBiome(meta){
@@ -5943,10 +6102,18 @@
       }
     }
     function drawNPCs(){
-      // วาด NPC ทุกคนที่อยู่โซนเดียวกับผู้เล่น — สี/เงื่อนไข ❗ มาจาก registry (02b-npcs.js)
+      // วาด NPC ที่ "อยู่โซนนี้ตอนนี้" (กลางคืนเข้าบ้าน) + ไอคอนกิจกรรมตามอาชีพ/เวลา
       for (const n of NPCS){
-        if (n.map !== currentMap) continue;
-        drawNPCVisual(n, n.robeColor, n.hoodColor, npcAttention(n));
+        if (npcZone(n) !== currentMap) continue;
+        const p = npcPos(n);
+        drawNPCVisual({ ...n, x:p.x, y:p.y }, n.robeColor, n.hoodColor, npcAttention(n));
+        const act = npcActivityIcon(n);
+        if (act){
+          const bob = Math.sin(frameCount*0.08 + n.x)*2;
+          ctx.font = "13px sans-serif"; ctx.textAlign = "center";
+          ctx.fillText(act, p.x + n.size*0.7, p.y - n.size*0.9 + bob);
+          ctx.textAlign = "left";
+        }
       }
     }
 
@@ -6182,6 +6349,8 @@
         drawHomeInterior();
       } else if (currentMap === "Village"){
         drawVillage();
+      } else if (zoneMeta(currentMap).interior){
+        drawNpcInterior(zoneMeta(currentMap).interior);
       } else if (isDungeonZone(currentMap)){
         drawDungeonBiome(zoneMeta(currentMap));
       } else {
@@ -6300,6 +6469,89 @@
       ctx.fillStyle = "#8aa0b0"; ctx.beginPath(); ctx.arc(320, 400, 26, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = "#5f8f98"; ctx.beginPath(); ctx.arc(320, 400, 18, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = "#bfe0e8"; ctx.beginPath(); ctx.arc(320, 400, 7, 0, Math.PI*2); ctx.fill();
+      // ป้าย 🚪 เหนือประตูบ้านแต่ละหลัง (บอกว่าเข้าได้)
+      for (const h of VILLAGE_HOUSES){
+        const dx=h.x+h.w/2, near=Math.hypot((player.x+player.size/2)-dx,(player.y+player.size/2)-(h.y+h.h))<70;
+        ctx.font="12px sans-serif"; ctx.textAlign="center"; ctx.fillStyle="#fff2cf";
+        ctx.fillText(near?"🚪 เข้าไปดู":"🚪", dx, h.y+h.h-6);
+        ctx.textAlign="left";
+      }
+    }
+    // ---------- ภายในอาคาร NPC (เข้าได้จริง · ตกแต่งตามอาชีพ) ----------
+    function drawNpcInterior(kind){
+      const W=canvas.width, H=canvas.height;
+      // พื้นไม้
+      ctx.fillStyle="#7a5638"; ctx.fillRect(0,0,W,H);
+      ctx.strokeStyle="rgba(0,0,0,0.1)"; ctx.lineWidth=1;
+      for (let y=96;y<H;y+=28){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+      // ผนังบน (สีตามอาชีพ)
+      const wall = { shop:'#b98a52', elder:'#7d9160', herb:'#6f8aa6', kid:'#d99a6e' }[kind] || '#a98a6a';
+      ctx.fillStyle=wall; ctx.fillRect(0,0,W,96);
+      ctx.fillStyle="rgba(0,0,0,0.16)"; ctx.fillRect(0,94,W,5);
+      // พรม
+      ctx.fillStyle="rgba(120,60,70,0.28)"; ctx.beginPath(); ctx.roundRect(210,300,220,150,12); ctx.fill();
+      // ประตูออก (ล่างกลาง — ตรงกับ GATE to Village)
+      ctx.fillStyle="#3a2414"; ctx.fillRect(288,H-32,64,32);
+      ctx.fillStyle="#5a3c22"; ctx.fillRect(294,H-28,52,28);
+      ctx.fillStyle="#ffd54f"; ctx.beginPath(); ctx.arc(338,H-16,3,0,Math.PI*2); ctx.fill();
+
+      if (kind==='shop'){
+        // เคาน์เตอร์ + ชั้นวางสินค้า + ป้าย OPEN
+        ctx.fillStyle="#8a5a30"; ctx.fillRect(120,250,220,40); ctx.strokeStyle="#5a3a1c"; ctx.lineWidth=2; ctx.strokeRect(120,250,220,40);
+        ctx.fillStyle="#b98a52"; ctx.fillRect(120,250,220,10);
+        // ชั้นวางของบนผนัง
+        for (let s=0;s<2;s++){ const sy=40+s*26; ctx.fillStyle="#6a4a28"; ctx.fillRect(60,sy,240,7);
+          const goods=['#4CAF50','#ff5722','#4fc3f7','#ffd54f','#9575cd','#8bc34a'];
+          for (let i=0;i<6;i++){ ctx.fillStyle=goods[(i+s)%goods.length]; ctx.fillRect(70+i*38, sy-14, 16, 14); } }
+        // ถังสินค้า
+        ctx.fillStyle="#8a6a3a"; ctx.beginPath(); ctx.roundRect(430,300,44,54,6); ctx.fill(); ctx.strokeStyle="#5a3a1c"; ctx.strokeRect(430,300,44,54);
+        ctx.fillStyle="#c8a060"; ctx.beginPath(); ctx.arc(452,300,20,Math.PI,0); ctx.fill();
+        // ป้าย OPEN
+        ctx.fillStyle="#2e7d32"; ctx.fillRect(400,120,90,30); ctx.fillStyle="#fff"; ctx.font="bold 15px sans-serif"; ctx.textAlign="center"; ctx.fillText("OPEN 🪙", 445,141);
+        ctx.font="bold 13px Kanit,sans-serif"; ctx.fillStyle="#3a2410"; ctx.fillText("ร้านค้านิลส์ — คุยเพื่อซื้อของ (T)", W/2, 78); ctx.textAlign="left";
+      } else if (kind==='elder'){
+        // ชั้นหนังสือ + เตาผิง + เก้าอี้
+        ctx.fillStyle="#5a3a1c"; ctx.fillRect(60,120,150,150); ctx.strokeStyle="#3a2410"; ctx.lineWidth=2; ctx.strokeRect(60,120,150,150);
+        const bk=['#8a4a4a','#4a6a8a','#6a8a4a','#8a7a3a'];
+        for (let r=0;r<4;r++){ ctx.fillStyle="#3a2410"; ctx.fillRect(66,132+r*36,138,4); for (let i=0;i<9;i++){ ctx.fillStyle=bk[(i+r)%4]; ctx.fillRect(70+i*15,138+r*36,11,26); } }
+        // เตาผิง
+        ctx.fillStyle="#6a6a72"; ctx.fillRect(430,150,130,120); ctx.fillStyle="#241a16"; ctx.fillRect(452,196,86,74);
+        const fl=6+Math.sin(frameCount*0.3)*3; ctx.fillStyle="#ff7043"; ctx.beginPath(); ctx.ellipse(495,250,18,20+fl,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle="#ffca28"; ctx.beginPath(); ctx.ellipse(495,256,9,12+fl*0.5,0,0,Math.PI*2); ctx.fill();
+        // เก้าอี้โยก
+        ctx.strokeStyle="#5a3a1c"; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(300,330,26,0.1,Math.PI-0.1); ctx.stroke();
+        ctx.font="bold 13px Kanit,sans-serif"; ctx.fillStyle="#f6ead2"; ctx.textAlign="center"; ctx.fillText("บ้านผู้เฒ่าโรวัน", W/2, 78); ctx.textAlign="left";
+      } else if (kind==='herb'){
+        // สมุนไพรแขวน + หม้อต้มยา + ชั้นขวดยา
+        for (let i=0;i<8;i++){ const hx=70+i*60; ctx.strokeStyle="#6a8a4a"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(hx,96); ctx.lineTo(hx,130+((i*13)%20)); ctx.stroke();
+          ctx.fillStyle=["#7cb342","#aed581","#558b2f"][i%3]; ctx.beginPath(); ctx.arc(hx,132+((i*13)%20),6,0,Math.PI*2); ctx.fill(); }
+        // หม้อต้ม
+        ctx.fillStyle="#37474f"; ctx.beginPath(); ctx.ellipse(180,320,40,26,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle="#66bb6a"; ctx.beginPath(); ctx.ellipse(180,312,32,16,0,0,Math.PI*2); ctx.fill();
+        for (let i=0;i<3;i++){ const by=312-((frameCount*0.5+i*20)%40); ctx.fillStyle="rgba(150,230,160,0.7)"; ctx.beginPath(); ctx.arc(170+i*12,by,3,0,Math.PI*2); ctx.fill(); }
+        // ชั้นขวดยา
+        ctx.fillStyle="#6a4a28"; ctx.fillRect(400,180,150,7);
+        const potc=['#e57373','#64b5f6','#81c784','#ba68c8','#fff176'];
+        for (let i=0;i<5;i++){ ctx.fillStyle=potc[i]; ctx.fillRect(410+i*28,160,14,20); ctx.fillStyle="#ddd"; ctx.fillRect(414+i*28,155,6,6); }
+        // กระถางต้นไม้
+        ctx.fillStyle="#a1673a"; ctx.fillRect(470,320,34,30); ctx.fillStyle="#4a8a3a"; ctx.beginPath(); ctx.arc(487,318,18,0,Math.PI*2); ctx.fill();
+        ctx.font="bold 13px Kanit,sans-serif"; ctx.fillStyle="#f6ead2"; ctx.textAlign="center"; ctx.fillText("บ้านมายา — นักสมุนไพร", W/2, 78); ctx.textAlign="left";
+      } else if (kind==='kid'){
+        // เตียงเล็ก + กล่องของเล่น + ลูกบอล + รูปวาดติดผนัง
+        ctx.fillStyle="#8a5a30"; ctx.beginPath(); ctx.roundRect(70,300,140,80,6); ctx.fill();
+        ctx.fillStyle="#ef9a9a"; ctx.beginPath(); ctx.roundRect(74,304,132,40,4); ctx.fill(); ctx.fillStyle="#fff"; ctx.beginPath(); ctx.roundRect(78,308,44,26,3); ctx.fill();
+        // กล่องของเล่น
+        ctx.fillStyle="#42a5f5"; ctx.fillRect(430,320,70,50); ctx.strokeStyle="#1565c0"; ctx.lineWidth=2; ctx.strokeRect(430,320,70,50);
+        ctx.fillStyle="#ffb74d"; ctx.beginPath(); ctx.arc(452,318,10,Math.PI,0); ctx.fill();
+        ctx.fillStyle="#66bb6a"; ctx.fillRect(478,300,12,20);
+        // ลูกบอลกลิ้ง
+        const ballx=280+Math.sin(frameCount*0.05)*40; ctx.fillStyle="#e53935"; ctx.beginPath(); ctx.arc(ballx,400,12,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(ballx,400,12,0.6,1.9); ctx.fill();
+        // รูปวาดติดผนัง
+        for (let i=0;i<3;i++){ ctx.fillStyle="#fff"; ctx.fillRect(120+i*90,30,54,42); ctx.strokeStyle="#8a6a3a"; ctx.strokeRect(120+i*90,30,54,42);
+          ctx.fillStyle=["#ffb74d","#81c784","#64b5f6"][i]; ctx.beginPath(); ctx.arc(147+i*90,52,10,0,Math.PI*2); ctx.fill(); }
+        ctx.font="bold 13px Kanit,sans-serif"; ctx.fillStyle="#3a2410"; ctx.textAlign="center"; ctx.fillText("บ้านทาโร่", W/2, 78); ctx.textAlign="left";
+      }
     }
 
     // ---------- Minimap (มุมซ้ายบน — สไตล์ Moonstone) ----------
@@ -6347,7 +6599,7 @@
         m.fillRect(g.x*sx, g.y*sy, Math.max(3, g.w*sx), Math.max(3, g.h*sy));
       }
       // NPC / ศัตรู
-      for (const n of NPCS){ if (n.map === currentMap) dot(n.x, n.y, "#e0e0e0", 2); }
+      for (const n of NPCS){ if (npcZone(n) === currentMap){ const p=npcPos(n); dot(p.x, p.y, "#e0e0e0", 2); } }
       for (const e of enemies) dot(e.x, e.y, "#ff5252", 2);
       // ผู้เล่น (จุดเหลืองใหญ่ + ขอบขาว)
       const px = (player.x+player.size/2)*sx, py = (player.y+player.size/2)*sy;
