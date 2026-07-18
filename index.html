@@ -551,17 +551,18 @@
   <h1>PROJECT EDEN</h1>
   <div class="subtitle pixel">: GENESIS &nbsp;·&nbsp; ALPHA 0.7</div>
 
-  <button id="menuBtn" title="เมนู (Tab)">☰</button>
+  <button id="menuBtn" title="เมนู (Tab)" data-en-title="Menu (Tab)">☰</button>
   <div class="toolbar">
-    <div class="toolbarTitle">เมนู · กด Tab เพื่อเปิด/ปิด</div>
-    <button id="statsToggle">📊 สถานะ</button>
-    <button id="questToggle">📜 เควส</button>
-    <button id="controlsToggle">⌨ ปุ่มควบคุม</button>
-    <button id="shopToggle">🛒 ร้านค้า</button>
-    <button id="craftToggle">🔨 ช่างฝีมือ</button>
+    <div class="toolbarTitle" data-en="Menu · press Tab to toggle">เมนู · กด Tab เพื่อเปิด/ปิด</div>
+    <button id="statsToggle" data-en="📊 Stats">📊 สถานะ</button>
+    <button id="questToggle" data-en="📜 Quests">📜 เควส</button>
+    <button id="controlsToggle" data-en="⌨ Controls">⌨ ปุ่มควบคุม</button>
+    <button id="shopToggle" data-en="🛒 Shop">🛒 ร้านค้า</button>
+    <button id="craftToggle" data-en="🔨 Crafting">🔨 ช่างฝีมือ</button>
     <button id="soundToggle">🔊 Sound: On</button>
-    <button id="helpBtn">❓ How to Play</button>
-    <button id="fullscreenToggle">⛶ เต็มจอ</button>
+    <button id="langToggle" class="langToggleBtn">🌐 EN</button>
+    <button id="helpBtn" data-en="❓ How to Play">❓ How to Play</button>
+    <button id="fullscreenToggle" data-en="⛶ Fullscreen">⛶ เต็มจอ</button>
   </div>
 
   <div class="frame">
@@ -584,12 +585,13 @@
       <div class="egg">🥚</div>
       <div class="tt1">PROJECT EDEN</div>
       <div class="tt2">: GENESIS — LIVING WORLD DEMO</div>
-      <button class="startBtn" id="startBtn">▶ กด SPACE หรือคลิกเพื่อเริ่ม</button>
+      <button class="startBtn" id="startBtn" data-en="▶ Press SPACE or click to start">▶ กด SPACE หรือคลิกเพื่อเริ่ม</button>
       <div class="menuRow">
-        <button class="menuBtn" id="fullscreenToggleMenu">⛶ เต็มจอ</button>
-        <button class="menuBtn" id="helpBtnMenu">❓ วิธีเล่น</button>
+        <button class="menuBtn langToggleBtn" id="langToggleTitle">🌐 EN</button>
+        <button class="menuBtn" id="fullscreenToggleMenu" data-en="⛶ Fullscreen">⛶ เต็มจอ</button>
+        <button class="menuBtn" id="helpBtnMenu" data-en="❓ How to Play">❓ วิธีเล่น</button>
       </div>
-      <div class="featList">🌱 ปลูก &nbsp;·&nbsp; 🐾 เลี้ยงและวิวัฒนาการ &nbsp;·&nbsp; ⚔️ ผจญภัย &nbsp;·&nbsp; 🍳 ปรุงอาหาร &nbsp;·&nbsp; 🥚 ผสมพันธุ์</div>
+      <div class="featList" data-en="🌱 Farm &nbsp;·&nbsp; 🐾 Raise &amp; evolve &nbsp;·&nbsp; ⚔️ Adventure &nbsp;·&nbsp; 🍳 Cook &nbsp;·&nbsp; 🥚 Breed">🌱 ปลูก &nbsp;·&nbsp; 🐾 เลี้ยงและวิวัฒนาการ &nbsp;·&nbsp; ⚔️ ผจญภัย &nbsp;·&nbsp; 🍳 ปรุงอาหาร &nbsp;·&nbsp; 🥚 ผสมพันธุ์</div>
       <div class="verTag">ALPHA 0.7 · NEW ZONES UPDATE</div>
     </div>
     <div id="storyScreen">
@@ -598,14 +600,14 @@
       <div class="storyText" id="storyText"></div>
       <div class="storyDots" id="storyDots"></div>
       <div class="storyNav">
-        <button class="btn" id="storySkip">ข้ามเรื่องราว</button>
-        <button class="btn" id="storyNext" style="background:linear-gradient(180deg,#3a5a2a,#1c3a0f);">ถัดไป ▶</button>
+        <button class="btn" id="storySkip" data-en="Skip story">ข้ามเรื่องราว</button>
+        <button class="btn" id="storyNext" data-en="Next ▶" style="background:linear-gradient(180deg,#3a5a2a,#1c3a0f);">ถัดไป ▶</button>
       </div>
     </div>
     <div id="starterScreen">
-      <div class="starterTag">เลือกสัตว์เลี้ยงตัวแรก</div>
+      <div class="starterTag" data-en="Choose your first companion">เลือกสัตว์เลี้ยงตัวแรก</div>
       <div class="starterTitle">CHOOSE YOUR COMPANION</div>
-      <div class="starterDesc">ก่อนเริ่มการเดินทาง เลือกสัตว์เลี้ยงตัวแรกที่จะร่วมผจญภัยไปกับเจ้า แต่ละตัวมีนิสัยและความถนัดต่างกัน แต่ทุกตัวสามารถวิวัฒนาการไปเป็นธาตุใดก็ได้เหมือนกันหมด</div>
+      <div class="starterDesc" data-en="Before your journey begins, choose your first companion. Each has its own personality and strengths, but every one of them can evolve into any element.">ก่อนเริ่มการเดินทาง เลือกสัตว์เลี้ยงตัวแรกที่จะร่วมผจญภัยไปกับเจ้า แต่ละตัวมีนิสัยและความถนัดต่างกัน แต่ทุกตัวสามารถวิวัฒนาการไปเป็นธาตุใดก็ได้เหมือนกันหมด</div>
       <div id="starterGrid"></div>
     </div>
 
@@ -620,8 +622,8 @@
     <button class="battleBtn move" id="battleMoveBtn">🚶 Move</button>
   </div>
   <div id="battleMoveMenu" class="hidden">
-    <button class="battleBtn cancel" id="battleCancelBtn">✕ ยกเลิก</button>
-    <button class="battleBtn confirm" id="battleConfirmBtn">✓ ยืนยันเดิน</button>
+    <button class="battleBtn cancel" id="battleCancelBtn" data-en="✕ Cancel">✕ ยกเลิก</button>
+    <button class="battleBtn confirm" id="battleConfirmBtn" data-en="✓ Confirm move">✓ ยืนยันเดิน</button>
   </div>
 
   <div id="tutorialBar">
@@ -630,13 +632,13 @@
       <div class="tut-progress" id="tutorialProgress">MAIN QUEST 1/12</div>
       <div class="tut-text" id="tutorialText">ใช้ W A S D เพื่อเดินไปรอบฟาร์ม</div>
     </div>
-    <button class="tut-close" id="tutorialClose" title="ซ่อนคำแนะนำ">✕</button>
+    <button class="tut-close" id="tutorialClose" title="ซ่อนคำแนะนำ" data-en-title="Hide hint">✕</button>
   </div>
 
   <div id="ui">
     <div class="card" style="--accent:var(--sage-dark);">
-      <h3>🎒 กระเป๋าผู้เล่น</h3>
-      <div class="coinRow"><span>🪙 เหรียญ</span><span id="ui-coin">20</span></div>
+      <h3 data-en="🎒 Inventory">🎒 กระเป๋าผู้เล่น</h3>
+      <div class="coinRow"><span data-en="🪙 Coins">🪙 เหรียญ</span><span id="ui-coin">20</span></div>
       <div class="invGrid">
         <div class="invChip"><span class="ic">🌱</span><span class="val" id="ui-seeds">3</span></div>
         <div class="invChip"><span class="ic">🥦</span><span class="val" id="ui-veggie">0</span></div>
@@ -653,7 +655,7 @@
         <div class="invChip"><span class="ic">🍓</span><span class="val" id="ui-berries">0</span></div>
       </div>
       <div class="metaLine" id="ui-seedsel">เมล็ดที่เลือก [Z]: 🥦 ผัก</div>
-      <div class="row" style="margin-top:8px;"><span>⚡ พลังงาน</span><span id="ui-energy">100/100</span></div>
+      <div class="row" style="margin-top:8px;"><span data-en="⚡ Energy">⚡ พลังงาน</span><span id="ui-energy">100/100</span></div>
       <div class="barTrack"><div class="barFill energy" id="ui-energybar" style="width:100%;"></div></div>
     </div>
 
@@ -673,48 +675,48 @@
       </div>
       <div class="miniGrid">
         <div class="miniStat"><span class="k">⚔️ ATK</span><span class="v" id="ui-batk">15</span></div>
-        <div class="miniStat"><span class="k">🥦 ผัก</span><span class="v" id="ui-bveggie">0</span></div>
-        <div class="miniStat"><span class="k">🍖 เนื้อ</span><span class="v" id="ui-bmeat">0</span></div>
-        <div class="miniStat"><span class="k">ธาตุ</span><span class="v" id="ui-belement" title="ธาตุประจำตัว">🔥 ธาตุ</span></div>
-        <div class="miniStat"><span class="k">นิสัย</span><span class="v" id="ui-bpersonality" title="นิสัยประจำตัว">🐾 นิสัย</span></div>
+        <div class="miniStat"><span class="k" data-en="🥦 Veg">🥦 ผัก</span><span class="v" id="ui-bveggie">0</span></div>
+        <div class="miniStat"><span class="k" data-en="🍖 Meat">🍖 เนื้อ</span><span class="v" id="ui-bmeat">0</span></div>
+        <div class="miniStat"><span class="k" data-en="Element">ธาตุ</span><span class="v" id="ui-belement" title="ธาตุประจำตัว" data-en-title="Element">🔥 ธาตุ</span></div>
+        <div class="miniStat"><span class="k" data-en="Nature">นิสัย</span><span class="v" id="ui-bpersonality" title="นิสัยประจำตัว" data-en-title="Personality">🐾 นิสัย</span></div>
       </div>
       <div class="row" style="margin-top:7px; font-size:var(--fs-small);"><span id="ui-btrait" title="Trait ติดตัว">✨ Trait</span><span id="ui-bmutant"></span></div>
       <div class="metaLine" id="ui-biv">IV HP · ATK · SPD</div>
       <div class="metaLine" id="ui-bgear">อุปกรณ์: ไม่มี</div>
       <div class="metaLine" id="ui-bpath"></div>
       <div class="metaLine" id="ui-baffinity">Affinity: -</div>
-      <button class="btn" id="berryFeedBtn" style="width:100%; margin-top:8px;">🍓 ป้อนผลไม้ธาตุ</button>
+      <button class="btn" id="berryFeedBtn" data-en="🍓 Feed elemental berry" style="width:100%; margin-top:8px;">🍓 ป้อนผลไม้ธาตุ</button>
       <div id="berryPanel"></div>
-      <button class="btn" id="storageToggle" style="width:100%; margin-top:6px;">📦 คลังสัตว์เลี้ยง (สลับตัว)</button>
+      <button class="btn" id="storageToggle" data-en="📦 Pet storage (swap)" style="width:100%; margin-top:6px;">📦 คลังสัตว์เลี้ยง (สลับตัว)</button>
     </div>
 
     <div class="card" style="--accent:var(--sky-dark);">
-      <h3>🗺️ แผนที่</h3>
+      <h3 data-en="🗺️ Map">🗺️ แผนที่</h3>
       <div class="row"><span id="ui-map">Farm Zone</span></div>
-      <div class="metaLine">
-        ขอบขวา → Forest Dungeon (→ ซากอารยธรรม)<br>ขอบซ้าย → Crystal Cave (→ ภูเขาไฟ)<br>ขอบบน → ภูเขาหิมะ<br>รังตรงกลางฟาร์ม → ผสมพันธุ์
+      <div class="metaLine" data-en="Top edge → Whispering Woods · Left edge → Mirror Lake · Bottom → Eden Valley · Nest in the farm → Breeding">
+        ขอบบน → ป่ากระซิบ<br>ขอบซ้าย → ทะเลสาบกระจก<br>ขอบล่าง → หุบเขาเอเดน<br>รังตรงกลางฟาร์ม → ผสมพันธุ์
       </div>
     </div>
   </div>
 
   <div id="ui2">
     <div class="card" style="--accent:var(--berry-dark);">
-      <h3>🐣 ปาร์ตี้สัตว์เลี้ยง (Q สลับ)</h3>
+      <h3 data-en="🐣 Pet party (Q swap)">🐣 ปาร์ตี้สัตว์เลี้ยง (Q สลับ)</h3>
       <div id="ui-party"></div>
     </div>
     <div class="card" style="--accent:var(--clay-dark);">
-      <h3>🍳 ครัว &amp; สกิล</h3>
-      <div class="metaLine">กด <kbd>C</kbd> ทำอาหารสูตรที่มีของพอ · กด <kbd>E</kbd> ใช้สกิล (ต้องปลดล็อกก่อน)</div>
+      <h3 data-en="🍳 Kitchen &amp; Skills">🍳 ครัว &amp; สกิล</h3>
+      <div class="metaLine" data-en="Press <kbd>C</kbd> to cook a recipe you can afford · <kbd>E</kbd> to use a skill (must be unlocked)">กด <kbd>C</kbd> ทำอาหารสูตรที่มีของพอ · กด <kbd>E</kbd> ใช้สกิล (ต้องปลดล็อกก่อน)</div>
       <div class="row" style="margin-top:6px;"><span>Skill Lv (1 ระดับ)</span><span id="ui-skillstate">🔒 0/1</span></div>
       <div class="barTrack"><div class="barFill skill" id="ui-skillbar" style="width:100%;"></div></div>
     </div>
     <div class="card" style="--accent:var(--plum-dark);">
-      <h3>🥚 ไข่ &amp; บันทึกเกม</h3>
-      <div class="row"><span>ไข่ที่ถืออยู่</span><span class="pill" id="ui-eggcount">0</span></div>
+      <h3 data-en="🥚 Eggs &amp; Save">🥚 ไข่ &amp; บันทึกเกม</h3>
+      <div class="row"><span data-en="Eggs held">ไข่ที่ถืออยู่</span><span class="pill" id="ui-eggcount">0</span></div>
       <div class="metaLine" id="ui-eggtimer">ไม่มีไข่ในครอบครอง</div>
-      <button class="btn" id="dex-btn" style="width:100%; margin-top:6px;">📔 สมุดสะสมสายพันธุ์</button>
-      <button class="btn" id="save-btn" style="width:100%; margin-top:6px;">💾 บันทึกเกม (P)</button>
-      <button class="btn" id="mainmenu-btn" style="width:100%; margin-top:6px;">🔄 เมนูหลัก / เปลี่ยน Slot</button>
+      <button class="btn" id="dex-btn" data-en="📔 Species Dex" style="width:100%; margin-top:6px;">📔 สมุดสะสมสายพันธุ์</button>
+      <button class="btn" id="save-btn" data-en="💾 Save game (P)" style="width:100%; margin-top:6px;">💾 บันทึกเกม (P)</button>
+      <button class="btn" id="mainmenu-btn" data-en="🔄 Main menu / change slot" style="width:100%; margin-top:6px;">🔄 เมนูหลัก / เปลี่ยน Slot</button>
       <div class="metaLine" id="save-status">ยังไม่เคยบันทึก</div>
     </div>
   </div>
@@ -731,13 +733,13 @@
     </div>
     <div class="card" style="--accent:var(--plum-dark);">
       <h3>🔖 Side Quest</h3>
-      <div id="sideQuestList" class="metaLine">คุยกับผู้เฒ่าโรวันเพื่อปลดล็อกภารกิจเสริม</div>
+      <div id="sideQuestList" class="metaLine" data-en="Talk to Elder Rowan to unlock side quests">คุยกับผู้เฒ่าโรวันเพื่อปลดล็อกภารกิจเสริม</div>
     </div>
   </div>
 
-  <button id="evaToggle" title="EVA — กดเปิด/ปิดข้อความ"><span class="eva-avatar"></span></button>
+  <button id="evaToggle" title="EVA — กดเปิด/ปิดข้อความ" data-en-title="EVA — click to toggle messages"><span class="eva-avatar"></span></button>
   <div id="eva-panel">
-    <button id="evaClose" title="ปิด">✕</button>
+    <button id="evaClose" title="ปิด" data-en-title="Close">✕</button>
     <div>
       <span class="eva-tag">EVA · AI COMPANION</span>
       <div class="eva-text" id="eva-text">กำลังโหลดข้อมูลเกม...</div>
@@ -746,40 +748,40 @@
 
   <div class="controls">
     <div class="ctrlGroup">
-      <div class="ctrlGroupTitle">🚶 เคลื่อนที่</div>
-      <div class="ctrlRow"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>เดิน / เลื่อนช่องต่อสู้</span></div>
-      <div class="ctrlRow"><kbd>SPACE</kbd><span>ใช้เครื่องมือที่เลือก · ยืนยัน/โจมตี</span></div>
+      <div class="ctrlGroupTitle" data-en="🚶 Movement">🚶 เคลื่อนที่</div>
+      <div class="ctrlRow"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span data-en="Walk / move battle cursor">เดิน / เลื่อนช่องต่อสู้</span></div>
+      <div class="ctrlRow"><kbd>SPACE</kbd><span data-en="Use selected tool · confirm/attack">ใช้เครื่องมือที่เลือก · ยืนยัน/โจมตี</span></div>
     </div>
     <div class="ctrlGroup">
-      <div class="ctrlGroupTitle">🧰 เครื่องมือ (Hotbar)</div>
-      <div class="ctrlRow"><kbd>1</kbd>-<kbd>6</kbd><span>เลือกเครื่องมือ (หรือคลิก)</span></div>
-      <div class="ctrlRow"><kbd>1</kbd><span>🌱 มือ/เมล็ด — ปลูก/เก็บ</span></div>
-      <div class="ctrlRow"><kbd>2</kbd><span>⚒️ จอบ — พรวนดินสร้างแปลง</span></div>
-      <div class="ctrlRow"><kbd>3</kbd><span>🚿 บัวรดน้ำ — รดแปลง</span></div>
-      <div class="ctrlRow"><kbd>4</kbd><span>🪓 ขวาน · <kbd>5</kbd> ⛏️ อีเต้อ · <kbd>6</kbd> 🎣 เบ็ด</span></div>
-      <div class="ctrlRow"><kbd>Z</kbd><span>สลับชนิดเมล็ด · <kbd>X</kbd> ปรับปรุงดิน</span></div>
-      <div class="ctrlRow"><kbd>SPACE</kbd><span>ที่เตียง (มุมซ้ายบนฟาร์ม) = นอนจบวัน</span></div>
+      <div class="ctrlGroupTitle" data-en="🧰 Tools (Hotbar)">🧰 เครื่องมือ (Hotbar)</div>
+      <div class="ctrlRow"><kbd>1</kbd>-<kbd>6</kbd><span data-en="Select tool (or click)">เลือกเครื่องมือ (หรือคลิก)</span></div>
+      <div class="ctrlRow"><kbd>1</kbd><span data-en="🌱 Hand/seed — plant/harvest">🌱 มือ/เมล็ด — ปลูก/เก็บ</span></div>
+      <div class="ctrlRow"><kbd>2</kbd><span data-en="⚒️ Hoe — till soil into plots">⚒️ จอบ — พรวนดินสร้างแปลง</span></div>
+      <div class="ctrlRow"><kbd>3</kbd><span data-en="🚿 Watering can — water plots">🚿 บัวรดน้ำ — รดแปลง</span></div>
+      <div class="ctrlRow"><kbd>4</kbd><span data-en="🪓 Axe · <kbd>5</kbd> ⛏️ Pickaxe · <kbd>6</kbd> 🎣 Rod">🪓 ขวาน · <kbd>5</kbd> ⛏️ อีเต้อ · <kbd>6</kbd> 🎣 เบ็ด</span></div>
+      <div class="ctrlRow"><kbd>Z</kbd><span data-en="Swap seed type · <kbd>X</kbd> upgrade soil">สลับชนิดเมล็ด · <kbd>X</kbd> ปรับปรุงดิน</span></div>
+      <div class="ctrlRow"><kbd>SPACE</kbd><span data-en="At the bed (in your Home) = sleep to end day">ที่เตียง (มุมซ้ายบนฟาร์ม) = นอนจบวัน</span></div>
     </div>
     <div class="ctrlGroup">
-      <div class="ctrlGroupTitle">🐾 ดูแลสัตว์เลี้ยง / ศึก</div>
-      <div class="ctrlRow"><kbd>F</kbd><span>ให้ผัก · <kbd>G</kbd> ให้เนื้อ</span></div>
-      <div class="ctrlRow"><kbd>E</kbd><span>ใช้สกิล · <kbd>N</kbd> ผสมพันธุ์</span></div>
-      <div class="ctrlRow"><kbd>Q</kbd><span>สลับสัตว์ / ข้ามตา</span></div>
-      <div class="ctrlRow"><kbd>C</kbd><span>ทำอาหาร · <kbd>R</kbd> ประดิษฐ์ · <kbd>T</kbd> คุย NPC</span></div>
+      <div class="ctrlGroupTitle" data-en="🐾 Pet care / battle">🐾 ดูแลสัตว์เลี้ยง / ศึก</div>
+      <div class="ctrlRow"><kbd>F</kbd><span data-en="Feed veg · <kbd>G</kbd> feed meat">ให้ผัก · <kbd>G</kbd> ให้เนื้อ</span></div>
+      <div class="ctrlRow"><kbd>E</kbd><span data-en="Use skill · <kbd>N</kbd> breed">ใช้สกิล · <kbd>N</kbd> ผสมพันธุ์</span></div>
+      <div class="ctrlRow"><kbd>Q</kbd><span data-en="Swap pet / skip turn">สลับสัตว์ / ข้ามตา</span></div>
+      <div class="ctrlRow"><kbd>C</kbd><span data-en="Cook · <kbd>R</kbd> craft · <kbd>T</kbd> talk to NPC">ทำอาหาร · <kbd>R</kbd> ประดิษฐ์ · <kbd>T</kbd> คุย NPC</span></div>
     </div>
     <div class="ctrlGroup">
-      <div class="ctrlGroupTitle">📋 ทั่วไป</div>
-      <div class="ctrlRow"><kbd>T</kbd><span>คุยกับ NPC</span></div>
-      <div class="ctrlRow"><kbd>B</kbd><span>ร้านค้า</span></div>
-      <div class="ctrlRow"><kbd>P</kbd><span>บันทึกเกม</span></div>
+      <div class="ctrlGroupTitle" data-en="📋 General">📋 ทั่วไป</div>
+      <div class="ctrlRow"><kbd>T</kbd><span data-en="Talk to NPC">คุยกับ NPC</span></div>
+      <div class="ctrlRow"><kbd>B</kbd><span data-en="Shop">ร้านค้า</span></div>
+      <div class="ctrlRow"><kbd>P</kbd><span data-en="Save game">บันทึกเกม</span></div>
     </div>
   </div>
 
   <div id="helpOverlay">
     <div id="helpCard">
-      <button class="closeHelp" id="closeHelpBtn">ปิด ✕</button>
-      <h2>วิธีเล่น</h2>
-      <h4>🎮 การควบคุมพื้นฐาน</h4>
+      <button class="closeHelp" id="closeHelpBtn" data-en="Close ✕">ปิด ✕</button>
+      <h2 data-en="How to Play">วิธีเล่น</h2>
+      <h4 data-en="🎮 Basic controls">🎮 การควบคุมพื้นฐาน</h4>
       <p><kbd>W A S D</kbd> เดิน &nbsp; <kbd>SPACE</kbd> ปลูก/เก็บเกี่ยวเมื่อยืนบนแปลงดิน</p>
       <p><kbd>1</kbd> ป้อนผักให้สัตว์เลี้ยง (ฟื้น HP) &nbsp; <kbd>2</kbd> ป้อนเนื้อ (เพิ่ม ATK)</p>
       <h4>🌱 ฟาร์มมิ่ง</h4>
@@ -788,80 +790,64 @@
       <p>ป้อนผัก 3 ครั้งจะกลายเป็น Nature Guardian, ป้อนเนื้อ 3 ครั้งจะกลายเป็น War Beast, ป้อนทั้งคู่อย่างละ 2 จะได้ Chimera Beast หายาก สัตว์เลี้ยงที่ Bond สูงและกินอาหารมากพอจะวิวัฒนาการขั้นสูงสุดพร้อมสกิลพิเศษ</p>
       <p><kbd>Q</kbd> สลับสัตว์เลี้ยงตัวหลักในปาร์ตี้ (สูงสุด 3 ตัว)</p>
       <h4>⚔️ การผจญภัย &amp; Tactical Grid Battle</h4>
-      <p>เดินไปขอบขวาของฟาร์มเพื่อเข้า Forest Dungeon หรือขอบซ้ายเพื่อเข้า Crystal Cave หรือขอบบนเพื่อเข้าภูเขาหิมะ เมื่อสัตว์เลี้ยงหรือคุณเดินเข้าใกล้ศัตรู จะเข้าสู่โหมดต่อสู้แบบ <b>Grid Tactical Turn-Based</b> ทันที</p>
-      <p>🗺️ <b>โซนสำรวจทั้งหมด:</b> จากฟาร์มไปได้ 3 ทาง — 🌲 Forest Dungeon (เดินไปสุดขอบขวาต่อเพื่อเข้า 🏛️ ซากอารยธรรม ที่มีผู้พิทักษ์โบราณชอบทำให้มึนงงและดรอปโบราณวัตถุ), 🔥 Crystal Cave (เดินไปสุดขอบขวาต่อเพื่อเข้า 🌋 ภูเขาไฟ ที่ศัตรูดุร้ายโจมตีแรงและดรอปออบซิเดียน), และ ❄️ ภูเขาหิมะ ทางขอบบนของฟาร์ม (ดรอปขนสัตว์อันอบอุ่น) แต่ละโซนมีทรัพยากรและของดรอปเฉพาะตัวที่ขายได้ในร้านค้า</p>
-      <p>ในสนามรบ ลำดับการเข้าตาขึ้นกับค่าความเร็ว เมื่อถึงตาของสัตว์เลี้ยงคุณ จะมีเมนู 4 ปุ่มขึ้นด้านล่างจอ โดย 3 ปุ่มแรกคือ <b>สกิลที่ติดตั้งไว้</b> ของสัตว์ตัวนั้น (ต่างกันตามบทบาท Tank/DPS/Support/CC เช่น โจมตี, ตั้งการ์ด, สกิลพิเศษที่แรงขึ้นแต่มีคูลดาวน์) — ช่องที่ยังไม่ปลดล็อกจะขึ้นว่า "Empty" จนกว่าจะทำ Crystal Cake ให้กิน กดปุ่มสกิลแล้วเลือกเป้าหมายด้วย <kbd>A</kbd>/<kbd>D</kbd> แล้วกด <kbd>SPACE</kbd> เพื่อยืนยัน หรือกด <b>Move</b> เพื่อเข้าโหมดเคลื่อนที่ (ใช้ <kbd>W A S D</kbd> เลือกช่องในระยะแล้วกดปุ่มยืนยัน) — การเคลื่อนที่จะจบเทิร์นทันทีและไม่สามารถโจมตีต่อได้ในตานั้น</p>
-      <p>🎭 <b>Role ในการต่อสู้:</b> สัตว์เลี้ยงและศัตรูแต่ละตัวมี Role ประจำตัว — 🛡️ <b>Tank</b> (พลังพืชผสม Chimera) HP สูง รับดาเมจน้อยลง 20% และดึงเป้าศัตรูให้โจมตีตัวเองก่อน · ⚔️ <b>DPS</b> (สาย Fire และ Seedling พื้นฐาน) โจมตีแรงกว่าปกติ 20% · ✚ <b>Support</b> (สาย Nature) แทนที่จะโจมตีศัตรู สามารถเลือกเป้าเป็นพวกเดียวกัน (วงกลมสีเขียว) เพื่อรักษา HP ได้ · 💫 <b>CC</b> (ศัตรูในป่า) โจมตีมีโอกาสทำให้เป้าหมาย "มึนงง" ข้ามเทิร์นถัดไป ดูไอคอน Role ได้ที่หัวชื่อของแต่ละตัวในสนามรบและในแผงปาร์ตี้</p>
+      <p>เดินเข้าโซนต่างๆ ผ่านประตูเชื่อม (ป่ากระซิบ / ทะเลสาบกระจก / ภูเขาซินเดอร์ / ที่ราบสายฟ้า / เหวประกาย) เมื่อ <b>ผู้เล่นเดินไปชนศัตรู</b> จะเข้าสู่โหมดต่อสู้แบบ <b>Grid Tactical Turn-Based</b></p>
+      <p>🗺️ <b>ดันเจี้ยนหลายชั้น:</b> ป่า/ภูเขาไฟ/ที่ราบสายฟ้ามี "ประตูดันเจี้ยน" ให้ลงไปสู้ (หลายชั้น บอสอยู่ชั้นสุดท้าย) เดินลงบันไดทางขวาเพื่อลงลึกขึ้น</p>
+      <p>ในสนามรบ ลำดับการเข้าตาขึ้นกับค่าความเร็ว เมื่อถึงตาของสัตว์เลี้ยงคุณ จะมีเมนู 4 ปุ่มขึ้นด้านล่างจอ 3 ปุ่มแรกคือ <b>สกิลที่ติดตั้งไว้</b> กดปุ่มสกิลแล้วเลือกเป้าหมายด้วย <kbd>A</kbd>/<kbd>D</kbd> แล้วกด <kbd>SPACE</kbd> เพื่อยืนยัน หรือกด <b>Move</b> เพื่อเข้าโหมดเคลื่อนที่</p>
+      <p>🎭 <b>Role:</b> 🛡️ <b>Tank</b> HP สูง รับดาเมจน้อยลง 20% ดึงเป้า · ⚔️ <b>DPS</b> โจมตีแรงกว่า 20% · ✚ <b>Support</b> รักษาพวกเดียวกันได้ · 💫 <b>CC</b> มีโอกาสทำให้มึนงง</p>
       <p>ชนะศึกจะได้รับ EXP และไอเทมดรอปใกล้ตัวคุณ หากปาร์ตี้ทั้งหมดพ่ายแพ้ จะถูกส่งกลับฟาร์มพร้อมเสียเหรียญเล็กน้อยเพื่อพักฟื้น</p>
-      <h4>🍳 ครัว &amp; สกิล</h4>
-      <p><kbd>C</kbd> ทำอาหารตามสูตรที่มีวัตถุดิบพอ &nbsp; <kbd>E</kbd> ใช้สกิลพิเศษเมื่อปลดล็อกแล้ว</p>
+      <h4>🍓 ผลไม้ธาตุ (Affinity Berries)</h4>
+      <p>เดินเก็บพุ่มผลไม้ธาตุประจำแต่ละดินแดน (ป่า=🍏Leaf, ทะเลสาบ=🫐Water, ภูเขาไฟ=🍓Fire, ที่ราบสายฟ้า=🍋Electric, เหวคริสตัล=🌰Earth) พุ่มออกผลใหม่ทุกเช้า · ที่การ์ดสัตว์เลี้ยงกดปุ่ม 🍓 เพื่อป้อน แต่ละลูก +10 Affinity ธาตุนั้น พอโตเต็มวัยจะวิวัฒนาการตามธาตุที่ Affinity สูงสุด</p>
+      <h4>🌿 ธาตุ (Element)</h4>
+      <p>🔥ไฟ ชนะ 🌿ใบไม้ ชนะ 🌍ดิน ชนะ ⚡ไฟฟ้า ชนะ 💧น้ำ ชนะ 🔥ไฟ — ได้เปรียบ +40% เสียเปรียบเหลือ 75%</p>
       <h4>🥚 ผสมพันธุ์ &amp; บันทึกเกม</h4>
-      <p>เมื่อมีสัตว์เลี้ยง 2 ตัวขึ้นไปที่วิวัฒนาการแล้วและ Bond ≥80 ยืนใกล้รังกลางฟาร์มแล้วกด <kbd>N</kbd> เพื่อผสมพันธุ์ ไข่จะฟักออกมาเป็นสัตว์เลี้ยงใหม่หลังผ่านไปสักครู่</p>
-      <p>🧬 <b>IV / Trait / Mutation:</b> สัตว์เลี้ยงทุกตัวมีค่า IV ซ่อนอยู่ 3 ค่า (HP/ATK/SPD ตั้งแต่ 0-31) ที่ส่งผลต่อสถานะจริงเล็กน้อย และมี Trait ติดตัว 1 อย่างจาก 5 แบบ (💪Hardy HP+10%, 🔥Brave ATK+10%, 💨Swift ความเร็วในศึก+3, 💗Gentle ได้ Bond จากการป้อนอาหารเพิ่ม 50%, ✨Clever ได้ EXP เพิ่ม 20%) เวลาผสมพันธุ์ ไข่จะสืบทอด IV และ Trait จากพ่อแม่แบบสุ่ม (มีโอกาสเล็กน้อยได้ค่าใหม่ที่ไม่ได้มาจากพ่อแม่) และมีโอกาสประมาณ 5% เกิด <b>การกลายพันธุ์ (Mutation)</b> ซึ่งจะได้ IV สมบูรณ์แบบทั้ง 3 ค่าและสีตัวสีทองอมเหลืองพิเศษ ดูค่า IV/Trait ของตัวที่ใช้งานอยู่ได้ที่การ์ดสัตว์เลี้ยงด้านล่างเกม</p>
-      <p>ไข่ที่ดรอปจากมอนสเตอร์ในดันเจี้ยน/ถ้ำก็มี IV และ Trait สุ่มของตัวเองเช่นกัน (แต่ไม่มีโอกาสกลายพันธุ์ — กลายพันธุ์เกิดจากการผสมพันธุ์ที่รังเท่านั้น)</p>
-      <p>🐾 <b>นิสัย (Personality):</b> สัตว์เลี้ยงแต่ละตัวเกิดมาพร้อมนิสัย 1 ใน 4 แบบแบบสุ่ม (ไม่ถ่ายทอดตอนผสมพันธุ์) ซึ่งเปลี่ยนทั้งวิธีวิ่งตามผู้เล่นและค่าสถานะ: 🤪<b>ขี้เล่น</b> วิ่งตามแบบส่ายไปมาไวกว่าปกติ (SPD สูง, HP ต่ำ), 🥰<b>ขี้อ้อน</b> เดินใกล้ตัวตลอดเวลา (Bond จากป้อนอาหารสูงมาก, ATK ต่ำ), 😾<b>ขี้โมโห</b> ชอบเดินตามห่างๆ (ATK สูง, Bond ช้า), 😴<b>ขี้เซา</b> เดินตามช้าและแอบงีบหลับเป็นระยะ (HP สูง, SPD ต่ำ) ดูนิสัยของตัวที่ใช้งานอยู่ได้ที่การ์ดสัตว์เลี้ยงด้านล่างเกม</p>
-      <p>🌿 <b>ธาตุ (Element):</b> ทุกตัว (ทั้งของผู้เล่นและศัตรู) มีธาตุประจำตัว 1 ใน 5: 🌍ดิน, 💧น้ำ, 🔥ไฟ, 🌿ใบไม้, ⚡ไฟฟ้า ธาตุจะแพ้ชนะกันเป็นวงจร: 🔥ไฟ ชนะ 🌿ใบไม้ ชนะ 🌍ดิน ชนะ ⚡ไฟฟ้า ชนะ 💧น้ำ ชนะ 🔥ไฟ (วนกลับมาที่ไฟ) — ธาตุที่ได้เปรียบทำดาเมจ +40% ธาตุที่เสียเปรียบทำดาเมจได้แค่ 75% ใน Tactical Battle แต่ละโซนมีธาตุประจำโซน: Forest Dungeon=🌿ใบไม้, Crystal Cave/ภูเขาไฟ=🔥ไฟ, ซากอารยธรรม=🌍ดิน, ภูเขาหิมะ=💧น้ำ ส่วนศัตรูใน Monster Tournament เป็น ⚡ไฟฟ้า พิเศษ ไข่ที่ดรอปก็สืบธาตุตามโซนที่พบด้วย</p>
-      <p>🍓 <b>ผลไม้ธาตุ (Affinity Berries):</b> ซื้อได้จากร้านค้า 5 ชนิด (Fire/Water/Earth/Leaf/Electric Berry) ที่การ์ดสัตว์เลี้ยงกดปุ่ม 🍓 ป้อนผลไม้ธาตุ เพื่อเลือกป้อน แต่ละลูกให้ +10 Affinity ธาตุนั้นๆ กับสัตว์เลี้ยงตัวที่ใช้งานอยู่ เมื่อสัตว์เลี้ยงโตเต็มวัย (ป้อนอาหารรวมอย่างน้อย 3 ครั้งไม่ว่าจะผัก/เนื้อ/ผลไม้ธาตุ) เกมจะเช็กว่า Affinity ธาตุไหนสูงสุดแล้ววิวัฒนาการไปทางนั้น: 🔥Fire→War Beast, 🌿Leaf→Nature Guardian, 🌍Earth→Boulder Golem (Tank), 💧Water→Tide Serpent (CC), ⚡Electric→Volt Fox (DPS) ถ้าไม่เคยป้อนผลไม้ธาตุเลยจะใช้กฎเดิม (ผัก 3/เนื้อ 3/ผสมกัน→Chimera Beast) แทน เมื่อวิวัฒนาการอีกครั้ง (Bond ≥60 และป้อนอาหารรวม ≥8 ครั้ง) จะโตเต็มขั้นสูงสุดและปลดล็อกสกิลประจำธาตุ (Fireball/Heal Pulse/Rock Slide/Healing Tide/Thunder Strike)</p>
-      <p>🐾 <b>สัตว์เลี้ยง 6 สายพันธุ์:</b> นอกจาก 🌱Seedling ตัวเริ่มต้นแล้ว ยังมี 🐺Wolf, 🐢Turtle, 🐻Bear, 🦆Duck, 🦁Lion ให้ได้ตัวจากไข่ที่ดรอปในดันเจี้ยนแต่ละโซน (Forest→Duck, Crystal Cave→Lion, ภูเขาไฟ→Wolf, ซากอารยธรรม→Turtle, ภูเขาหิมะ→Bear) หรือจากการผสมพันธุ์ที่รัง (ลูกจะสืบพันธุ์จากพ่อแม่ตัวใดตัวหนึ่งแบบสุ่ม มีโอกาสเล็กน้อยได้พันธุ์ใหม่ที่ไม่ได้มาจากพ่อแม่หากเกิดการกลายพันธุ์) แต่ละสายพันธุ์มีค่าสถานะพื้นฐานต่างกัน (Wolf ไวและแรงกว่า, Turtle HP สูงมากแต่ช้า, Bear แข็งแกร่งสมดุล, Duck ไวมากแต่ HP ต่ำ, Lion โจมตีแรงที่สุด) และสามารถวิวัฒนาการไปเป็นธาตุใดก็ได้ทั้ง 5 ธาตุเหมือนกับ Seedling ทุกประการ เพียงแค่ชื่อและรูปลักษณ์ตอนวิวัฒนาการจะเปลี่ยนไปตามสายพันธุ์ (เช่น Wolf+Fire = Ember Wolf, Turtle+Water = Tide Turtle)</p>
-      <p>🕵️ <b>เรื่องเล่าลึกลับ:</b> มีตำนานเล่าขานถึงสัตว์ในตำนานอีกตัวหนึ่งที่ไม่เคยมีใครเจอในไข่หรือจากการกลายพันธุ์เลย... ว่ากันว่าต้องนำ "นักล่าสองตัวที่ผ่านศึกจนเก่งกาจสุดขั้ว และลุกเป็นไฟทั้งคู่" มาผสมพันธุ์กันที่รังถึงจะปลุกมันขึ้นมาได้ ลองหาคำตอบดูเอง...</p>
-      <p>กด <kbd>P</kbd> เพื่อบันทึกความคืบหน้าได้ตลอดเวลา (บันทึกอัตโนมัติทุก 20 วิด้วย)</p>
+      <p>มีสัตว์เลี้ยง 2 ตัวที่วิวัฒนาการแล้ว Bond ≥80 ยืนใกล้รังกลางฟาร์มกด <kbd>N</kbd> เพื่อผสมพันธุ์ · กด <kbd>P</kbd> บันทึก (อัตโนมัติทุก 20 วิด้วย)</p>
       <h4>📜 Quest &amp; NPC</h4>
-      <p>ผู้เฒ่าโรวันและมายา นักสมุนไพร ใช้ชีวิตอยู่ในฟาร์มตามตารางเวลาจริง (Daily Schedule) — เดินไปมาตามจุดต่างๆ ขึ้นอยู่กับช่วงเวลาของวัน (รุ่งอรุณ/กลางวัน/พลบค่ำ/กลางคืน) เข้าใกล้แล้วกด <kbd>T</kbd> เพื่อคุย โรวันจะนำทาง Main Quest และมอบ Side Quest ให้เมื่อพร้อม ส่วนมายาเป็นบทสนทนาแนวเป็นกันเองไม่ผูกกับเควส</p>
-      <p>💗 <b>ความสนิทสนม (Friendship):</b> คุยด้วยได้ +2 ความสนิทสนมต่อวัน (จำกัด 1 ครั้ง/วัน/คน) ในหน้าต่างสนทนากดปุ่ม 🎁 ให้ของขวัญ เพื่อเลือกไอเทมจากคลังมอบให้ แต่ละคนมีของที่ชอบ/รักเป็นพิเศษ/ไม่ชอบต่างกัน (โรวันรักคริสตัล ชอบผัก/ไม้, มายารักปลา ชอบพริกไฟ/ผัก) ให้ของที่ใช่จะได้ความสนิทสนมมากกว่า ระดับความสนิทสนมแสดงเป็นหัวใจ (0-5)</p>
-      <h4>🛒 ร้านค้า &amp; พลังงาน</h4>
-      <p>กดปุ่ม <kbd>B</kbd> หรือ 🛒 ร้านค้า มุมขวาบนเพื่อซื้อเมล็ด/ของฟื้นพลังงาน หรือขายผัก เนื้อ พริกไฟ คริสตัล แลกเป็นเหรียญ</p>
-      <p>การปลูก เก็บเกี่ยว ป้อนอาหาร ทำอาหาร และผสมพันธุ์ ใช้ ⚡ พลังงาน พลังงานจะค่อยๆ ฟื้นเองตามเวลา หรือกินอาหารที่ปรุงเสร็จเพื่อฟื้นเร็วขึ้น</p>
-      <h4>🎣 เก็บเกี่ยววัตถุดิบ</h4>
-      <p>ยืนใกล้บ่อน้ำในฟาร์มแล้วกด <kbd>F</kbd> เพื่อตกปลา ยืนใกล้ต้นไม้แล้วกด <kbd>G</kbd> เพื่อตัดไม้ (ต้นไม้จะงอกใหม่หลังผ่านไปสักพัก) และเข้าไปใน Crystal Cave แล้วกด <kbd>M</kbd> ใกล้ก้อนแร่เพื่อขุด</p>
-      <h4>🔨 ช่างฝีมือ (Crafting)</h4>
-      <p>กดปุ่ม <kbd>R</kbd> หรือ 🔨 ช่างฝีมือ มุมขวาบนเพื่อนำไม้ แร่ และปลา มาประดิษฐ์เป็นอุปกรณ์ถาวรที่เพิ่มผลผลิตต่อครั้ง หรือปุ๋ยเร่งโตแบบใช้ครั้งเดียว</p>
-      <p>🌸🌾 <b>ฤดูกาล:</b> เวลาในเกมหมุนเวียนผ่าน 4 ฤดู (ใบไม้ผลิ → ร้อน → ใบไม้ร่วง → หนาว) ทุกๆ 5 วัน พืชที่ปลูกจะกลายเป็นผักหรือพริกไฟตามฤดูนั้นๆ โดยฤดูร้อนปลูกพริกไฟ ฤดูใบไม้ร่วงให้ผลผลิตโบนัส และฤดูหนาวปลูกไม่ได้เลยถ้ายังไม่มีโรงเรือน</p>
-      <p>🪴 <b>ดินและปุ๋ยหมัก:</b> ยืนบนแปลงที่ว่างแล้วกด <kbd>X</kbd> โดยมีไม้อย่างน้อย 3 ท่อน เพื่อปรับปรุงดินให้ดีขึ้น (สูงสุด 2 ระดับ) ดินที่ดีขึ้นทำให้พืชโตเร็วขึ้นและได้ผลผลิตต่อรอบมากขึ้น</p>
-      <p>⚙️ <b>ระบบอัตโนมัติ:</b> ในเมนูช่างฝีมือ ประดิษฐ์ 💧 สปริงเกอร์ (รดน้ำอัตโนมัติ โตเร็วเทียบเท่าฝนตลอด), 🏡 โรงเรือน (ปลูกได้แม้ฤดูหนาว ไม่โดนโทษกลางคืน) และ 🍽️ เครื่องให้อาหารอัตโนมัติ (ป้อนผักให้สัตว์เลี้ยงหลักเป็นระยะโดยไม่ต้องกดเอง)</p>
-      <h4>🎉 เทศกาล</h4>
-      <p>ทุกๆ 20 วันจะมีเทศกาลพิเศษหมุนเวียนมา 2 แบบ: 🎣 <b>Fishing Contest</b> (วันที่ 3 ของทุกปี) — ตกปลาให้ได้มากที่สุดในวันนั้นเพื่อรับรางวัลเหรียญตามระดับ (ทองแดง/เงิน/ทอง), และ ⚔️ <b>Monster Tournament</b> (วันที่ 8) — เดินไปที่เวทีประลองสีแดงทางฝั่งขวาของฟาร์มแล้วกด <kbd>V</kbd> เพื่อท้าดวลศัตรูชุดพิเศษ 3 ตัวในระบบ Tactical Battle รางวัลคือเหรียญและ EXP ก้อนใหญ่ ดูเทศกาลที่กำลังจัดอยู่ได้จาก HUD มุมบนของหน้าจอ</p>
+      <p>ชาวเมืองใช้ชีวิตตามเวลาจริง กลางวันอยู่นอกบ้าน กลางคืนเข้าบ้านไปนอน เข้าใกล้กด <kbd>T</kbd> เพื่อคุย · เดินเข้าประตูบ้าน/ร้านในหมู่บ้านเพื่อดู interior ได้</p>
+      <h4>🛒 ร้านค้า · 🎣 เก็บเกี่ยว · 🔨 ช่างฝีมือ · 🎉 เทศกาล</h4>
+      <p>กด <kbd>B</kbd> ร้านค้า · ตกปลา/ตัดไม้/ขุดแร่ด้วยเครื่องมือ · กด <kbd>R</kbd> ประดิษฐ์อุปกรณ์ · ทุก 20 วันมีเทศกาล (Fishing Contest / Monster Tournament)</p>
+      <p class="metaLine" data-en="(Detailed guide is in Thai — ask to translate the full guide if you need it.)" style="display:none;" id="helpEnNote">​</p>
     </div>
   </div>
 
   <div id="craftOverlay">
     <div id="craftCard">
-      <button class="closeShop" id="closeCraftBtn">ปิด ✕</button>
-      <h2>🔨 โต๊ะช่างฝีมือ</h2>
+      <button class="closeShop" id="closeCraftBtn" data-en="Close ✕">ปิด ✕</button>
+      <h2 data-en="🔨 Crafting bench">🔨 โต๊ะช่างฝีมือ</h2>
       <div id="craftList"></div>
     </div>
   </div>
 
   <div id="shopOverlay">
     <div id="shopCard">
-      <button class="closeShop" id="closeShopBtn">ปิด ✕</button>
-      <h2>🛒 ร้านค้าฟาร์ม</h2>
-      <div class="shopCoin">🪙 เหรียญของเจ้า: <span id="shop-coin">0</span></div>
-      <h4>ซื้อของ</h4>
+      <button class="closeShop" id="closeShopBtn" data-en="Close ✕">ปิด ✕</button>
+      <h2 data-en="🛒 Farm shop">🛒 ร้านค้าฟาร์ม</h2>
+      <div class="shopCoin"><span data-en="🪙 Your coins:">🪙 เหรียญของเจ้า:</span> <span id="shop-coin">0</span></div>
+      <h4 data-en="Buy">ซื้อของ</h4>
       <div id="shopBuyList"></div>
-      <h4>ขายของ</h4>
+      <h4 data-en="Sell">ขายของ</h4>
       <div id="shopSellList"></div>
     </div>
   </div>
 
   <div id="storageOverlay">
     <div id="storageCard">
-      <button class="closeShop" id="closeStorageBtn">ปิด ✕</button>
-      <h2>📦 คลังสัตว์เลี้ยง</h2>
-      <div class="storageHint">ฝากสัตว์เลี้ยงไว้ในคลังเพื่อสลับไปเลี้ยง/ลองตัวอื่นในปาร์ตี้ (สูงสุด 3 ตัว) — สถิติ Bond, EXP, Level ของตัวที่ฝากไว้จะไม่หายไป รับกลับมาเมื่อไหร่ก็ได้</div>
+      <button class="closeShop" id="closeStorageBtn" data-en="Close ✕">ปิด ✕</button>
+      <h2 data-en="📦 Pet storage">📦 คลังสัตว์เลี้ยง</h2>
+      <div class="storageHint" data-en="Store pets to swap party members (max 3). Bond, EXP and Level of stored pets are kept — take them back anytime.">ฝากสัตว์เลี้ยงไว้ในคลังเพื่อสลับไปเลี้ยง/ลองตัวอื่นในปาร์ตี้ (สูงสุด 3 ตัว) — สถิติ Bond, EXP, Level ของตัวที่ฝากไว้จะไม่หายไป รับกลับมาเมื่อไหร่ก็ได้</div>
       <div id="storageContent"></div>
     </div>
   </div>
 
   <div id="shipOverlay">
     <div id="shipCard">
-      <h2>📦 กล่องขายของ</h2>
-      <div class="skillLearnHint">ใส่ของลงกล่องจากกระเป๋า (ฝั่งซ้าย) — จะขายอัตโนมัติตอนนอน/จบวัน ตามราคาตลาดของวันนั้น</div>
+      <h2 data-en="📦 Shipping bin">📦 กล่องขายของ</h2>
+      <div class="skillLearnHint" data-en="Put items in the bin from your bag (left) — they sell automatically when you sleep/end the day, at that day's market price">ใส่ของลงกล่องจากกระเป๋า (ฝั่งซ้าย) — จะขายอัตโนมัติตอนนอน/จบวัน ตามราคาตลาดของวันนั้น</div>
       <div id="shipCols">
-        <div class="shipCol"><div class="shipColTitle">🎒 ในกระเป๋า</div><div id="shipInvList"></div></div>
-        <div class="shipCol"><div class="shipColTitle">📦 ในกล่อง (รอขาย)</div><div id="shipBinList"></div></div>
+        <div class="shipCol"><div class="shipColTitle" data-en="🎒 In bag">🎒 ในกระเป๋า</div><div id="shipInvList"></div></div>
+        <div class="shipCol"><div class="shipColTitle" data-en="📦 In bin (to sell)">📦 ในกล่อง (รอขาย)</div><div id="shipBinList"></div></div>
       </div>
-      <div id="shipFooter"><span>รายได้ที่จะได้ตอนจบวัน:</span> <span id="shipTotal">🪙 0</span></div>
-      <button class="btn" id="shipCloseBtn" style="width:100%; margin-top:8px;">ปิด ✕</button>
+      <div id="shipFooter"><span data-en="Income at end of day:">รายได้ที่จะได้ตอนจบวัน:</span> <span id="shipTotal">🪙 0</span></div>
+      <button class="btn" id="shipCloseBtn" data-en="Close ✕" style="width:100%; margin-top:8px;">ปิด ✕</button>
     </div>
   </div>
 
@@ -871,49 +857,49 @@
       <h2 id="dayEndTitle">😴 นอนหลับฝันดี</h2>
       <div id="dayEndBody"></div>
       <div id="dayEndNote" class="skillLearnHint"></div>
-      <button class="btn" id="dayEndBtn" style="width:100%; margin-top:6px;">เริ่มวันใหม่ ▶</button>
+      <button class="btn" id="dayEndBtn" data-en="Start new day ▶" style="width:100%; margin-top:6px;">เริ่มวันใหม่ ▶</button>
     </div>
   </div>
 
   <div id="slotOverlay">
     <div id="slotCard">
-      <h2>💾 เลือกช่องเซฟ</h2>
-      <div class="skillLearnHint">เกมมี 3 ช่องเซฟ — เล่นต่อจากเซฟเดิม หรือเริ่มเกมใหม่ในช่องไหนก็ได้ (เกมจะบันทึกอัตโนมัติลงช่องที่เลือก)</div>
+      <h2 data-en="💾 Choose a save slot">💾 เลือกช่องเซฟ</h2>
+      <div class="skillLearnHint" data-en="The game has 3 save slots — continue an existing save or start a new game in any slot (autosaves to the chosen slot)">เกมมี 3 ช่องเซฟ — เล่นต่อจากเซฟเดิม หรือเริ่มเกมใหม่ในช่องไหนก็ได้ (เกมจะบันทึกอัตโนมัติลงช่องที่เลือก)</div>
       <div id="slotList"></div>
     </div>
   </div>
 
   <div id="dexOverlay">
     <div id="dexCard">
-      <h2>📔 Eden Dex — สมุดสะสมสายพันธุ์</h2>
+      <h2 data-en="📔 Eden Dex — species collection">📔 Eden Dex — สมุดสะสมสายพันธุ์</h2>
       <div id="dexProgress" class="skillLearnCreature"></div>
-      <div class="skillLearnHint">สายพันธุ์ลับ (★) จะไม่ฟักจากไข่ทั่วไป — ต้องผสมพันธุ์ตามสูตรลับเท่านั้น คำใบ้ซ่อนอยู่ในรายการที่ยังไม่ค้นพบ</div>
+      <div class="skillLearnHint" data-en="Secret species (★) won't hatch from normal eggs — they only come from secret breeding recipes. Hints are hidden in the undiscovered entries.">สายพันธุ์ลับ (★) จะไม่ฟักจากไข่ทั่วไป — ต้องผสมพันธุ์ตามสูตรลับเท่านั้น คำใบ้ซ่อนอยู่ในรายการที่ยังไม่ค้นพบ</div>
       <div id="dexList"></div>
-      <button class="closeShop skillLearnCancel" id="dexCloseBtn">ปิดสมุด ✕</button>
+      <button class="closeShop skillLearnCancel" id="dexCloseBtn" data-en="Close book ✕">ปิดสมุด ✕</button>
     </div>
   </div>
 
   <div id="pathChooseOverlay">
     <div id="pathChooseCard">
-      <h2>🧭 เลือกสายพัฒนา (Skill Path)</h2>
+      <h2 data-en="🧭 Choose a Skill Path">🧭 เลือกสายพัฒนา (Skill Path)</h2>
       <div id="pathChooseCreatureName" class="skillLearnCreature"></div>
-      <div class="skillLearnHint">การเลือกสายเป็นการตัดสินใจถาวร — สกิลที่เรียนหลังจากนี้ (Lv.10 / 16 / 24) จะมาจากสายที่เลือกเท่านั้น</div>
+      <div class="skillLearnHint" data-en="Choosing a path is permanent — skills learned after this (Lv.10 / 16 / 24) come only from the chosen path.">การเลือกสายเป็นการตัดสินใจถาวร — สกิลที่เรียนหลังจากนี้ (Lv.10 / 16 / 24) จะมาจากสายที่เลือกเท่านั้น</div>
       <div id="pathChooseList"></div>
     </div>
   </div>
 
   <div id="skillLearnOverlay">
     <div id="skillLearnCard">
-      <h2>🌟 เรียนรู้สกิลใหม่</h2>
+      <h2 data-en="🌟 Learn a new skill">🌟 เรียนรู้สกิลใหม่</h2>
       <div id="skillLearnCreatureName" class="skillLearnCreature"></div>
       <div class="skillLearnNewBox">
-        <div class="skillLearnNewLabel">สกิลใหม่</div>
+        <div class="skillLearnNewLabel" data-en="New skill">สกิลใหม่</div>
         <div id="skillLearnNewName" class="skillLearnNewName"></div>
         <div id="skillLearnNewDesc" class="skillLearnDesc"></div>
       </div>
-      <div class="skillLearnHint">สกิลเต็มแล้ว! เลือกสกิลที่จะแทนที่ด้วยสกิลใหม่นี้ (หรือยกเลิกเพื่อใช้สกิลเดิมต่อไป)</div>
+      <div class="skillLearnHint" data-en="Skills are full! Choose one to replace with this new skill (or cancel to keep your current skills).">สกิลเต็มแล้ว! เลือกสกิลที่จะแทนที่ด้วยสกิลใหม่นี้ (หรือยกเลิกเพื่อใช้สกิลเดิมต่อไป)</div>
       <div id="skillLearnCurrentList"></div>
-      <button class="closeShop skillLearnCancel" onclick="cancelReplaceSkill()">เก็บสกิลเดิมไว้ ✕</button>
+      <button class="closeShop skillLearnCancel" onclick="cancelReplaceSkill()" data-en="Keep current skills ✕">เก็บสกิลเดิมไว้ ✕</button>
     </div>
   </div>
 
@@ -926,15 +912,61 @@
         <div class="npcText" id="npcText"></div>
         <div id="giftPanel"></div>
         <div class="npcNav">
-          <button class="btn" id="npcGiftBtn" style="background:linear-gradient(180deg,#5a3a1a,#2a1a08); margin-right:auto;">🎁 ให้ของขวัญ</button>
-          <button class="btn" id="npcCloseBtn">ปิด ✕</button>
-          <button class="btn" id="npcNextBtn" style="background:linear-gradient(180deg,#3a5a2a,#1c3a0f);">ถัดไป ▶</button>
+          <button class="btn" id="npcGiftBtn" data-en="🎁 Give gift" style="background:linear-gradient(180deg,#5a3a1a,#2a1a08); margin-right:auto;">🎁 ให้ของขวัญ</button>
+          <button class="btn" id="npcCloseBtn" data-en="Close ✕">ปิด ✕</button>
+          <button class="btn" id="npcNextBtn" data-en="Next ▶" style="background:linear-gradient(180deg,#3a5a2a,#1c3a0f);">ถัดไป ▶</button>
         </div>
       </div>
     </div>
   </div>
-
   <script>
+    // ==========================================================================
+    // i18n — ระบบสลับภาษา ไทย / อังกฤษ (ต้องโหลดเป็นไฟล์แรกสุดใน JS_ORDER)
+    // แนวคิด: ทุกข้อความเรียก t("ไทย","English") ซึ่งอ่านค่า LANG ตอนรัน
+    //   - ข้อความ runtime (EVA/แบนเนอร์/บทพูด) สลับได้ทันที
+    //   - ตาราง data ที่ประเมินตอนโหลด (ชื่อ NPC/ไอเทม/บท) จะตรงภาษาเพราะ "สลับภาษา = รีโหลด"
+    //   - UI static ใน HTML ใช้ attribute data-en / data-en-title (applyStaticI18n สลับให้)
+    // ==========================================================================
+    let LANG = 'th';
+    try { const _sl = localStorage.getItem('eden-lang'); if (_sl === 'en' || _sl === 'th') LANG = _sl; } catch (e) {}
+    function t(th, en){ return (LANG === 'en') ? (en != null ? en : th) : th; }
+    // แปลง object {th,en} (หรือ string) → ข้อความตามภาษาปัจจุบัน
+    function tr(o){
+      if (o == null) return '';
+      if (typeof o === 'string') return o;
+      return (LANG === 'en' && o.en != null) ? o.en : (o.th != null ? o.th : String(o));
+    }
+    function setLang(l){
+      if ((l !== 'en' && l !== 'th') || l === LANG) return;
+      try { localStorage.setItem('eden-lang', l); } catch (e) {}
+      // เซฟก่อนรีโหลด (สลับภาษา = โหลดใหม่ทั้งหน้าเพื่อให้ตาราง data ตรงภาษา)
+      // saveGame() เขียน localStorage แบบ sync ก่อน await ตัวแรก จึงบันทึกทันก่อน reload
+      try { if (typeof gameStarted !== 'undefined' && gameStarted && typeof saveGame === 'function') saveGame(); } catch (e) {}
+      setTimeout(()=>{ try { location.reload(); } catch (e) {} }, 60);
+    }
+    function toggleLang(){ setLang(LANG === 'en' ? 'th' : 'en'); }
+    // ป้ายปุ่มสลับภาษา (โชว์ภาษาที่จะสลับไป)
+    function langBtnLabel(){ return LANG === 'en' ? '🌐 ไทย' : '🌐 EN'; }
+
+    // สลับข้อความ UI static ที่มี attribute data-en / data-en-title / data-en-html
+    function applyStaticI18n(){
+      const en = (LANG === 'en');
+      document.querySelectorAll('[data-en]').forEach(el=>{
+        if (el.dataset.thText === undefined) el.dataset.thText = el.textContent;
+        el.textContent = en ? el.getAttribute('data-en') : el.dataset.thText;
+      });
+      document.querySelectorAll('[data-en-html]').forEach(el=>{
+        if (el.dataset.thHtml === undefined) el.dataset.thHtml = el.innerHTML;
+        el.innerHTML = en ? el.getAttribute('data-en-html') : el.dataset.thHtml;
+      });
+      document.querySelectorAll('[data-en-title]').forEach(el=>{
+        if (el.dataset.thTitle === undefined) el.dataset.thTitle = el.getAttribute('title') || '';
+        el.setAttribute('title', en ? el.getAttribute('data-en-title') : el.dataset.thTitle);
+      });
+      try { document.documentElement.lang = en ? 'en' : 'th'; } catch(e){}
+      // ป้ายปุ่มสลับภาษา (ถ้ามี)
+      document.querySelectorAll('.langToggleBtn').forEach(b=> b.textContent = langBtnLabel());
+    }
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
 
@@ -1116,6 +1148,10 @@
     document.getElementById('evaToggle').addEventListener('click', toggleEva);
     document.getElementById('evaClose').addEventListener('click', ()=> document.body.classList.remove('eva-open'));
 
+    // ---------- ปุ่มสลับภาษา ไทย/อังกฤษ (บนหน้าเริ่ม + ในเมนู) ----------
+    document.querySelectorAll('.langToggleBtn').forEach(b=> b.addEventListener('click', e=>{ e.stopPropagation(); toggleLang(); }));
+    applyStaticI18n(); // แปล UI static ตามภาษาที่บันทึกไว้
+
     // ---------- Shop (Economy) ----------
     let shopOpen = false;
     const shopOverlay = document.getElementById('shopOverlay');
@@ -1250,10 +1286,10 @@
     shipOverlayEl.addEventListener('click', e=>{ if (e.target === shipOverlayEl) closeShipping(); });    // ---------- Story (Intro) ----------
     let storyActive = false;
     const storySlides = [
-      { icon:"🌫️", text:"สายลมพัดผ่านฟาร์มร้างที่ปกคลุมด้วยหมอกสีเขียว... เจ้าลืมตาตื่นขึ้นกลางแปลงดินที่ไม่คุ้นเคย โดยจำอะไรก่อนหน้านี้ไม่ได้เลย" },
-      { icon:"🤖", text:"\"ตื่นแล้วสินะ\" เสียงหนึ่งดังขึ้นในหัวของเจ้า — \"ข้าคือ EVA ระบบสนับสนุนที่ถูกส่งมาพร้อมเจ้า ดูเหมือนเราจะตกลงมาที่ดินแดนที่เรียกว่า Eden\"" },
-      { icon:"🌾", text:"Eden เคยเป็นฟาร์มอันอุดมสมบูรณ์ ก่อนที่สิ่งมีชีวิตประหลาดจะยึดครองป่าและถ้ำโดยรอบ ผู้คนหายไปเกือบหมด เหลือเพียงผู้เฒ่าคนหนึ่งที่ยังคงเฝ้าดูแลผืนดินนี้" },
-      { icon:"🏚️", text:"\"ถ้าเจ้าอยากรู้ความจริง เจ้าต้องช่วยฟื้นฟูฟาร์มนี้ขึ้นมาใหม่\" เสียงแหบพร่าดังมาจากกระท่อมเก่าไม่ไกลนัก... ผู้เฒ่าโรวันกำลังรอเจ้าอยู่" }
+      { icon:"🌫️", text:t("สายลมพัดผ่านฟาร์มร้างที่ปกคลุมด้วยหมอกสีเขียว... เจ้าลืมตาตื่นขึ้นกลางแปลงดินที่ไม่คุ้นเคย โดยจำอะไรก่อนหน้านี้ไม่ได้เลย","A wind drifts across an abandoned farm veiled in green mist... You open your eyes in an unfamiliar field, remembering nothing of what came before.") },
+      { icon:"🤖", text:t("\"ตื่นแล้วสินะ\" เสียงหนึ่งดังขึ้นในหัวของเจ้า — \"ข้าคือ EVA ระบบสนับสนุนที่ถูกส่งมาพร้อมเจ้า ดูเหมือนเราจะตกลงมาที่ดินแดนที่เรียกว่า Eden\"","\"So you're awake,\" a voice speaks inside your head — \"I'm EVA, the support system sent with you. It seems we've landed in a land called Eden.\"") },
+      { icon:"🌾", text:t("Eden เคยเป็นฟาร์มอันอุดมสมบูรณ์ ก่อนที่สิ่งมีชีวิตประหลาดจะยึดครองป่าและถ้ำโดยรอบ ผู้คนหายไปเกือบหมด เหลือเพียงผู้เฒ่าคนหนึ่งที่ยังคงเฝ้าดูแลผืนดินนี้","Eden was once a bountiful farmland, before strange creatures overran the surrounding forests and caves. Nearly everyone vanished — only one old man still watches over this land.") },
+      { icon:"🏚️", text:t("\"ถ้าเจ้าอยากรู้ความจริง เจ้าต้องช่วยฟื้นฟูฟาร์มนี้ขึ้นมาใหม่\" เสียงแหบพร่าดังมาจากกระท่อมเก่าไม่ไกลนัก... ผู้เฒ่าโรวันกำลังรอเจ้าอยู่","\"If you want the truth, you must help restore this farm.\" A hoarse voice calls from an old cottage not far away... Elder Rowan is waiting for you.") }
     ];
     let storyIndex = 0;
     const storyScreenEl = document.getElementById('storyScreen');
@@ -1265,7 +1301,7 @@
       storyIconEl.textContent = s.icon;
       storyTextEl.textContent = s.text;
       storyDotsEl.innerHTML = storySlides.map((_,i)=> `<span class="${i===storyIndex?'on':''}"></span>`).join('');
-      document.getElementById('storyNext').textContent = storyIndex === storySlides.length-1 ? "เริ่มการเดินทาง ▶" : "ถัดไป ▶";
+      document.getElementById('storyNext').textContent = storyIndex === storySlides.length-1 ? t("เริ่มการเดินทาง ▶","Begin your journey ▶") : t("ถัดไป ▶","Next ▶");
     }
     function openStory(){
       storyActive = true; storyIndex = 0; renderStory();
@@ -1456,8 +1492,8 @@
     // แต่ละ chapter = ปมเนื้อเรื่อง 1 ชั้น + โซนที่ปลดล็อก + เป้าหมายที่ต้องทำครบก่อนไปต่อ
     // zones สะสมจาก chapter ก่อนหน้า (ปลดแล้วไม่ล็อกกลับ)
     const CHAPTERS = [
-      { id:'awakening', title:"ผู้ตื่นไร้ความทรงจำ",
-        desc:"ตั้งหลักที่ฟาร์ม สำรวจป่ากระซิบและทะเลสาบกระจก ทำความรู้จัก Eden",
+      { id:'awakening', title:t("ผู้ตื่นไร้ความทรงจำ","The Memoryless Awakened"),
+        desc:t("ตั้งหลักที่ฟาร์ม สำรวจป่ากระซิบและทะเลสาบกระจก ทำความรู้จัก Eden","Settle at the farm, explore the Whispering Woods and Mirror Lake, and get to know Eden."),
         zones:["Farm","Dungeon","Snow"],
         intro:"เริ่มจากสิ่งเล็กๆ ก่อน — ฟื้นฟาร์มนี้ แล้วความทรงจำอาจตามกลับมา",
         outro:"📡 EVA กู้บันทึกชิ้นแรกคืนมาได้: เจ้าไม่ได้ 'ตกลงมา' ที่ Eden... เจ้าถูก 'ส่งมา' และสัญญาณพลังงานประหลาดกำลังแผ่มาจากภูเขาซินเดอร์",
@@ -1467,8 +1503,8 @@
           { desc:"ลงวิหารกระซิบแล้วชนะศัตรู 2 ตัว", check:()=> defeatCount>=2 },
           { desc:"👑 ปราบ ราชันเขี้ยวเงา ในวิหารกระซิบ (ประตูดันเจี้ยนในป่ากระซิบ)", check:()=> !!bossesDefeated.shadowFang }
         ] },
-      { id:'emberDepths', title:"เปลวไฟใต้พิภพ",
-        desc:"ตามสัญญาณสู่ภูเขาซินเดอร์และเหวประกาย หาสาเหตุที่สัตว์ป่ากลายเป็นศัตรู",
+      { id:'emberDepths', title:t("เปลวไฟใต้พิภพ","Flames Beneath the Earth"),
+        desc:t("ตามสัญญาณสู่ภูเขาซินเดอร์และเหวประกาย หาสาเหตุที่สัตว์ป่ากลายเป็นศัตรู","Follow the signal to Mount Cinder and the Glimmering Abyss to find why the wildlife turned hostile."),
         zones:["Volcano","Cave"],
         intro:"เส้นทางสู่ภูเขาซินเดอร์และเหวประกายเปิดแล้ว — แกนพลังงานของ Eden อยู่ลึกลงไป",
         outro:"🌋 แกนพลังงานใต้ภูเขาซินเดอร์ถูกดึงพลังจนเสียสมดุล — นี่คือเหตุที่สัตว์คลุ้มคลั่ง และพิกัดของ 'ผู้ดึงพลัง' ชี้ไปยังที่ราบสายฟ้า",
@@ -1478,8 +1514,8 @@
           { desc:"ความสนิทสนมกับโรวัน ≥ 30", check:()=> npcById('rowan').friendship>=30 },
           { desc:"👑 ปราบ มหาไททันหินหลอม ในเหวหลอมถ่าน (ประตูดันเจี้ยนในภูเขาซินเดอร์)", check:()=> !!bossesDefeated.magmaTitan }
         ] },
-      { id:'ruinsOfTruth', title:"ซากปรักแห่งความจริง",
-        desc:"เจาะลึกหอสกายโฮลด์บนที่ราบสายฟ้า — ความจริงว่า Eden คืออะไร และเจ้าคือใคร",
+      { id:'ruinsOfTruth', title:t("ซากปรักแห่งความจริง","Ruins of Truth"),
+        desc:t("เจาะลึกหอสกายโฮลด์บนที่ราบสายฟ้า — ความจริงว่า Eden คืออะไร และเจ้าคือใคร","Delve into Skyhold Observatory on the Thunder Plains — the truth of what Eden is, and who you are."),
         zones:["Ruins"],
         intro:"ที่ราบสายฟ้าเปิดแล้ว — คำตอบเรื่องตัวตนของเจ้ารออยู่ในหอสกายโฮลด์",
         outro:"🏺 ห้องแล็บโบราณเผยความจริง: Eden คือโครงการฟื้นฟูระบบนิเวศ และเจ้าคือผู้ดูแลที่ถูกปลุกขึ้น... ช้าเกินกำหนดหลายร้อยปี หัวใจของ Eden ยังรอการฟื้นฟู",
@@ -1489,8 +1525,8 @@
           { desc:"ผสมพันธุ์สัตว์เลี้ยงสำเร็จ 1 ครั้ง", check:()=> tut.bred },
           { desc:"👑 ปราบ ผู้คุมกฎโบราณ ในหอสกายโฮลด์", check:()=> !!bossesDefeated.ancientWarden }
         ] },
-      { id:'heartOfEden', title:"หัวใจของเอเดน",
-        desc:"รวบรวมทุกอย่างที่เรียนรู้มา ฟื้นฟูหัวใจของ Eden ให้กลับมาเต้นอีกครั้ง",
+      { id:'heartOfEden', title:t("หัวใจของเอเดน","The Heart of Eden"),
+        desc:t("รวบรวมทุกอย่างที่เรียนรู้มา ฟื้นฟูหัวใจของ Eden ให้กลับมาเต้นอีกครั้ง","Bring together all you've learned and make the Heart of Eden beat once more."),
         zones:[],
         intro:"บทสุดท้าย — โบราณวัตถุใน Ruins คือกุญแจฟื้นฟูหัวใจของ Eden",
         outro:"🌅 หัวใจของ Eden กลับมาเต้นอีกครั้ง หมอกสีเขียวจางหาย... แต่ตำนานยังไม่จบ: ยังมีสายพันธุ์ลับให้ค้นหา และเทศกาลอีกมากมายรอเจ้าอยู่",
@@ -1528,7 +1564,7 @@
       const el = document.getElementById('chapterGoalList');
       if (!head || !el) return;
       if (chapterIndex >= CHAPTERS.length){
-        head.innerHTML = "<b>🌅 เนื้อเรื่องหลักจบสมบูรณ์</b><br>Endgame: สะสมสายพันธุ์หายากและสูตรผสมลับต่อได้เลย";
+        head.innerHTML = t("<b>🌅 เนื้อเรื่องหลักจบสมบูรณ์</b><br>Endgame: สะสมสายพันธุ์หายากและสูตรผสมลับต่อได้เลย","<b>🌅 Main story complete</b><br>Endgame: keep collecting rare species and secret breeding recipes");
         el.innerHTML = "";
         return;
       }
@@ -1648,7 +1684,7 @@
     }
 
     // ---------- ข้อมูล NPC ทั้งหมด ----------
-    defineNPC({ id:'rowan', name:"ผู้เฒ่าโรวัน", size:22, range:58, map:"Village",
+    defineNPC({ id:'rowan', name:t("ผู้เฒ่าโรวัน","Elder Rowan"), size:22, range:58, map:"Village",
       home:'HomeRowan', hx:330, hy:300, act:{ day:'📖', dusk:'🍵' },
       robeColor:"#5a7a4a", hoodColor:"#e8e8e8",
       loves:['crystal'], likes:['veggie','wood'], dislikes:['fish'],
@@ -1694,7 +1730,7 @@
         return true;
       } });
 
-    defineNPC({ id:'maya', name:"มายา นักสมุนไพร", size:20, range:55, map:"Village",
+    defineNPC({ id:'maya', name:t("มายา นักสมุนไพร","Maya the Herbalist"), size:20, range:55, map:"Village",
       home:'HomeMaya', hx:330, hy:300, act:{ day:'🌿', dusk:'🧪' },
       robeColor:"#4a6a8a", hoodColor:"#ffca9e",
       loves:['fish'], likes:['chili','veggie'], dislikes:['ore'],
@@ -1732,7 +1768,7 @@
         consume:()=>{ inv.chili-=2; inv.veggie-=2; },
         reward:()=>{ inv.fireBerry+=1; inv.leafBerry+=1; updateEVA("🔖 เควสของมายาสำเร็จ! ได้รับ Fire Berry และ Leaf Berry"); } } });
 
-    defineNPC({ id:'fay', name:"เฟย์ ช่างตีเหล็ก", size:21, range:55, map:"Volcano",
+    defineNPC({ id:'fay', name:t("เฟย์ ช่างตีเหล็ก","Fay the Blacksmith"), size:21, range:55, map:"Volcano",
       act:{ day:'🔨', dusk:'🔥', night:'🔨' },
       robeColor:"#7a4a3a", hoodColor:"#caa472",
       loves:['ore','obsidian'], likes:['crystal','wood'], dislikes:['veggie'],
@@ -1763,7 +1799,7 @@
         consume:()=>{ inv.ore-=5; },
         reward:()=>{ inv.coin+=30; inv.crystal+=2; updateEVA("🔖 เควสของเฟย์สำเร็จ! ได้รับ 30 เหรียญ + คริสตัล 2"); } } });
 
-    defineNPC({ id:'nils', name:"นิลส์ พ่อค้า", size:20, range:58, map:"Village",
+    defineNPC({ id:'nils', name:t("นิลส์ พ่อค้า","Nils the Merchant"), size:20, range:58, map:"Village",
       home:'ShopNils', hx:330, hy:300, act:{ day:'🛒', dusk:'🪙' },
       robeColor:"#8a6a2a", hoodColor:"#e8d8b8",
       loves:['relic'], likes:['fish','fur'], dislikes:['wood'],
@@ -1792,7 +1828,7 @@
         consume:()=>{ inv.fish-=3; },
         reward:()=>{ inv.coin+=25; inv.seeds+=3; updateEVA("🔖 เควสของนิลส์สำเร็จ! ได้รับ 25 เหรียญ + เมล็ด 3"); } } });
 
-    defineNPC({ id:'luna', name:"ลูน่า นักวิจัยธารน้ำแข็ง", size:20, range:55, map:"Snow",
+    defineNPC({ id:'luna', name:t("ลูน่า นักวิจัยธารน้ำแข็ง","Luna the Lake Researcher"), size:20, range:55, map:"Snow",
       act:{ day:'🔭', dusk:'📊', night:'🌌' },
       robeColor:"#4a7a8a", hoodColor:"#dceefc",
       loves:['fur'], likes:['fish','crystal'], dislikes:['chili'],
@@ -1816,7 +1852,7 @@
         consume:()=>{ inv.fur-=2; },
         reward:()=>{ inv.waterBerry+=2; inv.coin+=15; updateEVA("🔖 เควสของลูน่าสำเร็จ! ได้รับ Water Berry 2 + 15 เหรียญ"); } } });
 
-    defineNPC({ id:'taro', name:"ทาโร่ เด็กชายรักสัตว์", size:16, range:50, map:"Village",
+    defineNPC({ id:'taro', name:t("ทาโร่ เด็กชายรักสัตว์","Taro the Animal Lover"), size:16, range:50, map:"Village",
       home:'HomeTaro', hx:330, hy:300, act:{ day:'⚽', dusk:'🪁' },
       robeColor:"#c05a3a", hoodColor:"#ffdca8",
       loves:['veggie'], likes:['fish'], dislikes:['obsidian'],
@@ -1840,7 +1876,7 @@
         reward:()=>{ inv.leafBerry+=1; inv.earthBerry+=1; updateEVA("🔖 เควสของทาโร่สำเร็จ! ได้รับ Leaf Berry + Earth Berry"); } } });
 
     // ---------- ชาวถิ่นตามดินแดนในแผนที่โลก (World Map residents) ----------
-    defineNPC({ id:'anya', name:"ดรูอิดอันยา", size:20, range:55, map:"Dungeon",
+    defineNPC({ id:'anya', name:t("ดรูอิดอันยา","Druid Anya"), size:20, range:55, map:"Dungeon",
       act:{ day:'🍃', dusk:'🌙', night:'✨' },
       robeColor:"#3a7a4a", hoodColor:"#cfe8b0",
       loves:['leafBerry','veggie'], likes:['wood'], dislikes:['obsidian'],
@@ -1852,7 +1888,7 @@
       seasonLines:{ 0:"🌸 ยอดอ่อนแตกใบเต็มป่า พลังชีวิตล้นเหลือ", 1:"☀️ ร่มไม้หนาทึบช่วยกันร้อนได้ดี",
         2:"🍂 ใบไม้ร่วงคือช่วงที่ป่าเงียบที่สุด", 3:"❄️ แม้หนาว ป่ากระซิบก็ไม่เคยหลับใหล" } });
 
-    defineNPC({ id:'borin', name:"บอริน นักขุดแร่", size:21, range:55, map:"Cave",
+    defineNPC({ id:'borin', name:t("บอริน นักขุดแร่","Borin the Miner"), size:21, range:55, map:"Cave",
       act:{ day:'⛏️', dusk:'💎', night:'⛏️' },
       robeColor:"#6a5a7a", hoodColor:"#d0c0e0",
       loves:['crystal','ore'], likes:['obsidian'], dislikes:['fish'],
@@ -1864,7 +1900,7 @@
       seasonLines:{ 0:"🌸 ข้างนอกใบไม้ผลิเหรอ? ในเหวนี่แสงคริสตัลสวยกว่าเยอะ", 1:"☀️ ในเหวเย็นสบาย ขุดได้ทั้งวัน",
         2:"🍂 ช่วงนี้ผลึกหลุดง่าย ขุดคุ้มมาก", 3:"❄️ หนาวข้างนอกไม่เกี่ยวกับข้า ข้าอยู่ใต้ดิน" } });
 
-    defineNPC({ id:'elara', name:"อีลาร่า ผู้ทอสายฟ้า", size:20, range:55, map:"Ruins",
+    defineNPC({ id:'elara', name:t("อีลาร่า ผู้ทอสายฟ้า","Elara the Storm-Weaver"), size:20, range:55, map:"Ruins",
       act:{ day:'⚡', dusk:'🌩️', night:'⚡' },
       robeColor:"#4a5a8a", hoodColor:"#cfe0ff",
       loves:['crystal','relic'], likes:['ore'], dislikes:['veggie'],
@@ -1938,7 +1974,7 @@
     function nearShippingBin(){ return currentMap === "Home" && Math.hypot((player.x+player.size/2)-(shippingBin.x+shippingBin.w/2), (player.y+player.size/2)-(shippingBin.y+shippingBin.h/2)) < 50; }
 
     // ---------- Seasons ----------
-    const SEASON_NAMES = ["ใบไม้ผลิ","ร้อน","ใบไม้ร่วง","หนาว"];
+    const SEASON_NAMES = [t("ใบไม้ผลิ","Spring"), t("ร้อน","Summer"), t("ใบไม้ร่วง","Autumn"), t("หนาว","Winter")];
     const SEASON_ICONS = ["🌸","☀️","🍂","❄️"];
     const DAYS_PER_SEASON = 5;
     function seasonIdx(){ return Math.floor((dayCount-1)/DAYS_PER_SEASON) % 4; }
@@ -1949,12 +1985,12 @@
     // เพิ่มพืชใหม่ = เพิ่ม entry เดียว: ปลูก/เก็บ/ขาย/วาด ทำงานเองหมด (seedKey = ช่องเมล็ดใน inv)
     // seasons = ฤดูที่ปลูกได้ (index 0-3) — โรงเรือน (greenhouseBuilt) ปลดล็อกทุกฤดู
     const CROP_DB = {
-      veggie:     { id:'veggie',     name:'ผัก',            icon:'🥦', seedKey:'seeds',       seedPrice:2, growTime:180, seasons:[0,1,2], sellPrice:2,  color:'#4CAF50', stemColor:'#5c8a2f', glow:'#c8ff9e' },
-      chili:      { id:'chili',      name:'พริกไฟ',         icon:'🌶️', seedKey:'seedChili',   seedPrice:3, growTime:200, seasons:[1],     sellPrice:4,  color:'#ff5722', stemColor:'#c0392b', glow:'#ffab91' },
-      pumpkin:    { id:'pumpkin',    name:'ฟักทองทองคำ',    icon:'🎃', seedKey:'seedPumpkin', seedPrice:5, growTime:320, seasons:[2],     sellPrice:10, color:'#ff9800', stemColor:'#8a6a2a', glow:'#ffe0b2' },
-      frostberry: { id:'frostberry', name:'เบอร์รี่น้ำแข็ง', icon:'🫐', seedKey:'seedFrost',   seedPrice:6, growTime:260, seasons:[3],     sellPrice:11, color:'#4fc3f7', stemColor:'#4a7a8a', glow:'#b3e5fc' },
-      iceMint:    { id:'iceMint',    name:'มิ้นต์น้ำแข็ง',   icon:'🍃', seedKey:'seedMint',    seedPrice:4, growTime:140, seasons:[3],     sellPrice:5,  color:'#80f2d8', stemColor:'#3a8a72', glow:'#d0fff5' },
-      snowGinseng:{ id:'snowGinseng',name:'โสมหิมะ',        icon:'🫚', seedKey:'seedGinseng', seedPrice:9, growTime:420, seasons:[3],     sellPrice:18, color:'#e8d5a8', stemColor:'#8a7a5a', glow:'#fff2d0' },
+      veggie:     { id:'veggie',     name:t('ผัก','Vegetable'),            icon:'🥦', seedKey:'seeds',       seedPrice:2, growTime:180, seasons:[0,1,2], sellPrice:2,  color:'#4CAF50', stemColor:'#5c8a2f', glow:'#c8ff9e' },
+      chili:      { id:'chili',      name:t('พริกไฟ','Fire Chili'),         icon:'🌶️', seedKey:'seedChili',   seedPrice:3, growTime:200, seasons:[1],     sellPrice:4,  color:'#ff5722', stemColor:'#c0392b', glow:'#ffab91' },
+      pumpkin:    { id:'pumpkin',    name:t('ฟักทองทองคำ','Golden Pumpkin'),    icon:'🎃', seedKey:'seedPumpkin', seedPrice:5, growTime:320, seasons:[2],     sellPrice:10, color:'#ff9800', stemColor:'#8a6a2a', glow:'#ffe0b2' },
+      frostberry: { id:'frostberry', name:t('เบอร์รี่น้ำแข็ง','Frostberry'), icon:'🫐', seedKey:'seedFrost',   seedPrice:6, growTime:260, seasons:[3],     sellPrice:11, color:'#4fc3f7', stemColor:'#4a7a8a', glow:'#b3e5fc' },
+      iceMint:    { id:'iceMint',    name:t('มิ้นต์น้ำแข็ง','Ice Mint'),   icon:'🍃', seedKey:'seedMint',    seedPrice:4, growTime:140, seasons:[3],     sellPrice:5,  color:'#80f2d8', stemColor:'#3a8a72', glow:'#d0fff5' },
+      snowGinseng:{ id:'snowGinseng',name:t('โสมหิมะ','Snow Ginseng'),        icon:'🫚', seedKey:'seedGinseng', seedPrice:9, growTime:420, seasons:[3],     sellPrice:18, color:'#e8d5a8', stemColor:'#8a7a5a', glow:'#fff2d0' },
     };
     const CROP_KEYS = Object.keys(CROP_DB);
     function cropInfo(id){ return CROP_DB[id] || CROP_DB.veggie; }
@@ -2066,11 +2102,11 @@
     // ---------- เครื่องมือ (ได้รับจากการคุยกับ NPC — ไม่มีขาย) ----------
     // เพิ่มเครื่องมือใหม่ = เพิ่ม entry + ใส่ gift ให้ NPC สักคนใน 06-npcs.js
     const TOOL_DB = {
-      hoe:         { id:'hoe',         icon:'⚒️', name:'จอบพรวนดิน', keyHint:'SPACE', desc:'พรวนดินในเขตไร่เพื่อสร้างแปลงปลูก (พลังงาน 4)' },
-      wateringCan: { id:'wateringCan', icon:'🚿', name:'บัวรดน้ำ',    keyHint:'SPACE', desc:'รดน้ำแปลงที่ปลูก — ดินแห้งพืชไม่โต (ฝนตก/สปริงเกอร์ช่วยได้)' },
-      axe:         { id:'axe',         icon:'🪓', name:'ขวานตัดไม้',  keyHint:'G',     desc:'ตัดต้นไม้เก็บไม้' },
-      pickaxe:     { id:'pickaxe',     icon:'⛏️', name:'อีเต้อขุดแร่', keyHint:'M',     desc:'ขุดแร่ใน Crystal Cave' },
-      rod:         { id:'rod',         icon:'🎣', name:'เบ็ดตกปลา',   keyHint:'F',     desc:'ตกปลาที่บ่อน้ำ' },
+      hoe:         { id:'hoe',         icon:'⚒️', name:t('จอบพรวนดิน','Hoe'), keyHint:'SPACE', desc:t('พรวนดินในเขตไร่เพื่อสร้างแปลงปลูก (พลังงาน 4)','Till soil in the farm field to make plots (4 energy)') },
+      wateringCan: { id:'wateringCan', icon:'🚿', name:t('บัวรดน้ำ','Watering Can'),    keyHint:'SPACE', desc:t('รดน้ำแปลงที่ปลูก — ดินแห้งพืชไม่โต (ฝนตก/สปริงเกอร์ช่วยได้)','Water your plots — dry soil stops growth (rain/sprinkler help)') },
+      axe:         { id:'axe',         icon:'🪓', name:t('ขวานตัดไม้','Axe'),  keyHint:'G',     desc:t('ตัดต้นไม้เก็บไม้','Chop trees for wood') },
+      pickaxe:     { id:'pickaxe',     icon:'⛏️', name:t('อีเต้อขุดแร่','Pickaxe'), keyHint:'M',     desc:t('ขุดแร่ในเหวประกาย','Mine ore in Glimmering Abyss') },
+      rod:         { id:'rod',         icon:'🎣', name:t('เบ็ดตกปลา','Fishing Rod'),   keyHint:'F',     desc:t('ตกปลาที่บ่อน้ำ','Fish at the pond') },
     };
     const TOOL_ORDER = ['hoe','wateringCan','axe','pickaxe','rod'];
     // เริ่มเกมมีเครื่องมือครบ ยกเว้นเบ็ดตกปลา (rod) ที่ต้องไปรับจากมายาที่ฟาร์ม
@@ -4076,7 +4112,7 @@
         const n = 3 + dungeonFloor; // ชั้น 1 = 4 ตัว, ชั้น 2 = 5 ตัว ...
         for (let i=0;i<n;i++) enemies.push(makeDungeonEnemy(cfg, dungeonFloor, false));
       }
-      const label = `${meta.name} (ชั้น ${dungeonFloor}/${floors})`;
+      const label = `${zoneLabel(currentMap)} (${t('ชั้น','Floor')} ${dungeonFloor}/${floors})`;
       const el = document.getElementById('ui-map'); if (el) el.innerText = label;
     }
     function descendFloor(){
@@ -4111,7 +4147,7 @@
       const meta = zoneMeta(newMap);
       if (isDungeonZone(newMap)) tut.enteredDungeon = true;
       const c = active();
-      document.getElementById('ui-map').innerText = meta.name;
+      document.getElementById('ui-map').innerText = zoneLabel(newMap);
       // ---- โซนเปิดให้สำรวจ (overworld) — ไม่มีศัตรู เดินเก็บของ/คุย NPC ----
       if (newMap === "Dungeon"){
         mapBanner = { text:"🌲 ป่ากระซิบ", sub:"Whispering Woods — เก็บสมุนไพร/ไม้/แร่เหล็ก · ประตูวิหารกระซิบอยู่กลางป่า", timer:130 };
@@ -5146,8 +5182,8 @@
       document.getElementById('ui-seeds').innerText = CROP_KEYS.reduce((s,k)=>s+(inv[CROP_DB[k].seedKey]||0),0);
       const selInfo = cropInfo(selectedCrop);
       const selEl = document.getElementById('ui-seedsel');
-      if (selEl) selEl.innerText = `เมล็ดที่เลือก [Z]: ${selInfo.icon} ${selInfo.name} x${inv[selInfo.seedKey]||0}` +
-        (greenhouseBuilt || selInfo.seasons.includes(seasonIdx()) ? '' : ' ⚠️นอกฤดู');
+      if (selEl) selEl.innerText = `${t('เมล็ดที่เลือก','Seed')} [Z]: ${selInfo.icon} ${tr(selInfo.nameL||selInfo.name)} x${inv[selInfo.seedKey]||0}` +
+        (greenhouseBuilt || selInfo.seasons.includes(seasonIdx()) ? '' : t(' ⚠️นอกฤดู',' ⚠️off-season'));
       document.getElementById('ui-veggie').innerText = inv.veggie;
       document.getElementById('ui-meat').innerText = inv.meat;
       document.getElementById('ui-chili').innerText = inv.chili;
@@ -5203,7 +5239,7 @@
 
       const phase = dayPhase();
       const phaseIcon = phase==='night' ? '🌙' : phase==='dusk' ? '🌆' : phase==='dawn' ? '🌅' : '☀️';
-      const phaseLabel = phase==='night' ? 'กลางคืน' : phase==='dusk' ? 'พลบค่ำ' : phase==='dawn' ? 'รุ่งอรุณ' : 'กลางวัน';
+      const phaseLabel = phase==='night' ? t('กลางคืน','Night') : phase==='dusk' ? t('พลบค่ำ','Dusk') : phase==='dawn' ? t('รุ่งอรุณ','Dawn') : t('กลางวัน','Day');
       document.getElementById('hud-daynight').innerText = phaseIcon;
       document.getElementById('hud-day').innerText = 'Day '+dayCount+' · '+phaseLabel;
       const clockEl = document.getElementById('hud-clock');
@@ -5213,7 +5249,7 @@
         clockEl.style.color = gameHour() >= 23.5 ? '#c0392b' : '';
       }
       const weatherIcon = weather==='rain' ? '🌧️' : weather==='storm' ? '⛈️' : '🌤️';
-      const weatherLabel = weather==='rain' ? 'ฝนตก' : weather==='storm' ? 'พายุ' : 'แจ่มใส';
+      const weatherLabel = weather==='rain' ? t('ฝนตก','Rainy') : weather==='storm' ? t('พายุ','Storm') : t('แจ่มใส','Clear');
       document.getElementById('hud-weather').innerText = weatherIcon;
       document.getElementById('hud-weathertext').innerText = weatherLabel;
       document.getElementById('hud-season').innerText = seasonIcon();
@@ -6556,7 +6592,7 @@
 
     // ---------- Minimap (มุมซ้ายบน — สไตล์ Moonstone) ----------
     // ป้ายชื่อโซน + สีพื้น minimap — ดึงจาก ZONE_META (ครอบคลุมทุกโซนอัตโนมัติ)
-    function zoneLabel(m){ return zoneMeta(m).name; }
+    function zoneLabel(m){ const z=zoneMeta(m); return t(z.name, z.en || z.name); }
     function zoneMiniBg(m){ return zoneMeta(m).mini || "#2c2013"; }
     let _miniCanvas = null, _mctx = null;
     function drawMinimap(){
