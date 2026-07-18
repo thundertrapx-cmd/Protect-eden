@@ -1886,7 +1886,7 @@
     // 1 วัน = 6:00 น. → 2:00 น. (20 ชั่วโมงเกม) · ต้อง "นอน" ถึงจะขึ้นวันใหม่ · ถึงตี 2 = ล้มหมดสติ
     let dayCount = 1;
     const START_HOUR = 6, DAY_HOURS = 20; // 6:00 → 26:00 (=2:00 น. ของวันถัดไป)
-    const DAY_LENGTH = 10800; // frames ต่อวัน (~3 นาทีจริง/วัน — ช้าลงให้เหมือนใช้ชีวิต)
+    const DAY_LENGTH = 21600; // frames ต่อวัน (~6 นาทีจริง/วัน — นาฬิกาเดินช้าลงเท่าตัว)
     let dayTimer = 0;
     let dayEndActive = false; // true = กำลังโชว์หน้าสรุปวัน (หยุดเกม)
     function gameHour(){ return START_HOUR + (dayTimer/DAY_LENGTH)*DAY_HOURS; } // 6.0 .. 26.0
@@ -2076,9 +2076,9 @@
       Cave:       { name:"เหวประกาย",                en:"Glimmering Abyss",   type:'wild',  biome:'crystal', mini:"#2a1c40" },
       Volcano:    { name:"ภูเขาซินเดอร์",            en:"Mount Cinder",       type:'wild',  biome:'volcano', mini:"#3a1408", dungeon:'Cinderforge' },
       Ruins:      { name:"ที่ราบสายฟ้า",            en:"Thunder Plains",     type:'wild',  biome:'storm',   mini:"#20283f", dungeon:'Skyhold' },
-      Sanctum:    { name:"วิหารกระซิบ",             en:"Whispering Sanctum", type:'dungeon', biome:'dungeon-forest', mini:"#0a140c", parent:'Dungeon' },
-      Cinderforge:{ name:"เหวหลอมถ่าน",             en:"Cinderforge Depths", type:'dungeon', biome:'dungeon-lava',   mini:"#1a0505", parent:'Volcano' },
-      Skyhold:    { name:"หอสังเกตการณ์สกายโฮลด์",  en:"Skyhold Observatory",type:'dungeon', biome:'dungeon-ruin',   mini:"#0f0a1c", parent:'Ruins' },
+      Sanctum:    { name:"วิหารกระซิบ",             en:"Whispering Sanctum", type:'dungeon', biome:'dungeon-forest', mini:"#0a140c", parent:'Dungeon', floors:3 },
+      Cinderforge:{ name:"เหวหลอมถ่าน",             en:"Cinderforge Depths", type:'dungeon', biome:'dungeon-lava',   mini:"#1a0505", parent:'Volcano', floors:3 },
+      Skyhold:    { name:"หอสังเกตการณ์สกายโฮลด์",  en:"Skyhold Observatory",type:'dungeon', biome:'dungeon-ruin',   mini:"#0f0a1c", parent:'Ruins', floors:4 },
     };
     function zoneMeta(m){ return ZONE_META[m] || { name:m, en:m, type:'wild', biome:'forest', mini:"#2c2013" }; }
     function isDungeonZone(m){ return zoneMeta(m).type === 'dungeon'; }
@@ -2127,11 +2127,12 @@
       Cave: [
         { x:480, y:0,   w:96, h:26,  to:'Snow', label:'ทะเลสาบกระจก' },
       ],
-      // ดันเจี้ยน (สู้บอส) — ขอบซ้ายกลับสู่ overworld ต้นทาง
-      Sanctum:     [ { x:0, y:180, w:28, h:120, to:'Dungeon', label:'กลับป่ากระซิบ' } ],
-      Cinderforge: [ { x:0, y:180, w:28, h:120, to:'Volcano', label:'กลับภูเขาซินเดอร์' } ],
-      Skyhold:     [ { x:0, y:180, w:28, h:120, to:'Ruins',   label:'กลับที่ราบสายฟ้า' } ],
+      // ดันเจี้ยน (หลายชั้น) — ซ้าย = ออกไป overworld ได้ทุกชั้น · ขวา = บันไดลงชั้นถัดไป (ซ่อนที่ชั้นสุดท้าย)
+      Sanctum:     [ { x:0, y:180, w:28, h:120, to:'Dungeon', label:'ออกจากวิหาร' }, { x:600, y:190, w:40, h:100, to:'Sanctum',     stairs:true, label:'บันไดลงชั้นถัดไป' } ],
+      Cinderforge: [ { x:0, y:180, w:28, h:120, to:'Volcano', label:'ออกจากเหว' },   { x:600, y:190, w:40, h:100, to:'Cinderforge', stairs:true, label:'บันไดลงชั้นถัดไป' } ],
+      Skyhold:     [ { x:0, y:180, w:28, h:120, to:'Ruins',   label:'ออกจากหอ' },     { x:600, y:190, w:40, h:100, to:'Skyhold',     stairs:true, label:'บันไดลงชั้นถัดไป' } ],
     };
+    let dungeonFloor = 1; // ชั้นปัจจุบันของดันเจี้ยน (บอสอยู่ชั้นสุดท้าย)
     // ---------- ขนาดโลกต่อโซน + กล้องเลื่อนตาม (Stardew-style) ----------
     // โซน overworld ใหญ่กว่าจอ (640x480) → กล้องเลื่อนตามผู้เล่น · ดันเจี้ยนคงจอเดียว (สู้ในกรอบ)
     const WORLD_SIZES = {
@@ -2155,6 +2156,11 @@
       for (const g of (GATES[currentMap] || [])){
         if (player.x + player.size > g.x && player.x < g.x + g.w &&
             player.y + player.size > g.y && player.y < g.y + g.h){
+          if (g.stairs){
+            const floors = zoneMeta(currentMap).floors || 1;
+            if (dungeonFloor < floors){ descendFloor(); return true; }
+            continue; // ชั้นสุดท้ายแล้ว ไม่มีบันไดลงต่อ
+          }
           switchMap(g.to); return true;
         }
       }
@@ -3028,17 +3034,18 @@
       return "DPS";                                // base Seedling before evolving
     }
     function zoneElement(){
-      if (currentMap==="Cave" || currentMap==="Volcano") return "Fire";
+      if (currentMap==="Cave" || currentMap==="Volcano" || currentMap==="Cinderforge") return "Fire";
       if (currentMap==="Snow") return "Water";     // frozen water
-      if (currentMap==="Dungeon") return "Leaf";   // forest
-      if (currentMap==="Ruins") return "Earth";    // ancient stone
+      if (currentMap==="Dungeon" || currentMap==="Sanctum") return "Leaf";   // forest
+      if (currentMap==="Ruins" || currentMap==="Skyhold") return "Earth";    // ancient stone
       return "Neutral";
     }
     function zoneEnemyName(){
       if (currentMap==="Cave") return "สัตว์ถ้ำ";
-      if (currentMap==="Volcano") return "อสูรลาวา";
-      if (currentMap==="Ruins") return "ผู้พิทักษ์โบราณ";
+      if (currentMap==="Volcano" || currentMap==="Cinderforge") return "อสูรลาวา";
+      if (currentMap==="Ruins" || currentMap==="Skyhold") return "ผู้พิทักษ์โบราณ";
       if (currentMap==="Snow") return "สัตว์หิมะ";
+      if (currentMap==="Sanctum") return "สัตว์ป่าถูกสาป";
       return "สัตว์ป่า";
     }
     function roleForEnemy(isBoss){
@@ -3075,7 +3082,7 @@
       const eUnits = cluster.map((e,i)=>{
         if (e.chapterBossId) return buildBossUnit(e, 5, eRows[i]); // chapter boss ใช้ stat/pattern จาก BOSS_DB
         const role = roleForEnemy(!!e.boss);
-        let atk = e.boss?18:10;
+        let atk = e.atk || (e.boss?18:10);
         if (role==='DPS') atk = Math.round(atk*1.2);
         let maxHp = role==='Tank' ? Math.round(e.maxHp*1.15) : e.maxHp;
         return {
@@ -3709,13 +3716,28 @@
     };
     let bossesDefeated = {}; // {bossId:true} — เก็บลงเซฟ (v4)
 
-    // บอสที่ "กำลังรออยู่" ในดันเจี้ยนโซนนี้ (chapter ตรง + ยังไม่ปราบ) — ใช้ชี้ทาง/ลำแสงประตู
+    // บอสที่ "กำลังรออยู่" ในดันเจี้ยนโซนนี้ — ยังไม่ปราบ + ถึง chapter แล้ว (เลือกบทน้อยสุดก่อน)
+    // ใช้ >= เพื่อกันบั๊ก "บอสหาย" กรณี chapter ไม่ตรงเป๊ะ (โซนถูก gate ตาม chapter อยู่แล้ว จึงปลอดภัย)
     function activeBossForDungeon(dungeonZone){
+      let best = null;
       for (const id in BOSS_DB){
         const def = BOSS_DB[id];
-        if (def.map === dungeonZone && chapterIndex === def.chapter && !bossesDefeated[id]) return def;
+        if (def.map === dungeonZone && !bossesDefeated[id] && chapterIndex >= def.chapter){
+          if (!best || def.chapter < best.chapter) best = def;
+        }
       }
-      return null;
+      return best;
+    }
+    // สปอว์นบอสประจำดันเจี้ยน (เรียกตอนถึง "ชั้นสุดท้าย")
+    function spawnDungeonBoss(){
+      const def = activeBossForDungeon(currentMap);
+      if (!def) return false;
+      if (enemies.some(e=>e.chapterBossId===def.id)) return true;
+      enemies.push({ x:canvas.width-140, y:220, size:def.overworldSize, hp:def.hp, maxHp:def.hp,
+        color:def.color, speed:0.3, squish:0, boss:true, chapterBossId:def.id });
+      updateEVA(`⚠️ ชั้นสุดท้าย! ${def.name} — ${def.title} — เฝ้าอยู่ตรงหน้า เดินเข้าไปชนเพื่อเริ่มต่อสู้`);
+      mapBanner = { text:`👑 ${def.name}`, sub:def.title, timer:160 };
+      return true;
     }
     // ถ้ายืนใน overworld ที่มีประตูลงดันเจี้ยน คืนบอสที่รออยู่ในดันเจี้ยนนั้น (ไว้โชว์ hint)
     function overworldActiveBoss(overworldZone){
@@ -3964,6 +3986,52 @@
       player.x = Math.min(Math.max(px, 10), W-10-player.size);
       player.y = Math.min(Math.max(py, 10), H-10-player.size);
     }
+    // ---------- ดันเจี้ยนหลายชั้น (บอสอยู่ชั้นสุดท้าย) ----------
+    // ศัตรูต่อไบโอม — ยิ่งลงลึกยิ่งแข็ง (คูณตามชั้น) · แก้ปัญหา "มอนอ่อน/น้อยเกินไป"
+    const DUNGEON_ENEMY = {
+      'dungeon-forest': { color:'#5a7a3a', hp:90,  atk:12, spd:0.9, size:26 },
+      'dungeon-lava':   { color:'#e04a1e', hp:120, atk:16, spd:1.05, size:26 },
+      'dungeon-ruin':   { color:'#8a63c0', hp:150, atk:19, spd:0.9, size:26 },
+    };
+    function makeDungeonEnemy(cfg, floor, strong){
+      const mul = 1 + (floor-1)*0.3 + (strong?0.5:0); // ลึกขึ้น = แกร่งขึ้น
+      const hp = Math.round(cfg.hp*mul);
+      return { x:150+Math.random()*380, y:120+Math.random()*250, size:cfg.size, hp, maxHp:hp,
+        color:cfg.color, speed:cfg.spd, squish:0, atk:Math.round(cfg.atk*mul) };
+    }
+    function spawnDungeonFloor(){
+      enemies = [];
+      const meta = zoneMeta(currentMap);
+      const floors = meta.floors || 1;
+      const cfg = DUNGEON_ENEMY[meta.biome] || DUNGEON_ENEMY['dungeon-forest'];
+      const isFinal = dungeonFloor >= floors;
+      if (isFinal){
+        const hasBoss = spawnDungeonBoss(); // บอสประจำดันเจี้ยน (ถ้ายังไม่ปราบ)
+        // มีสมุน/ศัตรูแข็งประกบบอส (หรือถ้าปราบบอสแล้ว = ศัตรูแข็งล้วน)
+        const n = hasBoss ? 2 : 3;
+        for (let i=0;i<n;i++) enemies.push(makeDungeonEnemy(cfg, dungeonFloor, true));
+      } else {
+        const n = 3 + dungeonFloor; // ชั้น 1 = 4 ตัว, ชั้น 2 = 5 ตัว ...
+        for (let i=0;i<n;i++) enemies.push(makeDungeonEnemy(cfg, dungeonFloor, false));
+      }
+      const label = `${meta.name} (ชั้น ${dungeonFloor}/${floors})`;
+      const el = document.getElementById('ui-map'); if (el) el.innerText = label;
+    }
+    function descendFloor(){
+      const meta = zoneMeta(currentMap);
+      const floors = meta.floors || 1;
+      if (dungeonFloor >= floors) return;
+      dungeonFloor++;
+      transitionAlpha = 1; sfx.zone();
+      spawnDungeonFloor();
+      // วางผู้เล่นที่ทางเข้าชั้นใหม่ (ฝั่งซ้าย) ให้พ้นบันได กันลงซ้ำทันที
+      player.x = 60; player.y = 240;
+      const isFinal = dungeonFloor >= floors;
+      if (!isFinal) mapBanner = { text:`⬇ ${meta.name} — ชั้น ${dungeonFloor}`, sub:"ลงลึกขึ้น ศัตรูแข็งขึ้น · บันไดลงต่ออยู่ทางขวา", timer:140 };
+      updateEVA(isFinal
+        ? `⬇ ถึงชั้นสุดท้ายของ${meta.name}แล้ว! บอสรออยู่ — เดินเข้าไปชนเพื่อเริ่มต่อสู้`
+        : `⬇ ลงมาชั้น ${dungeonFloor} ของ${meta.name} · ศัตรูแข็งขึ้นเรื่อยๆ ยิ่งลึก — บันไดลงชั้นถัดไปอยู่ทางขวา`);
+    }
     function switchMap(newMap){
       // Chapter gating: โซนที่ยังไม่ถึง chapter จะเข้าไม่ได้ (ดู CHAPTERS ใน 02-economy-quests.js)
       if (!zoneUnlocked(newMap)){
@@ -4000,20 +4068,14 @@
         updateEVA("เข้าสู่ทะเลสาบกระจก! น้ำใสราวกระจก — จุดชุมทางสู่ภูเขาซินเดอร์ ที่ราบสายฟ้า และเหวประกาย");
       // ---- ดันเจี้ยน (สู้บอส) — ศัตรูอยู่ที่นี่ ไม่ใช่ overworld ----
       } else if (newMap === "Sanctum"){
-        mapBanner = { text:"🗡️ วิหารกระซิบ", sub:"Whispering Sanctum — ระวังฝูงหมาป่าและเจ้าป่า!", timer:130 };
-        updateEVA("ลงสู่วิหารกระซิบแล้ว! สัตว์ป่าที่ถูกควบคุมซ่อนอยู่ในเงามืด สัตว์เลี้ยงจะคอยปกป้องเจ้า");
-        enemies.push({ x:300,y:150,size:24,hp:50,maxHp:50,color:"#6a8a4a",speed:1,squish:0 });
-        enemies.push({ x:460,y:300,size:24,hp:50,maxHp:50,color:"#6a8a4a",speed:1,squish:0 });
+        mapBanner = { text:"🗡️ วิหารกระซิบ", sub:"Whispering Sanctum — ดันเจี้ยนหลายชั้น บอสอยู่ชั้นล่างสุด", timer:130 };
+        updateEVA("ลงสู่วิหารกระซิบ! ดันเจี้ยนนี้มีหลายชั้น — เคลียร์/หลบศัตรูแล้วหาบันไดลง (ทางขวา) ลึกลงไปเรื่อยๆ บอสอยู่ชั้นสุดท้าย");
       } else if (newMap === "Cinderforge"){
-        mapBanner = { text:"🔥 เหวหลอมถ่าน", sub:"Cinderforge Depths — ลาวาและไททันหินหลอม!", timer:130 };
-        updateEVA("ลงสู่เหวหลอมถ่าน! ความร้อนแผดเผา ระวังศัตรูธาตุไฟที่โจมตีแรง");
-        enemies.push({ x:300,y:150,size:24,hp:55,maxHp:55,color:"#ff5722",speed:1.3,squish:0 });
-        enemies.push({ x:460,y:300,size:24,hp:55,maxHp:55,color:"#ff5722",speed:1.3,squish:0 });
+        mapBanner = { text:"🔥 เหวหลอมถ่าน", sub:"Cinderforge Depths — ยิ่งลึกยิ่งร้อน บอสอยู่ก้นเหว", timer:130 };
+        updateEVA("ลงสู่เหวหลอมถ่าน! ลงบันไดทางขวาไปเรื่อยๆ ศัตรูธาตุไฟแข็งขึ้นทุกชั้น — มหาไททันเฝ้าชั้นล่างสุด");
       } else if (newMap === "Skyhold"){
-        mapBanner = { text:"🏛️ หอสกายโฮลด์", sub:"Skyhold Observatory — ระบบป้องกันโบราณยังทำงาน", timer:130 };
-        updateEVA("ลงสู่หอสกายโฮลด์! รูนโบราณเรืองแสง สิ่งพิทักษ์ที่นี่ชอบทำให้มึนงง ระวังตัว");
-        enemies.push({ x:310,y:160,size:24,hp:60,maxHp:60,color:"#9575cd",speed:0.9,squish:0 });
-        enemies.push({ x:470,y:290,size:24,hp:60,maxHp:60,color:"#9575cd",speed:0.9,squish:0 });
+        mapBanner = { text:"🏛️ หอสกายโฮลด์", sub:"Skyhold Observatory — 4 ชั้น บอสอยู่ยอด/ก้นหอ", timer:130 };
+        updateEVA("ลงสู่หอสกายโฮลด์! หอนี้ลึก 4 ชั้น สิ่งพิทักษ์แข็งขึ้นทุกชั้น — ลงบันไดทางขวาไปจนถึงชั้นสุดท้ายเพื่อเจอบอส");
       } else if (newMap === "Home"){
         mapBanner = { text:"บ้านของเรา", sub:"เตียงนอน 😴 · กล่องขายของ 📦", timer:110 };
         updateEVA("เข้าบ้านแล้ว! เดินไปที่เตียงกด SPACE เพื่อนอนจบวัน · ใส่ของในกล่องขายทางขวา");
@@ -4030,9 +4092,11 @@
         mapBanner = { text:`👑 ${_obBoss.name} รออยู่!`, sub:"หาปากถ้ำเรืองแสง (ลำแสงทอง + จุด 👑 บนมินิแมพ) แล้วเดินเข้าไปสู้", timer:170 };
         updateEVA(`👑 บอส "${_obBoss.name}" กำลังเฝ้าอยู่ใน "ดันเจี้ยน" ของโซนนี้ — ไม่ได้อยู่กลางแจ้งแล้วนะ! มองหา "ปากถ้ำเรืองแสง" (มีลำแสงทองพุ่งขึ้นสูง + จุด 👑 บนมินิแมพ) แล้วเดินเข้าไปเพื่อลงไปสู้`);
       }
+      // เข้าดันเจี้ยนจากข้างนอก = เริ่มที่ชั้น 1 (การลงบันไดชั้นถัดไปทำผ่าน descendFloor ไม่ผ่าน switchMap)
+      if (isDungeonZone(newMap)){ dungeonFloor = 1; spawnDungeonFloor(); }
       spawnAtReturnGate(newMap, fromMap); // วางผู้เล่นข้างประตูย้อนกลับ (reciprocal)
       c.x = player.x - 24; c.y = player.y + 4;
-      maybeSpawnChapterBoss(newMap); // chapter boss โผล่ในโซนของมันช่วง chapter ที่ยังไม่ปราบ (05b-bosses.js)
+      if (!isDungeonZone(newMap)) maybeSpawnChapterBoss(newMap); // ดันเจี้ยนจัดการบอสเองที่ชั้นสุดท้าย (spawnDungeonFloor)
     }
 
     // ---------- Cooking ----------
@@ -4858,14 +4922,8 @@
         }
       }
 
-      // active creature follows player; enemies roam and trigger Tactical Grid Battle on contact
+      // สัตว์เลี้ยงเดินตามผู้เล่นอย่างเดียว — ไม่ไล่ชนศัตรู/ไม่เริ่มต่อสู้เอง (ผู้เล่นเป็นคนเลือกสู้เท่านั้น)
       c.target = null;
-      if (currentMap !== "Farm" && enemies.length>0){
-        let closest=null, minDist=Infinity;
-        for (let e of enemies){ const d=Math.hypot(e.x-c.x,e.y-c.y); if(d<minDist){minDist=d;closest=e;} }
-        if (closest && minDist < 36){ startBattle(closest); }
-        else c.target = closest;
-      }
       if (c.target){
         const angle = Math.atan2(c.target.y-c.y, c.target.x-c.x);
         c.x+=Math.cos(angle)*c.speed; c.y+=Math.sin(angle)*c.speed; c.facing={x:Math.cos(angle),y:Math.sin(angle)};
@@ -4892,12 +4950,20 @@
       if (c.attackCooldown>0) c.attackCooldown--;
 
       if (!battleActive){
+        const pcx = player.x+player.size/2, pcy = player.y+player.size/2;
         for (let e of enemies){
-          const angle = Math.atan2(player.y-e.y, player.x-e.x);
-          const nightMul = isNight() ? 1.15 : 1;
-          e.x += Math.cos(angle)*e.speed*nightMul; e.y += Math.sin(angle)*e.speed*nightMul;
+          // ศัตรูเดินสุ่มช้าๆ ไม่ไล่ผู้เล่น — เข้าโหมดต่อสู้เฉพาะเมื่อ "ผู้เล่นเดินไปชน" เท่านั้น (ไม่บังคับสู้)
+          e.wanderT = (e.wanderT||0) - 1;
+          if (e.wanderT <= 0){ e.wanderT = 70+Math.random()*90; e.wa = Math.random()*Math.PI*2; e.wmove = Math.random()<0.55; }
+          if (e.wmove){
+            const sp = (e.speed||1)*0.45;
+            const nx = e.x + Math.cos(e.wa)*sp, ny = e.y + Math.sin(e.wa)*sp;
+            if (nx>24 && nx<worldW()-24) e.x = nx;
+            if (ny>24 && ny<worldH()-24) e.y = ny;
+          }
           if (e.squish>0) e.squish--;
-          if (Math.hypot(player.x-e.x, player.y-e.y) < 30) startBattle(e);
+          // ต้องกำลังเดิน + ตัวชนกันจริง ถึงเริ่มต่อสู้ (ยืนเฉยข้างๆ ไม่โดนลากเข้าสู้)
+          if (player.moving && Math.hypot(pcx-e.x, pcy-e.y) < 28) startBattle(e);
         }
       }
 
@@ -5692,6 +5758,25 @@
       if (near){ ctx.fillStyle="#fff2cf"; ctx.fillText("เดินเข้าเพื่อลงดันเจี้ยน", cx, g.y+g.h+16); }
       ctx.textAlign="left";
     }
+    // บันไดลงชั้นถัดไปในดันเจี้ยน
+    function drawStairsMarker(g, cx, cy, near){
+      ctx.save();
+      const glow = 0.35 + Math.sin(frameCount*0.1)*0.15;
+      const rg = ctx.createRadialGradient(cx, cy, 3, cx, cy, g.w);
+      rg.addColorStop(0, `rgba(120,200,255,${glow})`); rg.addColorStop(1, "rgba(120,200,255,0)");
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(cx, cy, g.w, 0, Math.PI*2); ctx.fill();
+      // ขั้นบันไดไล่ลง
+      ctx.fillStyle = "#2a2436"; ctx.beginPath(); ctx.roundRect(g.x-2, g.y-2, g.w+4, g.h+4, 5); ctx.fill();
+      ctx.fillStyle = "#4a4258";
+      for (let i=0;i<4;i++){ ctx.fillRect(g.x+2, g.y+4+i*(g.h/4), g.w-4-i*6, g.h/4-3); }
+      ctx.restore();
+      ctx.font = "bold 10px Kanit, sans-serif"; ctx.textAlign="center";
+      ctx.fillStyle = near ? "rgba(40,90,140,0.95)" : "rgba(15,25,40,0.8)";
+      ctx.beginPath(); ctx.roundRect(cx-46, g.y-16, 92, 15, 5); ctx.fill();
+      ctx.fillStyle = "#dff0ff"; ctx.fillText("⬇ บันไดลงชั้นถัดไป", cx, g.y-5);
+      if (near){ ctx.fillStyle="#fff2cf"; ctx.fillText("เดินเข้าเพื่อลงลึก", cx, g.y+g.h+14); }
+      ctx.textAlign="left";
+    }
     function drawGateMarkers(){
       const pcx = player.x+player.size/2, pcy = player.y+player.size/2;
       for (const g of (GATES[currentMap] || [])){
@@ -5700,6 +5785,11 @@
           const _cx=g.x+g.w/2, _cy=g.y+g.h/2;
           const _near = Math.hypot(pcx-_cx, pcy-_cy) < 100;
           if (g.dungeon){ drawDungeonDoorMarker(g, _cx, _cy, _near); continue; }
+          if (g.stairs){
+            const floors = zoneMeta(currentMap).floors || 1;
+            if (dungeonFloor >= floors) continue;   // ชั้นสุดท้าย ไม่มีบันไดลงต่อ
+            drawStairsMarker(g, _cx, _cy, _near); continue;
+          }
         }
         const cx = g.x + g.w/2, cy = g.y + g.h/2;
         const near = Math.hypot(pcx-cx, pcy-cy) < 100;
