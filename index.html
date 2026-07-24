@@ -1640,9 +1640,9 @@
       if (meta && meta.interior) return true; // ภายในบ้าน/ร้านในหมู่บ้าน เข้าได้เสมอ
       // ดันเจี้ยน (Sanctum/Cinderforge/Skyhold) ปลดตาม overworld แม่ของมัน
       if (meta && meta.parent) return zoneUnlocked(meta.parent);
-      const upTo = Math.min(chapterIndex, CHAPTERS.length-1);
-      for (let i=0;i<=upTo;i++) if (CHAPTERS[i].zones.includes(map)) return true;
-      return false;
+      // โซนป่า = ปลดล็อกทีละโซนด้วย "กุญแจจากบอส" (07-world-state)
+      if (typeof ZONE_CHAIN !== 'undefined' && ZONE_CHAIN.includes(map)) return !!zonesUnlocked[map];
+      return true;
     }
     function _zoneUnlocked_old(map){
       if (map === "Farm") return true;
@@ -1676,9 +1676,7 @@
       sfx.chime();
       if (chapterIndex < CHAPTERS.length){
         const next = CHAPTERS[chapterIndex];
-        const newZones = next.zones.filter(z=>z!=="Farm");
-        mapBanner = { text:`📖 CHAPTER ${chapterIndex+1}: ${next.title}`,
-          sub: newZones.length ? `🔓 ปลดล็อกโซนใหม่: ${newZones.join(", ")}` : next.desc, timer:200 };
+        mapBanner = { text:`📖 CHAPTER ${chapterIndex+1}: ${next.title}`, sub: next.desc, timer:200 };
         updateEVA(`${finished.outro} — ${next.intro}`);
       } else {
         mapBanner = { text:"🌅 EDEN RESTORED", sub:"เนื้อเรื่องหลักจบสมบูรณ์!", timer:260 };
@@ -2242,6 +2240,26 @@
     };
     function zoneMeta(m){ return ZONE_META[m] || { name:m, en:m, type:'wild', biome:'forest', mini:"#2c2013" }; }
     function isDungeonZone(m){ return zoneMeta(m).type === 'dungeon'; }
+
+    // ---------- ปลดล็อกแมพทีละโซน (เส้นตรง · กุญแจจากบอส) ----------
+    // Woods → Lake → Cinder → Abyss → Thunder · ปราบบอส/การ์เดียนของโซน = ได้กุญแจปลดโซนถัดไป
+    const ZONE_CHAIN = ['Dungeon','Snow','Volcano','Cave','Ruins'];
+    let zonesUnlocked = { Dungeon:true }; // ป่ากระซิบเปิดตั้งแต่ต้น
+    function unlockNextZone(afterZone){
+      const i = ZONE_CHAIN.indexOf(afterZone);
+      if (i < 0 || i+1 >= ZONE_CHAIN.length) return;
+      const nz = ZONE_CHAIN[i+1];
+      if (zonesUnlocked[nz]) return;
+      zonesUnlocked[nz] = true;
+      const nm = zoneMeta(nz);
+      mapBanner = { text:`🗝️ ${t('ปลดล็อก','Unlocked')}: ${t(nm.name, nm.en)}`,
+        sub: t('ได้กุญแจจากการปราบบอส! เส้นทางใหม่เปิดแล้ว', 'You earned a key by defeating the boss! A new path is open'), timer:220 };
+      updateEVA(t(`🗝️ ยินดีด้วย! เจ้าได้ "กุญแจ" สู่ ${nm.name} — เดินทางไปโซนใหม่ได้แล้ว ไปสำรวจกันเลย!`,
+                  `🗝️ Congratulations! You obtained the key to ${nm.en} — a new zone is now open. Go explore!`));
+      if (typeof sfx!=='undefined' && sfx.chime) sfx.chime();
+    }
+    // โซนถัดไปในสายที่ "ยังไม่ปลด" (ไว้บอกผู้เล่นว่าต้องปราบบอสไหน)
+    function nextLockedZone(){ return ZONE_CHAIN.find(z=>!zonesUnlocked[z]) || null; }
 
     // ---------- ประตูเชื่อมโซน (แทนการเดินชนขอบจอ) ----------
     // เดินเข้าบริเวณทางออกเรืองแสงถึงจะเปลี่ยนโซน · dungeon:true = ประตูลงดันเจี้ยน (วาดเป็นปากถ้ำกลางโซน)
@@ -3866,40 +3884,62 @@
       relicWisp: { name:"วิญญาณโบราณ", color:"#9575cd", element:"Earth", hp:40,  atk:8,  spd:15, role:"CC",  size:16 },
     };
     const BOSS_DB = {
-      shadowFang: { id:'shadowFang', chapter:0, map:"Sanctum",
+      shadowFang: { id:'shadowFang', chapter:0, map:"Sanctum", chainZone:'Dungeon',
         name:"ราชันเขี้ยวเงา", title:"ผู้นำฝูงแห่งพงไพร",
         color:"#4a2a5a", element:"Leaf", role:"DPS", size:34, overworldSize:36,
-        hp:150, atk:13, spd:12, moveRange:3, atkRange:1, stunResist:0.5, phase2At:0.5,
+        hp:190, atk:16, spd:12, moveRange:3, atkRange:1, stunResist:0.5, phase2At:0.5,
         moves:[ {type:'melee',mult:1.2}, {type:'summon',spec:'wolfling',count:1,cap:2}, {type:'melee',mult:1.2} ],
         phase2:{ name:"คลุ้มคลั่ง", atkMult:1.35, spdBonus:3,
           moves:[ {type:'melee',mult:1.3}, {type:'melee',mult:1.3}, {type:'summon',spec:'wolfling',count:1,cap:2} ] },
         introEVA:"⚠️ ราชันเขี้ยวเงาปรากฏตัว! มันจะเรียกฝูงมาช่วย — กำจัดลูกฝูงก่อน อย่าให้ล้อมเรา",
-        defeatEVA:"🏆 ราชันเขี้ยวเงาสยบแล้ว! ฝูงหมาป่าในป่าสงบลง... EVA ตรวจพบว่าสัญญาณที่ควบคุมพวกมันมาจากใต้ดิน",
+        defeatEVA:"🏆 ราชันเขี้ยวเงาสยบแล้ว! 🗝️ เจ้าได้กุญแจสู่ทะเลสาบกระจก — เส้นทางใหม่เปิดแล้ว",
         reward:()=>{ inv.coin+=40; } },
-      magmaTitan: { id:'magmaTitan', chapter:1, map:"Cinderforge",
+      // การ์เดียนทะเลสาบกระจก (โซนไม่มีดันเจี้ยน — บอสอยู่กลางแจ้ง) → กุญแจสู่ภูเขาซินเดอร์
+      tideWarden: { id:'tideWarden', chapter:1, map:"Snow", chainZone:'Snow',
+        name:"ผู้พิทักษ์วารี", title:"เจ้าแห่งทะเลสาบกระจก",
+        color:"#2f8fb0", element:"Water", role:"CC", size:36, overworldSize:40,
+        hp:260, atk:19, spd:12, moveRange:3, atkRange:1, stunResist:0.6, phase2At:0.5,
+        moves:[ {type:'melee',mult:1.2}, {type:'blast',shape:'row',mult:1.9}, {type:'melee',mult:1.2} ],
+        phase2:{ name:"คลื่นบ้าคลั่ง", atkMult:1.3, spdBonus:3,
+          moves:[ {type:'blast',shape:'cross',mult:2.0}, {type:'melee',mult:1.4}, {type:'blast',shape:'row',mult:1.9} ] },
+        introEVA:"⚠️ ผู้พิทักษ์วารีผุดขึ้นจากทะเลสาบ! ระวังคลื่นที่กวาดทั้งแถว — อย่ายืนแถวเดียวกันหลายตัว",
+        defeatEVA:"🏆 ผู้พิทักษ์วารีสงบลง น้ำในทะเลสาบใสขึ้น... 🗝️ เจ้าได้กุญแจสู่ภูเขาซินเดอร์!",
+        reward:()=>{ inv.coin+=55; inv.fish+=3; } },
+      magmaTitan: { id:'magmaTitan', chapter:1, map:"Cinderforge", chainZone:'Volcano',
         name:"มหาไททันหินหลอม", title:"ผู้เฝ้าแกนพลังงาน",
         color:"#bf360c", element:"Fire", role:"Tank", size:38, overworldSize:42,
-        hp:280, atk:19, spd:6, moveRange:2, atkRange:1, stunResist:0.7, phase2At:0.5,
+        hp:340, atk:22, spd:6, moveRange:2, atkRange:1, stunResist:0.7, phase2At:0.5,
         moves:[ {type:'melee',mult:1.4}, {type:'blast',shape:'cross',mult:2.0}, {type:'guardheal',heal:0.10} ],
         phase2:{ name:"แกนหลอมละลาย", atkMult:1.2, spdBonus:2,
           moves:[ {type:'blast',shape:'nova',mult:1.8}, {type:'melee',mult:1.5}, {type:'blast',shape:'cross',mult:2.0} ] },
         introEVA:"⚠️ มหาไททันหินหลอมตื่นแล้ว! มันจะชาร์จระเบิดลาวา — เห็นช่องแดงเมื่อไหร่ให้เดินหลบทันที!",
-        defeatEVA:"🏆 ไททันล้มลง แกนพลังงานใต้ภูเขาไฟเริ่มเต้นเป็นจังหวะปกติ... แต่พิกัดของ 'ผู้ดึงพลัง' ยังชี้ไปที่ Ruins",
+        defeatEVA:"🏆 ไททันล้มลง แกนพลังงานใต้ภูเขาไฟเริ่มเต้นปกติ... 🗝️ เจ้าได้กุญแจสู่เหวประกาย!",
         reward:()=>{ inv.coin+=60; inv.crystal+=3; } },
-      ancientWarden: { id:'ancientWarden', chapter:2, map:"Skyhold",
+      // อสูรคริสตัลแห่งเหวประกาย (โซนไม่มีดันเจี้ยน — บอสกลางแจ้ง) → กุญแจสู่ที่ราบสายฟ้า
+      shardmaw: { id:'shardmaw', chapter:2, map:"Cave", chainZone:'Cave',
+        name:"ชาร์ดมอว์ อสูรคริสตัล", title:"ความน่าสะพรึงแห่งเหวประกาย",
+        color:"#8e44ad", element:"Earth", role:"Tank", size:38, overworldSize:42,
+        hp:380, atk:22, spd:8, moveRange:2, atkRange:1, stunResist:0.7, phase2At:0.45,
+        moves:[ {type:'melee',mult:1.3}, {type:'blast',shape:'nova',mult:1.9}, {type:'guardheal',heal:0.08} ],
+        phase2:{ name:"ผลึกแตกกระจาย", atkMult:1.25, spdBonus:2,
+          moves:[ {type:'blast',shape:'nova',mult:2.0}, {type:'melee',mult:1.5}, {type:'blast',shape:'cross',mult:1.9} ] },
+        introEVA:"⚠️ ชาร์ดมอว์คำรามจากผนังผลึก! มันแกร่งมากและระเบิดผลึกรอบตัว — ระวังช่องแดง",
+        defeatEVA:"🏆 ชาร์ดมอว์แหลกสลายเป็นผงคริสตัล... 🗝️ เจ้าได้กุญแจสู่ที่ราบสายฟ้า!",
+        reward:()=>{ inv.coin+=75; inv.crystal+=4; } },
+      ancientWarden: { id:'ancientWarden', chapter:2, map:"Skyhold", chainZone:'Ruins',
         name:"ผู้คุมกฎโบราณ", title:"ระบบป้องกันของห้องแล็บ",
         color:"#5e35b1", element:"Earth", role:"CC", size:36, overworldSize:40,
-        hp:340, atk:23, spd:11, moveRange:3, atkRange:2, stunResist:0.7, phase2At:0.45,
+        hp:400, atk:26, spd:11, moveRange:3, atkRange:2, stunResist:0.7, phase2At:0.45,
         moves:[ {type:'blast',shape:'row',mult:2.2}, {type:'melee',mult:1.2}, {type:'summon',spec:'relicWisp',count:1,cap:2} ],
         phase2:{ name:"โปรโตคอลฉุกเฉิน", atkMult:1.25, spdBonus:4,
           moves:[ {type:'blink'}, {type:'blast',shape:'row',mult:2.4}, {type:'melee',mult:1.4} ] },
         introEVA:"⚠️ ผู้คุมกฎโบราณเปิดระบบโจมตี! ลำแสงจะกวาดทั้งแถว — อย่ายืนแถวเดียวกันหลายตัว!",
         defeatEVA:"🏆 ผู้คุมกฎหยุดทำงาน ประตูสู่ห้องแล็บชั้นในเปิดออก... ความจริงเรื่องตัวตนของเจ้าอยู่ข้างหน้าแล้ว",
         reward:()=>{ inv.coin+=80; inv.relic+=1; relicCount++; } },
-      corruptedHeart: { id:'corruptedHeart', chapter:3, map:"Skyhold",
+      corruptedHeart: { id:'corruptedHeart', chapter:3, map:"Skyhold", chainZone:'Ruins',
         name:"หัวใจที่แปดเปื้อน", title:"แกนกลางของเอเดนที่ถูกกลืน",
         color:"#880e4f", element:"Chimera", role:"Tank", size:42, overworldSize:46,
-        hp:480, atk:25, spd:10, moveRange:2, atkRange:1, stunResist:0.85, phase2At:0.5,
+        hp:560, atk:28, spd:10, moveRange:2, atkRange:1, stunResist:0.85, phase2At:0.5,
         moves:[ {type:'melee',mult:1.3,lifesteal:0.5}, {type:'blast',shape:'nova',mult:2.2}, {type:'summon',spec:'relicWisp',count:2,cap:3} ],
         phase2:{ name:"หัวใจเต้นรัว", atkMult:1.35, spdBonus:4,
           moves:[ {type:'blast',shape:'cross',mult:2.4}, {type:'melee',mult:1.4,lifesteal:0.5}, {type:'blast',shape:'nova',mult:2.0} ] },
@@ -3915,7 +3955,7 @@
       let best = null;
       for (const id in BOSS_DB){
         const def = BOSS_DB[id];
-        if (def.map === dungeonZone && !bossesDefeated[id] && chapterIndex >= def.chapter){
+        if (def.map === dungeonZone && !bossesDefeated[id]){   // ดันเจี้ยนเข้าได้ก็ต่อเมื่อโซนปลดแล้ว จึงไม่ต้องเช็ก chapter
           if (!best || def.chapter < best.chapter) best = def;
         }
       }
@@ -3944,7 +3984,7 @@
       for (const id in BOSS_DB){
         const def = BOSS_DB[id];
         if (def.map !== map || bossesDefeated[id]) continue;
-        if (chapterIndex !== def.chapter) continue; // โผล่เฉพาะ chapter ของตัวเอง
+        if (typeof zoneUnlocked==='function' && !zoneUnlocked(map)) continue; // โผล่เฉพาะโซนที่ปลดล็อกแล้ว
         if (enemies.some(e=>e.chapterBossId===id)) continue; // กัน spawn ซ้ำ
         enemies.push({ x:canvas.width-140, y:240, size:def.overworldSize, hp:def.hp, maxHp:def.hp,
           color:def.color, speed:0.35, squish:0, boss:true, chapterBossId:id });
@@ -4154,6 +4194,7 @@
       bossesDefeated[def.id] = true;
       battle.telegraphs = (battle.telegraphs||[]).filter(x=>x.owner!==t);
       def.reward();
+      if (def.chainZone && typeof unlockNextZone==='function') unlockNextZone(def.chainZone); // 🗝️ ปลดโซนถัดไป
       flashAlpha = 0.8; shake(8,18);
       mapBanner = { text:`👑 ${def.name} พ่ายแพ้!`, sub:"เป้าหมาย Chapter สำเร็จ", timer:180 };
       updateEVA(def.defeatEVA);
@@ -4182,9 +4223,9 @@
     // ---------- ดันเจี้ยนหลายชั้น (บอสอยู่ชั้นสุดท้าย) ----------
     // ศัตรูต่อไบโอม — ยิ่งลงลึกยิ่งแข็ง (คูณตามชั้น) · แก้ปัญหา "มอนอ่อน/น้อยเกินไป"
     const DUNGEON_ENEMY = {
-      'dungeon-forest': { color:'#5a7a3a', hp:90,  atk:12, spd:0.9, size:26 },
-      'dungeon-lava':   { color:'#e04a1e', hp:120, atk:16, spd:1.05, size:26 },
-      'dungeon-ruin':   { color:'#8a63c0', hp:150, atk:19, spd:0.9, size:26 },
+      'dungeon-forest': { color:'#5a7a3a', hp:120, atk:16, spd:0.95, size:26 },
+      'dungeon-lava':   { color:'#e04a1e', hp:165, atk:21, spd:1.1,  size:26 },
+      'dungeon-ruin':   { color:'#8a63c0', hp:205, atk:26, spd:0.95, size:26 },
     };
     function makeDungeonEnemy(cfg, floor, strong){
       const mul = 1 + (floor-1)*0.3 + (strong?0.5:0); // ลึกขึ้น = แกร่งขึ้น
@@ -4228,12 +4269,17 @@
     function switchMap(newMap){
       // Chapter gating: โซนที่ยังไม่ถึง chapter จะเข้าไม่ได้ (ดู CHAPTERS ใน 02-economy-quests.js)
       if (!zoneUnlocked(newMap)){
-        const chNum = zoneChapterNumber(newMap);
+        const _idx = (typeof ZONE_CHAIN!=='undefined') ? ZONE_CHAIN.indexOf(newMap) : -1;
+        const _need = _idx > 0 ? (function(){ const p=zoneMeta(ZONE_CHAIN[_idx-1]); return t(p.name,p.en); })() : '';
         // ดันผู้เล่นกลับจากขอบจอ กันไม่ให้ trigger ซ้ำรัวๆ
         player.x = Math.min(Math.max(player.x, 60), canvas.width - 60 - player.size);
         player.y = Math.min(Math.max(player.y, 60), canvas.height - 60 - player.size);
-        mapBanner = { text:"🔒 ZONE LOCKED", sub:`ปลดล็อกใน Chapter ${chNum}: ${CHAPTERS[chNum-1].title}`, timer:110 };
-        updateEVA(`🔒 ทางนี้ยังมีหมอกพลังงานหนาแน่นเกินไป — จะผ่านได้เมื่อถึง Chapter ${chNum} "${CHAPTERS[chNum-1].title}" (ดูเป้าหมายที่แผง Chapter)`);
+        mapBanner = { text: t("🔒 โซนถูกล็อก","🔒 ZONE LOCKED"),
+          sub: _need ? t(`ต้องปราบบอสของ "${_need}" เพื่อรับกุญแจก่อน`, `Defeat the boss of "${_need}" to earn the key`) : t("ยังไปไม่ได้","Not reachable yet"), timer:140 };
+        updateEVA(_need
+          ? t(`🔒 ทางนี้ถูกปิดด้วยกุญแจพลังงาน — กลับไปปราบ "บอส" ของ ${_need} เพื่อรับกุญแจก่อน ถึงจะเปิดทางมาที่นี่`,
+              `🔒 This path is sealed by an energy lock — defeat the boss of ${_need} to earn its key and open the way here`)
+          : t("🔒 ทางนี้ยังไปไม่ได้ตอนนี้","🔒 This path isn't reachable yet"));
         return;
       }
       const fromMap = currentMap;
@@ -4642,7 +4688,7 @@
     // ---------- Save versioning ----------
     // ทุกครั้งที่เพิ่ม field ใหม่ลงเซฟ: เพิ่ม SAVE_VERSION แล้วเขียน migration step ใน migrateSave
     // ห้ามอ่าน field ใหม่ตรงๆ จาก data โดยไม่ผ่าน migration — ไม่งั้นเซฟเก่าพัง
-    const SAVE_VERSION = 13;
+    const SAVE_VERSION = 14;
 
     // ---------- เวลาเล่นสะสม (playtime) ----------
     // สะสมเป็นวินาทีใน update() (22-game-loop.js) เฉพาะตอน gameStarted — เก็บลงเซฟต่อ slot
@@ -4735,6 +4781,18 @@
         const known = ['Farm','Home','Village','Dungeon','Snow','Cave','Volcano','Ruins'];
         if (!known.includes(data.currentMap)) data.currentMap = 'Farm';
         v = 13;
+      }
+      if (v === 13){
+        // v13 → v14: ปลดล็อกแมพทีละโซนด้วยกุญแจจากบอส · เดาสิทธิ์เข้าโซนจากบอสที่ปราบแล้ว + chapter (ใจดี ไม่ให้ใครติด)
+        const bd = data.bossesDefeated || {};
+        const ci = data.chapterIndex || 0;
+        const zu = { Dungeon:true };
+        if (bd.shadowFang || ci>=1) zu.Snow = true;
+        if (bd.tideWarden || ci>=1) zu.Volcano = true;
+        if (bd.magmaTitan || ci>=2) zu.Cave = true;
+        if (bd.shardmaw  || ci>=2) zu.Ruins = true;
+        data.zonesUnlocked = zu;
+        v = 14;
       }
       data.version = v;
       return data;
@@ -4830,6 +4888,7 @@
           shipItems: Object.assign({}, shipItems), // v12: ของในกล่องขาย (ยังไม่ได้ขาย)
           discoveredSpecies: [...discoveredSpecies], dexRewarded,
           bossesDefeated: Object.assign({}, bossesDefeated),
+          zonesUnlocked: Object.assign({}, zonesUnlocked), // v14: กุญแจปลดล็อกแมพทีละโซน
           quest: { tutorialIndex, tut: Object.assign({}, tut),
             sideQuestsUnlocked, sideQuestsDone: sideQuests.filter(q=>q.done).map(q=>q.id),
             counters: { harvestCount, defeatCount, cookCount, fishCount, mineCount, woodCount, obsidianCount, relicCount } },
@@ -4897,6 +4956,7 @@
           // v2: chapter + quest progress · v4: boss progress
           chapterIndex = data.chapterIndex || 0;
           bossesDefeated = data.bossesDefeated || {};
+          zonesUnlocked = data.zonesUnlocked || { Dungeon:true };
           if (data.quest){
             tutorialIndex = data.quest.tutorialIndex || 0;
             Object.assign(tut, data.quest.tut || {});
